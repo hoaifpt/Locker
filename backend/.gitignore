@@ -1,0 +1,6 @@
+bin/
+obj/
+.vs/
+target/
+*.log
+.env

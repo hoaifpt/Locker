@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  devcontainer:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu
+    volumes:
+      - ../:/workspace:cached
+    command: sleep infinity
+    network_mode: service:infrastructure
+
+  infrastructure:
+    image: alpine
+    command: sleep infinity
+    ports:
+      - "5000:5000"
+      - "3000:3000"
+      - "8080:8080"
+      - "1883:1883"
+      - "27017:27017"
+
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: locker
+    volumes:
+      - mongodb-data:/data/db
+    network_mode: service:infrastructure
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    network_mode: service:infrastructure
+
+volumes:
+  mongodb-data:

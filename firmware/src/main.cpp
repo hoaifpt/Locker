@@ -20,7 +20,7 @@ static const char *TAG = "LOCKER_MAIN";
 
 extern "C" void app_main(void)
 {
-    // Initialize NVS
+    // Initialize NVS (Non-Volatile Storage)
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
@@ -29,29 +29,52 @@ extern "C" void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
 
-    ESP_LOGI(TAG, "Locker firmware starting...");
+    ESP_LOGI(TAG, "========================================");
+    ESP_LOGI(TAG, "   Smart Locker Firmware v1.0");
+    ESP_LOGI(TAG, "   Locker ID: %s", LOCKER_ID);
+    ESP_LOGI(TAG, "========================================");
 
-    // Initialize WiFi
-    wifi_manager_init();
+    // Step 1: Initialize WiFi (blocks until connected or timeout)
+    ret = wifi_manager_init();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "WiFi connection failed! Restarting in 5s...");
+        vTaskDelay(pdMS_TO_TICKS(5000));
+        esp_restart();
+    }
 
-    // Initialize hardware components
+    // Step 2: Initialize hardware components
     locker_control_init();
     door_sensor_init();
 
-    // Initialize MQTT
+    // Step 3: Initialize MQTT (requires WiFi)
     mqtt_handler_init();
 
-    ESP_LOGI(TAG, "Locker firmware initialized successfully");
+    // Startup confirmation: 3 short beeps
+    locker_buzzer_beep(3, 50);
 
-    // Main loop
+    ESP_LOGI(TAG, "Smart Locker initialized successfully!");
+    ESP_LOGI(TAG, "  - Solenoid:    GPIO %d", SOLENOID_PIN);
+    ESP_LOGI(TAG, "  - Buzzer:      GPIO %d", BUZZER_PIN);
+    ESP_LOGI(TAG, "  - LED Green:   GPIO %d", LED_GREEN_PIN);
+    ESP_LOGI(TAG, "  - LED Red:     GPIO %d", LED_RED_PIN);
+    ESP_LOGI(TAG, "  - Door Sensor: GPIO %d", DOOR_SENSOR_PIN);
+
+    // Main loop - 100ms polling interval
     while (1)
     {
-        // Monitor door status
+        // Monitor door status (with debounce)
         door_sensor_check();
 
-        // Handle any pending MQTT messages
+        // Handle MQTT heartbeat & periodic tasks
         mqtt_handler_process();
 
-        vTaskDelay(pdMS_TO_TICKS(100)); // 100ms delay
+        // Log WiFi disconnection warning
+        if (!wifi_manager_is_connected())
+        {
+            ESP_LOGW(TAG, "WiFi disconnected, waiting for reconnection...");
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

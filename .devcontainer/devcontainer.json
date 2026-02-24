@@ -3,7 +3,6 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "devcontainer",
   "workspaceFolder": "/workspace",
-
   "features": {
     "ghcr.io/devcontainers/features/dotnet:2": {
       "version": "8.0"
@@ -11,13 +10,21 @@
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
     },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installGradle": "true",
+      "gradleVersion": "8.12"
+    },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-
-  "forwardPorts": [5000, 3000, 8080, 1883, 27017],
-
+  "forwardPorts": [
+    5000,
+    3000,
+    8080,
+    1883,
+    27017
+  ],
   "portsAttributes": {
     "5000": {
       "label": "Backend API",
@@ -28,7 +35,6 @@
       "onAutoForward": "openPreview"
     }
   },
-
   "customizations": {
     "vscode": {
       "extensions": [
@@ -37,10 +43,11 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "platformio.platformio-ide",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
       ]
     }
   },
-
   "remoteUser": "vscode"
 }

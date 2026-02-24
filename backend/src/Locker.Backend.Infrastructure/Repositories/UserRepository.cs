@@ -26,8 +26,19 @@ public class UserRepository : IUserRepository
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var cursor = await _collection.FindAsync(u => u.Email == email, cancellationToken: cancellationToken);
+        return await cursor.FirstOrDefaultAsync(cancellationToken);
+    }
+
     public Task CreateAsync(User user, CancellationToken cancellationToken)
     {
         return _collection.InsertOneAsync(user, cancellationToken: cancellationToken);
+    }
+
+    public Task UpdateAsync(User user, CancellationToken cancellationToken)
+    {
+        return _collection.ReplaceOneAsync(u => u.Id == user.Id, user, cancellationToken: cancellationToken);
     }
 }

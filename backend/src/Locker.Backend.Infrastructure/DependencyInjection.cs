@@ -17,6 +17,7 @@ public static class DependencyInjection
         services.AddSingleton<MongoContext>();
         services.AddScoped<ILockerRepository, LockerRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
 

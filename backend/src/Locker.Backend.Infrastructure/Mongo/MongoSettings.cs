@@ -6,4 +6,5 @@ public class MongoSettings
     public string DatabaseName { get; set; } = "locker";
     public string UsersCollection { get; set; } = "users";
     public string LockersCollection { get; set; } = "lockers";
+    public string RefreshTokensCollection { get; set; } = "refresh_tokens";
 }

@@ -26,7 +26,13 @@ public class AuthService
     public async Task<AuthResponse?> LoginAsync(AuthRequest request, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetByUsernameAsync(request.Username, cancellationToken);
-        if (user == null || !user.IsActive || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (user == null || !user.IsActive)
+            return null;
+
+        if (string.IsNullOrEmpty(user.PasswordHash))
+            return null;
+
+        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
             return null;
 
         return await GenerateAuthResponseAsync(user, cancellationToken);

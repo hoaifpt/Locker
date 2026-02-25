@@ -3,7 +3,6 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "devcontainer",
   "workspaceFolder": "/workspace",
-
   "features": {
     "ghcr.io/devcontainers/features/dotnet:2": {
       "version": "8.0"
@@ -11,14 +10,17 @@
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
     },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installGradle": "true",
+      "gradleVersion": "8.12"
+    },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "postStartCommand": "export PATH=\"$PATH:$HOME/flutter/bin\" && echo 'export PATH=\"$PATH:$HOME/flutter/bin\"' >> ~/.bashrc || true",
 
   "forwardPorts": [5000, 3000, 8080, 1883, 27017],
-
   "portsAttributes": {
     "5000": {
       "label": "Backend API",
@@ -29,13 +31,13 @@
       "onAutoForward": "openPreview"
     }
   },
-
   "customizations": {
     "vscode": {
       "settings": {
         "dotnet.server.useOmnisharp": false,
         "dotnet.projectSystem.incrementalBuild": true,
-        "dotnet.server.waitForDebugger": false
+        "dotnet.server.waitForDebugger": false,
+        "mdb.connectionSaving.defaultConnectionSavingLocation": "Workspace"
       },
       "extensions": [
         "ms-dotnettools.csharp",
@@ -45,10 +47,12 @@
         "platformio.platformio-ide",
         "ms-azuretools.vscode-docker",
         "Dart-Code.dart-code",
-        "Dart-Code.flutter"
+        "Dart-Code.flutter",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "mongodb.mongodb-vscode"
       ]
     }
   },
-
   "remoteUser": "vscode"
 }

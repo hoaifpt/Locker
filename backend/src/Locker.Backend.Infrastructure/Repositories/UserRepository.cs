@@ -32,6 +32,12 @@ public class UserRepository : IUserRepository
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var cursor = await _collection.FindAsync(_ => true, cancellationToken: cancellationToken);
+        return await cursor.ToListAsync(cancellationToken);
+    }
+
     public Task CreateAsync(User user, CancellationToken cancellationToken)
     {
         return _collection.InsertOneAsync(user, cancellationToken: cancellationToken);

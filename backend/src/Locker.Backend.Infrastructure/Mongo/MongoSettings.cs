@@ -7,4 +7,7 @@ public class MongoSettings
     public string UsersCollection { get; set; } = "users";
     public string LockersCollection { get; set; } = "lockers";
     public string RefreshTokensCollection { get; set; } = "refresh_tokens";
+    public string PackagesCollection { get; set; } = "packages";
+    public string BookingsCollection { get; set; } = "bookings";
+    public string PaymentsCollection { get; set; } = "payments";
 }

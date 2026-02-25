@@ -1,6 +1,7 @@
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
+using Locker.Backend.Domain.Enums;
 using LockerEntity = Locker.Backend.Domain.Entities.Locker;
 
 namespace Locker.Backend.Application.Services;
@@ -18,6 +19,15 @@ public class LockerService
     {
         var lockers = await _lockerRepository.GetAllAsync(cancellationToken);
         return lockers.Select(ToDto).ToList();
+    }
+
+    public async Task<List<LockerDto>> GetAvailableAsync(CancellationToken cancellationToken)
+    {
+        var lockers = await _lockerRepository.GetAllAsync(cancellationToken);
+        return lockers
+            .Where(l => l.Slots.Any(s => s.Status == LockerSlotStatus.Available))
+            .Select(ToDto)
+            .ToList();
     }
 
     public async Task<LockerDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
@@ -64,6 +74,19 @@ public class LockerService
         }
 
         await _lockerRepository.DeleteAsync(id, cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> UpdateSlotStatusAsync(string lockerId, int slotIndex, LockerSlotStatus status, CancellationToken cancellationToken)
+    {
+        var locker = await _lockerRepository.GetByIdAsync(lockerId, cancellationToken);
+        if (locker == null) return false;
+
+        var slot = locker.Slots.FirstOrDefault(s => s.Index == slotIndex);
+        if (slot == null) return false;
+
+        slot.Status = status;
+        await _lockerRepository.UpdateAsync(locker, cancellationToken);
         return true;
     }
 

@@ -9,6 +9,11 @@ public static class DependencyInjection
     {
         services.AddScoped<LockerService>();
         services.AddScoped<AuthService>();
+        services.AddScoped<UserService>();
+        services.AddScoped<PackageService>();
+        services.AddScoped<BookingService>();
+        services.AddScoped<PaymentService>();
+        services.AddScoped<AdminService>();
         return services;
     }
 }

@@ -1,11 +1,10 @@
 namespace Locker.Backend.Domain.Enums;
 
-public enum LockerSlotStatus
+public enum BookingStatus
 {
-    Available,
     Pending,
-    Ative,
-    Complete,
+    Active,
+    Completed,
     Canceled,
     Expired
 }

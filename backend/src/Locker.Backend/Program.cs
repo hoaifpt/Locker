@@ -1,8 +1,14 @@
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Locker.Backend;
 using Locker.Backend.Application;
 using Locker.Backend.Infrastructure;
 using Locker.Backend.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -41,6 +47,30 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+
+// Rate limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+    options.AddFixedWindowLimiter("api", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 5;
+    });
+    options.RejectionStatusCode = 429;
+});
+
 // Add CORS
 builder.Services.AddCors(options =>
 {
@@ -62,6 +92,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    options.MapInboundClaims = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -69,7 +100,9 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(key)
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        RoleClaimType = ClaimTypes.Role,
+        NameClaimType = ClaimTypes.Name
     };
 });
 
@@ -86,9 +119,23 @@ app.UseSwaggerUI(options =>
 
 app.UseCors("AllowAll");
 
+// Security headers
+app.Use(async (ctx, next) =>
+{
+    ctx.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    ctx.Response.Headers.Append("X-Frame-Options", "DENY");
+    ctx.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    ctx.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    ctx.Response.Headers.Append("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    await next();
+});
+
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers().RequireRateLimiting("api");
+
+await DbSeeder.SeedAsync(app.Services);
 
 app.Run();

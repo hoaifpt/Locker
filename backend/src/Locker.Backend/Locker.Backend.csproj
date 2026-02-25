@@ -6,13 +6,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Locker.Backend.Application\Locker.Backend.Application.csproj" />
-        <ProjectReference
-            Include="..\Locker.Backend.Infrastructure\Locker.Backend.Infrastructure.csproj" />
+        <ProjectReference Include="..\Locker.Backend.Infrastructure\Locker.Backend.Infrastructure.csproj" />
     </ItemGroup>
 </Project>

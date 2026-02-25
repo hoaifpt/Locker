@@ -1,5 +1,6 @@
 using Locker.Backend.Application.Models;
 using Locker.Backend.Application.Services;
+using Locker.Backend.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,8 +37,16 @@ public class LockersController : ControllerBase
         return Ok(item);
     }
 
+    [HttpGet("available")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAvailable(CancellationToken cancellationToken)
+    {
+        var items = await _lockerService.GetAvailableAsync(cancellationToken);
+        return Ok(items);
+    }
+
     [HttpPost]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateLockerRequest request, CancellationToken cancellationToken)
     {
         var item = await _lockerService.CreateAsync(request, cancellationToken);
@@ -45,7 +54,7 @@ public class LockersController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(string id, [FromBody] UpdateLockerRequest request, CancellationToken cancellationToken)
     {
         var updated = await _lockerService.UpdateAsync(id, request, cancellationToken);
@@ -58,7 +67,7 @@ public class LockersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
     {
         var deleted = await _lockerService.DeleteAsync(id, cancellationToken);
@@ -67,6 +76,16 @@ public class LockersController : ControllerBase
             return NotFound();
         }
 
+        return NoContent();
+    }
+
+    /// <summary>Called by firmware/ESP32 to report slot status change.</summary>
+    [HttpPost("{id}/slots/{slotIndex}/status")]
+    [Authorize(Roles = "Admin,Shipper")]
+    public async Task<IActionResult> UpdateSlotStatus(string id, int slotIndex, [FromBody] UpdateSlotStatusRequest request, CancellationToken cancellationToken)
+    {
+        var updated = await _lockerService.UpdateSlotStatusAsync(id, slotIndex, request.Status, cancellationToken);
+        if (!updated) return NotFound();
         return NoContent();
     }
 }

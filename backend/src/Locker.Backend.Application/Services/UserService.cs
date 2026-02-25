@@ -1,5 +1,5 @@
-using AutoMapper;
 using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Models;
 
 namespace Locker.Backend.Application.Services;
@@ -8,19 +8,19 @@ public class UserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IMapper _mapper;
+    private readonly UserMapper _userMapper;
 
-    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IMapper mapper)
+    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, UserMapper userMapper)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
-        _mapper = mapper;
+        _userMapper = userMapper;
     }
 
     public async Task<UserDto?> GetCurrentUserAsync(string userId, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
-        return user == null ? null : _mapper.Map<UserDto>(user);
+        return user == null ? null : _userMapper.Map(user);
     }
 
     public async Task<UserDto?> UpdateProfileAsync(string userId, UpdateProfileRequest request, CancellationToken cancellationToken)
@@ -36,7 +36,7 @@ public class UserService
             user.FullName = request.FullName;
 
         await _userRepository.UpdateAsync(user, cancellationToken);
-        return _mapper.Map<UserDto>(user);
+        return _userMapper.Map(user);
     }
 
     public async Task<bool> ChangePasswordAsync(string userId, ChangePasswordRequest request, CancellationToken cancellationToken)

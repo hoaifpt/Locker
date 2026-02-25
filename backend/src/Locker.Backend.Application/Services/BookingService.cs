@@ -1,5 +1,5 @@
-using AutoMapper;
 using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
@@ -13,7 +13,7 @@ public class BookingService
     private readonly IPackageRepository _packageRepository;
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IMapper _mapper;
+    private readonly BookingMapper _bookingMapper;
 
     public BookingService(
         IBookingRepository bookingRepository,
@@ -21,26 +21,26 @@ public class BookingService
         IPackageRepository packageRepository,
         IPaymentRepository paymentRepository,
         IPasswordHasher passwordHasher,
-        IMapper mapper)
+        BookingMapper bookingMapper)
     {
         _bookingRepository = bookingRepository;
         _lockerRepository = lockerRepository;
         _packageRepository = packageRepository;
         _paymentRepository = paymentRepository;
         _passwordHasher = passwordHasher;
-        _mapper = mapper;
+        _bookingMapper = bookingMapper;
     }
 
     public async Task<BookingDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(id, cancellationToken);
-        return booking == null ? null : _mapper.Map<BookingDto>(booking);
+        return booking == null ? null : _bookingMapper.Map(booking);
     }
 
     public async Task<List<BookingDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         var bookings = await _bookingRepository.GetAllAsync(cancellationToken);
-        return _mapper.Map<List<BookingDto>>(bookings);
+        return bookings.Select(_bookingMapper.Map).ToList();
     }
 
     public async Task<List<BookingDto>> GetMyBookingsAsync(string userId, BookingStatus? status, CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ public class BookingService
         var bookings = await _bookingRepository.GetByUserIdAsync(userId, cancellationToken);
         if (status.HasValue)
             bookings = bookings.Where(b => b.Status == status.Value).ToList();
-        return _mapper.Map<List<BookingDto>>(bookings);
+        return bookings.Select(_bookingMapper.Map).ToList();
     }
 
     public async Task<BookingDto?> CreateAsync(string userId, CreateBookingRequest request, CancellationToken cancellationToken)
@@ -79,7 +79,7 @@ public class BookingService
         await _bookingRepository.CreateAsync(booking, cancellationToken);
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
 
-        return _mapper.Map<BookingDto>(booking);
+        return _bookingMapper.Map(booking);
     }
 
     public async Task<bool> SetPinAsync(string bookingId, string userId, SetPinRequest request, CancellationToken cancellationToken)

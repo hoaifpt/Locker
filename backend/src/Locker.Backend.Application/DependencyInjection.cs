@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentValidation;
 using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Services;
@@ -11,9 +10,18 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddAutoMapper(typeof(MappingProfile).Assembly);
+        // Mappers
+        services.AddSingleton<UserMapper>();
+        services.AddSingleton<LockerSlotMapper>();
+        services.AddSingleton<LockerMapper>();
+        services.AddSingleton<PackageMapper>();
+        services.AddSingleton<BookingMapper>();
+        services.AddSingleton<PaymentMapper>();
+
+        // Validators
         services.AddValidatorsFromAssemblyContaining<AuthRequestValidator>();
 
+        // Services
         services.AddScoped<LockerService>();
         services.AddScoped<AuthService>();
         services.AddScoped<UserService>();

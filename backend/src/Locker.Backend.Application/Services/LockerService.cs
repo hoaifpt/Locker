@@ -1,5 +1,5 @@
-using AutoMapper;
 using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
@@ -10,31 +10,31 @@ namespace Locker.Backend.Application.Services;
 public class LockerService
 {
     private readonly ILockerRepository _lockerRepository;
-    private readonly IMapper _mapper;
+    private readonly LockerMapper _lockerMapper;
 
-    public LockerService(ILockerRepository lockerRepository, IMapper mapper)
+    public LockerService(ILockerRepository lockerRepository, LockerMapper lockerMapper)
     {
         _lockerRepository = lockerRepository;
-        _mapper = mapper;
+        _lockerMapper = lockerMapper;
     }
 
     public async Task<List<LockerDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         var lockers = await _lockerRepository.GetAllAsync(cancellationToken);
-        return _mapper.Map<List<LockerDto>>(lockers);
+        return lockers.Select(_lockerMapper.Map).ToList();
     }
 
     public async Task<List<LockerDto>> GetAvailableAsync(CancellationToken cancellationToken)
     {
         var lockers = await _lockerRepository.GetAllAsync(cancellationToken);
         var available = lockers.Where(l => l.Slots.Any(s => s.Status == LockerSlotStatus.Available)).ToList();
-        return _mapper.Map<List<LockerDto>>(available);
+        return available.Select(_lockerMapper.Map).ToList();
     }
 
     public async Task<LockerDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(id, cancellationToken);
-        return locker == null ? null : _mapper.Map<LockerDto>(locker);
+        return locker == null ? null : _lockerMapper.Map(locker);
     }
 
     public async Task<LockerDto> CreateAsync(CreateLockerRequest request, CancellationToken cancellationToken)
@@ -49,7 +49,7 @@ public class LockerService
         };
 
         await _lockerRepository.CreateAsync(locker, cancellationToken);
-        return _mapper.Map<LockerDto>(locker);
+        return _lockerMapper.Map(locker);
     }
 
     public async Task<bool> UpdateAsync(string id, UpdateLockerRequest request, CancellationToken cancellationToken)

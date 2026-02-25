@@ -1,5 +1,5 @@
-using AutoMapper;
 using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
@@ -10,31 +10,31 @@ public class PaymentService
 {
     private readonly IPaymentRepository _paymentRepository;
     private readonly IBookingRepository _bookingRepository;
-    private readonly IMapper _mapper;
+    private readonly PaymentMapper _paymentMapper;
 
-    public PaymentService(IPaymentRepository paymentRepository, IBookingRepository bookingRepository, IMapper mapper)
+    public PaymentService(IPaymentRepository paymentRepository, IBookingRepository bookingRepository, PaymentMapper paymentMapper)
     {
         _paymentRepository = paymentRepository;
         _bookingRepository = bookingRepository;
-        _mapper = mapper;
+        _paymentMapper = paymentMapper;
     }
 
     public async Task<PaymentDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         var payment = await _paymentRepository.GetByIdAsync(id, cancellationToken);
-        return payment == null ? null : _mapper.Map<PaymentDto>(payment);
+        return payment == null ? null : _paymentMapper.Map(payment);
     }
 
     public async Task<PaymentDto?> GetByBookingIdAsync(string bookingId, CancellationToken cancellationToken)
     {
         var payment = await _paymentRepository.GetByBookingIdAsync(bookingId, cancellationToken);
-        return payment == null ? null : _mapper.Map<PaymentDto>(payment);
+        return payment == null ? null : _paymentMapper.Map(payment);
     }
 
     public async Task<List<PaymentDto>> GetMyPaymentsAsync(string userId, CancellationToken cancellationToken)
     {
         var payments = await _paymentRepository.GetByUserIdAsync(userId, cancellationToken);
-        return _mapper.Map<List<PaymentDto>>(payments);
+        return payments.Select(_paymentMapper.Map).ToList();
     }
 
     public async Task<PaymentDto?> CreateAsync(string userId, CreatePaymentRequest request, CancellationToken cancellationToken)
@@ -43,7 +43,7 @@ public class PaymentService
         if (booking == null || booking.UserId != userId) return null;
 
         var existing = await _paymentRepository.GetByBookingIdAsync(request.BookingId, cancellationToken);
-        if (existing != null) return _mapper.Map<PaymentDto>(existing);
+        if (existing != null) return _paymentMapper.Map(existing);
 
         var payment = new Payment
         {
@@ -59,7 +59,7 @@ public class PaymentService
         await _paymentRepository.CreateAsync(payment, cancellationToken);
         await _bookingRepository.UpdateAsync(booking, cancellationToken);
 
-        return _mapper.Map<PaymentDto>(payment);
+        return _paymentMapper.Map(payment);
     }
 
     public async Task<bool> CompleteAsync(string paymentId, string userId, CompletePaymentRequest request, CancellationToken cancellationToken)

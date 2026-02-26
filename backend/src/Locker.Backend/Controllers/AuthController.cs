@@ -95,6 +95,22 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Revoke all active refresh tokens for the current user (logout from all devices).
+    /// </summary>
+    [HttpPost("logout-all")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null)
+            return Unauthorized();
+
+        await _authService.LogoutAllAsync(userId, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Send a 6-digit OTP to the user's email or phone number for password reset.
     /// </summary>
     [HttpPost("forgot-password")]

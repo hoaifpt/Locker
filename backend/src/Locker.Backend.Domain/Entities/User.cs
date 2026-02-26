@@ -12,4 +12,8 @@ public class User : BaseEntity
     public bool IsEmailVerified { get; set; } = false;
     public string? EmailVerificationToken { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // Brute-force protection
+    public int FailedLoginAttempts { get; set; } = 0;
+    public DateTime? LockoutEnd { get; set; }
 }

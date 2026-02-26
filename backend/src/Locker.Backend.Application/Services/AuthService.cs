@@ -54,8 +54,38 @@ public class AuthService
         if (!user.IsActive)
             return (null, "Tài khoản đã bị vô hiệu hóa.");
 
+        // Check lockout
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+        {
+            var remaining = (int)Math.Ceiling((user.LockoutEnd.Value - DateTime.UtcNow).TotalMinutes);
+            return (null, $"Tài khoản tạm thời bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau {remaining} phút.");
+        }
+
         if (string.IsNullOrEmpty(user.PasswordHash) || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        {
+            const int MaxFailedAttempts = 5;
+            const int LockoutMinutes = 15;
+
+            user.FailedLoginAttempts++;
+            if (user.FailedLoginAttempts >= MaxFailedAttempts)
+            {
+                user.LockoutEnd = DateTime.UtcNow.AddMinutes(LockoutMinutes);
+                user.FailedLoginAttempts = 0;
+                await _userRepository.UpdateAsync(user, cancellationToken);
+                return (null, $"Tài khoản bị khóa {LockoutMinutes} phút do đăng nhập sai {MaxFailedAttempts} lần liên tiếp.");
+            }
+
+            await _userRepository.UpdateAsync(user, cancellationToken);
             return (null, "Tên đăng nhập hoặc mật khẩu không đúng.");
+        }
+
+        // Đăng nhập thành công — reset lockout
+        if (user.FailedLoginAttempts > 0 || user.LockoutEnd.HasValue)
+        {
+            user.FailedLoginAttempts = 0;
+            user.LockoutEnd = null;
+            await _userRepository.UpdateAsync(user, cancellationToken);
+        }
 
         var response = await GenerateAuthResponseAsync(user, cancellationToken);
         return (response, null);
@@ -183,6 +213,12 @@ public class AuthService
     }
 
     /// <summary>
+    /// Revokes ALL active refresh tokens for the given user (logout all devices).
+    /// </summary>
+    public Task LogoutAllAsync(string userId, CancellationToken cancellationToken)
+        => _refreshTokenRepository.RevokeAllByUserIdAsync(userId, cancellationToken);
+
+    /// <summary>
     /// Determines if the identifier is an email or phone, validates it's real,
     /// finds the user, generates OTP, and dispatches it.
     /// Returns (false, errorMessage) on validation failure; (true, null) on success or account not found (anti-enumeration).
@@ -201,8 +237,10 @@ public class AuthService
         if (user == null || !user.IsActive)
             return (true, null); // anti-enumeration: don't reveal non-existence
 
-        // Generate a 6-digit OTP
-        var code = Random.Shared.Next(100_000, 999_999).ToString();
+        // Generate a 6-digit OTP using a cryptographically secure RNG
+        var bytes = new byte[4];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
+        var code = (Math.Abs(BitConverter.ToInt32(bytes)) % 900_000 + 100_000).ToString();
 
         var otpCode = new OtpCode
         {

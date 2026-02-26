@@ -7,6 +7,8 @@ public interface IUserRepository
     Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken);
     Task<User?> GetByIdAsync(string id, CancellationToken cancellationToken);
     Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken);
+    Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken);
+    Task<User?> GetByVerificationTokenAsync(string token, CancellationToken cancellationToken);
     Task<List<User>> GetAllAsync(CancellationToken cancellationToken);
     Task CreateAsync(User user, CancellationToken cancellationToken);
     Task UpdateAsync(User user, CancellationToken cancellationToken);

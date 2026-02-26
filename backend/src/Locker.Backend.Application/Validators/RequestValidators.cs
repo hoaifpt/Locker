@@ -44,6 +44,10 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.FullName)
             .MaximumLength(100).WithMessage("Full name must not exceed 100 characters.")
             .When(x => x.FullName != null);
+
+        RuleFor(x => x.PhoneNumber)
+            .Matches(@"^(\+?[0-9]{7,15})$").WithMessage("Số điện thoại không hợp lệ (ví dụ: +84901234567 hoặc 0901234567).")
+            .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
     }
 }
 
@@ -76,6 +80,39 @@ public class UpdateProfileRequestValidator : AbstractValidator<UpdateProfileRequ
         RuleFor(x => x.FullName)
             .MaximumLength(100).WithMessage("Full name must not exceed 100 characters.")
             .When(x => x.FullName != null);
+    }
+}
+
+public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest>
+{
+    public ForgotPasswordRequestValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email không được để trống.")
+            .EmailAddress().WithMessage("Email không hợp lệ.")
+            .MaximumLength(200).WithMessage("Email quá dài.");
+    }
+}
+
+public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
+{
+    public ResetPasswordRequestValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email hoặc số điện thoại không được để trống.");
+
+        RuleFor(x => x.Otp)
+            .NotEmpty().WithMessage("Mã OTP không được để trống.")
+            .Length(6).WithMessage("Mã OTP phải gồm 6 chữ số.")
+            .Matches("^[0-9]+$").WithMessage("Mã OTP chỉ chứa chữ số.");
+
+        RuleFor(x => x.NewPassword)
+            .NotEmpty().WithMessage("Mật khẩu mới không được để trống.")
+            .MinimumLength(8).WithMessage("Mật khẩu phải có ít nhất 8 ký tự.")
+            .Matches("[A-Z]").WithMessage("Mật khẩu phải chứa ít nhất một chữ hoa.")
+            .Matches("[a-z]").WithMessage("Mật khẩu phải chứa ít nhất một chữ thường.")
+            .Matches("[0-9]").WithMessage("Mật khẩu phải chứa ít nhất một chữ số.")
+            .Matches("[^a-zA-Z0-9]").WithMessage("Mật khẩu phải chứa ít nhất một ký tự đặc biệt.");
     }
 }
 

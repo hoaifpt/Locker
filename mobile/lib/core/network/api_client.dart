@@ -32,9 +32,8 @@ class ApiClient {
   void setToken(String token) {
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }
-  
+
   void clearToken() {
     _dio.options.headers.remove('Authorization');
   }
-  // Removed extra closing brace
 }

@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Install system dependencies for Flutter desktop
+echo "🔧 Installing system dependencies for Flutter desktop..."
+sudo apt update
+sudo apt install -y cmake ninja-build build-essential clang pkg-config libgtk-3-dev
+
 echo "🚀 Setting up Locker System..."
 
 # Backend
@@ -41,9 +46,14 @@ $HOME/flutter/bin/flutter precache --web 2>/dev/null || true
 
 # Mobile
 if [ -d "/workspace/mobile" ]; then
-  echo "📦 Getting Flutter dependencies..."
+  echo "📦 Setting up Flutter..."
+  if [ ! -d "$HOME/flutter" ]; then
+    git clone https://github.com/flutter/flutter.git -b stable $HOME/flutter
+  fi
+  export PATH="$PATH:$HOME/flutter/bin"
+  echo 'export PATH="$PATH:$HOME/flutter/bin"' >> $HOME/.bashrc
   cd /workspace/mobile
-  $HOME/flutter/bin/flutter pub get || echo "⚠️  Flutter pub get failed"
+  echo "ℹ️  Flutter setup skipped (install manually if needed)"
 fi
 
 # Firmware

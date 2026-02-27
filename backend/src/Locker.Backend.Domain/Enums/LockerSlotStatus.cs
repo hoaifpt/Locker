@@ -4,7 +4,7 @@ public enum LockerSlotStatus
 {
     Available,
     Pending,
-    Ative,
+    Active,
     Complete,
     Canceled,
     Expired

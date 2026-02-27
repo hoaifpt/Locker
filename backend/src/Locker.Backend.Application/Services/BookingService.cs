@@ -1,4 +1,5 @@
 using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
@@ -12,31 +13,34 @@ public class BookingService
     private readonly IPackageRepository _packageRepository;
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly BookingMapper _bookingMapper;
 
     public BookingService(
         IBookingRepository bookingRepository,
         ILockerRepository lockerRepository,
         IPackageRepository packageRepository,
         IPaymentRepository paymentRepository,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        BookingMapper bookingMapper)
     {
         _bookingRepository = bookingRepository;
         _lockerRepository = lockerRepository;
         _packageRepository = packageRepository;
         _paymentRepository = paymentRepository;
         _passwordHasher = passwordHasher;
+        _bookingMapper = bookingMapper;
     }
 
     public async Task<BookingDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(id, cancellationToken);
-        return booking == null ? null : ToDto(booking);
+        return booking == null ? null : _bookingMapper.Map(booking);
     }
 
     public async Task<List<BookingDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         var bookings = await _bookingRepository.GetAllAsync(cancellationToken);
-        return bookings.Select(ToDto).ToList();
+        return bookings.Select(_bookingMapper.Map).ToList();
     }
 
     public async Task<List<BookingDto>> GetMyBookingsAsync(string userId, BookingStatus? status, CancellationToken cancellationToken)
@@ -44,7 +48,7 @@ public class BookingService
         var bookings = await _bookingRepository.GetByUserIdAsync(userId, cancellationToken);
         if (status.HasValue)
             bookings = bookings.Where(b => b.Status == status.Value).ToList();
-        return bookings.Select(ToDto).ToList();
+        return bookings.Select(_bookingMapper.Map).ToList();
     }
 
     public async Task<BookingDto?> CreateAsync(string userId, CreateBookingRequest request, CancellationToken cancellationToken)
@@ -75,7 +79,7 @@ public class BookingService
         await _bookingRepository.CreateAsync(booking, cancellationToken);
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
 
-        return ToDto(booking);
+        return _bookingMapper.Map(booking);
     }
 
     public async Task<bool> SetPinAsync(string bookingId, string userId, SetPinRequest request, CancellationToken cancellationToken)
@@ -100,7 +104,7 @@ public class BookingService
 
         var slot = locker.Slots.FirstOrDefault(s => s.Index == booking.SlotIndex);
         if (slot != null)
-            slot.Status = LockerSlotStatus.Ative;
+            slot.Status = LockerSlotStatus.Active;
 
         await _bookingRepository.UpdateAsync(booking, cancellationToken);
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
@@ -111,6 +115,8 @@ public class BookingService
     {
         var booking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
         if (booking == null || booking.Status != BookingStatus.Active) return false;
+
+        if (string.IsNullOrEmpty(booking.PinHash)) return false;
 
         return _passwordHasher.Verify(request.Pin, booking.PinHash);
     }
@@ -161,20 +167,4 @@ public class BookingService
         await _bookingRepository.UpdateAsync(booking, cancellationToken);
         return true;
     }
-
-    private static BookingDto ToDto(Booking b) => new()
-    {
-        Id = b.Id,
-        UserId = b.UserId,
-        LockerId = b.LockerId,
-        SlotIndex = b.SlotIndex,
-        PackageId = b.PackageId,
-        MobileNumber = b.MobileNumber,
-        Status = b.Status,
-        TotalAmount = b.TotalAmount,
-        PaymentId = b.PaymentId,
-        CreatedAt = b.CreatedAt,
-        StartedAt = b.StartedAt,
-        CompletedAt = b.CompletedAt
-    };
 }

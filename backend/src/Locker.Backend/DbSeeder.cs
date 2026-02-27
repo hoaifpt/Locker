@@ -42,6 +42,13 @@ public static class DbSeeder
                 needsUpdate = true;
             }
 
+            if (!existing.IsEmailVerified)
+            {
+                existing.IsEmailVerified = true;
+                existing.EmailVerificationToken = null;
+                needsUpdate = true;
+            }
+
             if (needsUpdate)
             {
                 await userRepo.UpdateAsync(existing, CancellationToken.None);
@@ -59,6 +66,8 @@ public static class DbSeeder
             PasswordHash = passwordHasher.Hash("Admin@123"),
             Role = "Admin",
             IsActive = true,
+            IsEmailVerified = true,
+            EmailVerificationToken = null,
             CreatedAt = DateTime.UtcNow
         };
 

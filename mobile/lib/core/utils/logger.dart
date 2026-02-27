@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
+
 // Logger đơn giản
 void log(String message) {
-  print('[LOG] $message');
+  debugPrint('[LOG] $message');
 }

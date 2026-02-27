@@ -9,45 +9,23 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _authRepository = AuthRepository();
   bool _isLoading = false;
 
   Future<void> _handleLogin() async {
-    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
-        );
+    if (_phoneController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập số điện thoại')),
+      );
       return;
     }
 
     setState(() => _isLoading = true);
-
-    try {
-      final success = await _authRepository.login(
-        _usernameController.text,
-        _passwordController.text,
-      );
-
-      if (success && mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
-         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đăng nhập thất bại')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception:', '').trim())),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    // TODO: Gọi API login bằng số điện thoại
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => _isLoading = false);
+    // TODO: Xử lý chuyển màn hình
   }
 
   @override
@@ -64,25 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 48),
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
-                ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 24),
+              // ...existing code...
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

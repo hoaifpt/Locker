@@ -32,6 +32,18 @@ public class UserRepository : IUserRepository
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken)
+    {
+        var cursor = await _collection.FindAsync(u => u.PhoneNumber == phoneNumber, cancellationToken: cancellationToken);
+        return await cursor.FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<User?> GetByVerificationTokenAsync(string token, CancellationToken cancellationToken)
+    {
+        var cursor = await _collection.FindAsync(u => u.EmailVerificationToken == token, cancellationToken: cancellationToken);
+        return await cursor.FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(_ => true, cancellationToken: cancellationToken);

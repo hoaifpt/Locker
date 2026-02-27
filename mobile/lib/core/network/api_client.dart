@@ -36,5 +36,5 @@ class ApiClient {
   void clearToken() {
     _dio.options.headers.remove('Authorization');
   }
-}
+  // Removed extra closing brace
 }

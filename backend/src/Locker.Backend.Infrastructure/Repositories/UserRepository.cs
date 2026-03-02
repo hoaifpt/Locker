@@ -32,6 +32,7 @@ public class UserRepository : IUserRepository
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
+<<<<<<< HEAD
     public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(u => u.PhoneNumber == phoneNumber, cancellationToken: cancellationToken);
@@ -44,6 +45,8 @@ public class UserRepository : IUserRepository
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
+=======
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
     public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(_ => true, cancellationToken: cancellationToken);

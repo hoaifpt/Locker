@@ -47,6 +47,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+<<<<<<< HEAD
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
@@ -76,11 +77,15 @@ var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? Array.Empty<string>();
 
+=======
+// Add CORS
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
         policy =>
         {
+<<<<<<< HEAD
             if (builder.Environment.IsDevelopment() || allowedOrigins.Length == 0)
             {
                 policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
@@ -92,6 +97,11 @@ builder.Services.AddCors(options =>
                       .AllowAnyHeader()
                       .AllowCredentials();
             }
+=======
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
         });
 });
 
@@ -130,6 +140,11 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Locker API v1");
     options.RoutePrefix = "swagger";
 });
+<<<<<<< HEAD
+=======
+
+app.UseCors("AllowAll");
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 
 app.UseCors("AllowAll");
 

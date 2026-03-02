@@ -32,8 +32,16 @@ class ApiClient {
   void setToken(String token) {
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
   void clearToken() {
     _dio.options.headers.remove('Authorization');
   }
 }
+<<<<<<< HEAD
+=======
+}
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075

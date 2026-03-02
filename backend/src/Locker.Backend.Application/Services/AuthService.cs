@@ -18,18 +18,25 @@ public class AuthService
     private readonly ILogger<AuthService> _logger;
     private readonly string _baseUrl;
 
+<<<<<<< HEAD
     private static readonly TimeSpan OtpExpiry = TimeSpan.FromMinutes(5);
 
+=======
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
     public AuthService(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IPasswordHasher passwordHasher,
+<<<<<<< HEAD
         IJwtTokenService jwtTokenService,
         IOtpRepository otpRepository,
         IEmailService emailService,
         IIdentifierValidator identifierValidator,
         IOptions<AppSettings> appSettings,
         ILogger<AuthService> logger)
+=======
+        IJwtTokenService jwtTokenService)
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
@@ -45,6 +52,7 @@ public class AuthService
     public async Task<(AuthResponse? Response, string? Error)> LoginAsync(AuthRequest request, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetByUsernameAsync(request.Username, cancellationToken);
+<<<<<<< HEAD
         if (user == null)
             return (null, "Tên đăng nhập hoặc mật khẩu không đúng.");
 
@@ -89,12 +97,19 @@ public class AuthService
 
         var response = await GenerateAuthResponseAsync(user, cancellationToken);
         return (response, null);
+=======
+        if (user == null || !user.IsActive || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+            return null;
+
+        return await GenerateAuthResponseAsync(user, cancellationToken);
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
     }
 
     public async Task<(bool Success, string? Error)> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
         var existing = await _userRepository.GetByUsernameAsync(request.Username, cancellationToken);
         if (existing != null)
+<<<<<<< HEAD
             return (false, "Tên người dùng đã tồn tại.");
 
         var existingEmail = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
@@ -107,6 +122,9 @@ public class AuthService
             if (existingPhone != null)
                 return (false, "Số điện thoại đã được sử dụng.");
         }
+=======
+            return null;
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 
         var verificationToken = Guid.NewGuid().ToString("N");
 
@@ -115,15 +133,62 @@ public class AuthService
             Username = request.Username,
             Email = request.Email,
             FullName = request.FullName,
+<<<<<<< HEAD
             PhoneNumber = request.PhoneNumber,
             PasswordHash = _passwordHasher.Hash(request.Password),
             Role = "User",
             IsActive = false,          // inactive until email verified
             IsEmailVerified = false,
             EmailVerificationToken = verificationToken
+=======
+            PasswordHash = _passwordHasher.Hash(request.Password),
+            Role = "User"
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
         };
 
         await _userRepository.CreateAsync(user, cancellationToken);
+        return await GenerateAuthResponseAsync(user, cancellationToken);
+    }
+
+    public async Task<AuthResponse?> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken, cancellationToken);
+        if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt < DateTime.UtcNow)
+            return null;
+
+        var user = await _userRepository.GetByIdAsync(storedToken.UserId, cancellationToken);
+        if (user == null || !user.IsActive)
+            return null;
+
+        await _refreshTokenRepository.RevokeAsync(refreshToken, cancellationToken);
+        return await GenerateAuthResponseAsync(user, cancellationToken);
+    }
+
+    public async Task<bool> LogoutAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken, cancellationToken);
+        if (storedToken == null || storedToken.IsRevoked)
+            return false;
+
+        await _refreshTokenRepository.RevokeAsync(refreshToken, cancellationToken);
+        return true;
+    }
+
+    private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)
+    {
+        var accessToken = _jwtTokenService.CreateToken(user);
+        var refreshTokenValue = _jwtTokenService.CreateRefreshToken();
+
+        var refreshToken = new RefreshToken
+        {
+            UserId = user.Id,
+            Token = refreshTokenValue,
+            ExpiresAt = _jwtTokenService.GetRefreshTokenExpiry(),
+            CreatedAt = DateTime.UtcNow,
+            IsRevoked = false
+        };
+
+        await _refreshTokenRepository.CreateAsync(refreshToken, cancellationToken);
 
         // Send verification email — non-blocking: don't fail registration if email fails
         try

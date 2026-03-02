@@ -25,7 +25,11 @@ public class AuthController : ControllerBase
     {
         var (response, error) = await _authService.LoginAsync(request, cancellationToken);
         if (response == null)
+<<<<<<< HEAD
             return Unauthorized(new { message = error ?? "Tên đăng nhập hoặc mật khẩu không đúng." });
+=======
+            return Unauthorized(new { message = "Invalid username or password" });
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 
         return Ok(response);
     }
@@ -80,6 +84,26 @@ public class AuthController : ControllerBase
     {
         var response = await _authService.RefreshTokenAsync(request.RefreshToken, cancellationToken);
         if (response == null)
+<<<<<<< HEAD
+            return Unauthorized(new { message = "Invalid or expired refresh token" });
+=======
+            return Conflict(new { message = "Username already exists" });
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
+        return Ok(response);
+    }
+
+<<<<<<< HEAD
+    [HttpPost("logout")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+=======
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+    {
+        var response = await _authService.RefreshTokenAsync(request.RefreshToken, cancellationToken);
+        if (response == null)
             return Unauthorized(new { message = "Invalid or expired refresh token" });
 
         return Ok(response);
@@ -87,12 +111,13 @@ public class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
     public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken cancellationToken)
     {
         await _authService.LogoutAsync(request.RefreshToken, cancellationToken);
         return NoContent();
     }
+<<<<<<< HEAD
 
     /// <summary>
     /// Revoke all active refresh tokens for the current user (logout from all devices).
@@ -138,5 +163,7 @@ public class AuthController : ControllerBase
 
         return Ok(new { message = "Mật khẩu đã được đặt lại thành công." });
     }
+=======
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 }
 

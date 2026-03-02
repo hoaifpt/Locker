@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+<<<<<<< HEAD
 import '../../../core/network/api_client.dart';
+=======
+import '../../core/network/api_client.dart';
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 
 class AuthRepository {
   final ApiClient _apiClient = ApiClient();

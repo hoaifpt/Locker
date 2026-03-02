@@ -31,6 +31,15 @@ public class LockerService
         return available.Select(_lockerMapper.Map).ToList();
     }
 
+    public async Task<List<LockerDto>> GetAvailableAsync(CancellationToken cancellationToken)
+    {
+        var lockers = await _lockerRepository.GetAllAsync(cancellationToken);
+        return lockers
+            .Where(l => l.Slots.Any(s => s.Status == LockerSlotStatus.Available))
+            .Select(ToDto)
+            .ToList();
+    }
+
     public async Task<LockerDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(id, cancellationToken);
@@ -73,6 +82,22 @@ public class LockerService
     }
 
     public async Task<bool> UpdateSlotStatusAsync(string lockerId, int slotIndex, LockerSlotStatus status, CancellationToken cancellationToken)
+<<<<<<< HEAD
+=======
+    {
+        var locker = await _lockerRepository.GetByIdAsync(lockerId, cancellationToken);
+        if (locker == null) return false;
+
+        var slot = locker.Slots.FirstOrDefault(s => s.Index == slotIndex);
+        if (slot == null) return false;
+
+        slot.Status = status;
+        await _lockerRepository.UpdateAsync(locker, cancellationToken);
+        return true;
+    }
+
+    private static LockerDto ToDto(LockerEntity locker)
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
     {
         var locker = await _lockerRepository.GetByIdAsync(lockerId, cancellationToken);
         if (locker == null) return false;

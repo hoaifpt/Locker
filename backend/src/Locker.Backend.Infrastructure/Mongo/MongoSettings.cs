@@ -10,5 +10,8 @@ public class MongoSettings
     public string PackagesCollection { get; set; } = "packages";
     public string BookingsCollection { get; set; } = "bookings";
     public string PaymentsCollection { get; set; } = "payments";
+<<<<<<< HEAD
     public string OtpCodesCollection { get; set; } = "otp_codes";
+=======
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 }

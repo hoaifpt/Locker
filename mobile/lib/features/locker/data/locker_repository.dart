@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+import 'package:dio/dio.dart';
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 import '../../../core/network/api_client.dart';
 import '../models/locker_model.dart';
 

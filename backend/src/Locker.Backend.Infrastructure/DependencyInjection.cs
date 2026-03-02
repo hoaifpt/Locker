@@ -26,7 +26,10 @@ public static class DependencyInjection
         services.AddScoped<IPackageRepository, PackageRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+<<<<<<< HEAD
         services.AddScoped<IOtpRepository, OtpRepository>();
+=======
+>>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IEmailService, EmailService>();

@@ -5,7 +5,7 @@ namespace Locker.Backend.Application.Models;
 public class AuthRequest
 {
     [Required]
-    public string Username { get; set; } = string.Empty;
+    public string Identifier { get; set; } = string.Empty;  // Email or Phone Number
 
     [Required]
     [MinLength(6)]

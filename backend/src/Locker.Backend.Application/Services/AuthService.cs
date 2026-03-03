@@ -44,9 +44,22 @@ public class AuthService
 
     public async Task<(AuthResponse? Response, string? Error)> LoginAsync(AuthRequest request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByUsernameAsync(request.Username, cancellationToken);
+        // Try to find user by email or phone number
+        User? user = null;
+
+        // Check if identifier is email format
+        if (request.Identifier.Contains("@"))
+        {
+            user = await _userRepository.GetByEmailAsync(request.Identifier.Trim(), cancellationToken);
+        }
+        else
+        {
+            // Try as phone number
+            user = await _userRepository.GetByPhoneNumberAsync(request.Identifier.Trim(), cancellationToken);
+        }
+
         if (user == null)
-            return (null, "Tên đăng nhập hoặc mật khẩu không đúng.");
+            return (null, "Email/số điện thoại hoặc mật khẩu không đúng.");
 
         if (!user.IsEmailVerified)
             return (null, "Tài khoản chưa được xác thực email. Vui lòng kiểm tra hộp thư của bạn.");
@@ -76,7 +89,7 @@ public class AuthService
             }
 
             await _userRepository.UpdateAsync(user, cancellationToken);
-            return (null, "Tên đăng nhập hoặc mật khẩu không đúng.");
+            return (null, "Email/số điện thoại hoặc mật khẩu không đúng.");
         }
 
         // Đăng nhập thành công — reset lockout

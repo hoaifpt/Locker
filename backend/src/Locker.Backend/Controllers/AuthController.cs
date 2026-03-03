@@ -25,7 +25,7 @@ public class AuthController : ControllerBase
     {
         var (response, error) = await _authService.LoginAsync(request, cancellationToken);
         if (response == null)
-            return Unauthorized(new { message = error ?? "Tên đăng nhập hoặc mật khẩu không đúng." });
+            return Unauthorized(new { message = error ?? "Email/số điện thoại hoặc mật khẩu không đúng." });
 
         return Ok(response);
     }

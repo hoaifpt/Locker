@@ -6,4 +6,5 @@ public class LockerSlot
 {
     public int Index { get; set; }
     public LockerSlotStatus Status { get; set; } = LockerSlotStatus.Available;
+    public string? BookingId { get; set; }
 }

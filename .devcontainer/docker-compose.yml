@@ -27,6 +27,7 @@ services:
       MONGO_INITDB_DATABASE: locker
     volumes:
       - mongodb-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     network_mode: service:infrastructure
 
   mqtt:

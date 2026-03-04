@@ -15,3 +15,8 @@ public class LockerSlotDto
     public int Index { get; set; }
     public LockerSlotStatus Status { get; set; }
 }
+
+public class UpdateSlotStatusRequest
+{
+    public LockerSlotStatus Status { get; set; }
+}

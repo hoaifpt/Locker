@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Install system dependencies for Flutter desktop
+echo "🔧 Installing system dependencies for Flutter desktop..."
+sudo apt update
+sudo apt install -y cmake ninja-build build-essential clang pkg-config libgtk-3-dev
+
 echo "🚀 Setting up Locker System..."
 
 # Backend
@@ -17,9 +22,36 @@ if [ -d "/workspace/web" ]; then
   npm install || echo "⚠️  Web install failed"
 fi
 
+# Flutter SDK
+if [ ! -d "$HOME/flutter" ]; then
+  echo "📦 Installing Flutter SDK..."
+  git clone https://github.com/flutter/flutter.git -b stable --depth 1 $HOME/flutter
+else
+  echo "✅ Flutter SDK already exists"
+fi
+
+# Thêm Flutter vào PATH vĩnh viễn
+FLUTTER_PATH_LINE='export PATH="$PATH:$HOME/flutter/bin"'
+if ! grep -q 'flutter/bin' ~/.bashrc; then
+  echo "$FLUTTER_PATH_LINE" >> ~/.bashrc
+fi
+if ! grep -q 'flutter/bin' ~/.profile 2>/dev/null; then
+  echo "$FLUTTER_PATH_LINE" >> ~/.profile
+fi
+export PATH="$PATH:$HOME/flutter/bin"
+
+# Pre-download Dart SDK
+echo "📦 Pre-caching Flutter..."
+$HOME/flutter/bin/flutter precache --web 2>/dev/null || true
+
 # Mobile
 if [ -d "/workspace/mobile" ]; then
-  echo "📦 Getting Flutter dependencies..."
+  echo "📦 Setting up Flutter..."
+  if [ ! -d "$HOME/flutter" ]; then
+    git clone https://github.com/flutter/flutter.git -b stable $HOME/flutter
+  fi
+  export PATH="$PATH:$HOME/flutter/bin"
+  echo 'export PATH="$PATH:$HOME/flutter/bin"' >> $HOME/.bashrc
   cd /workspace/mobile
   echo "ℹ️  Flutter setup skipped (install manually if needed)"
 fi

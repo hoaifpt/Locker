@@ -1,0 +1,83 @@
+using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Mapping;
+using Locker.Backend.Application.Models;
+using Locker.Backend.Domain.Enums;
+
+namespace Locker.Backend.Application.Services;
+
+public class AdminService
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IBookingRepository _bookingRepository;
+    private readonly IPaymentRepository _paymentRepository;
+    private readonly UserMapper _userMapper;
+    private readonly BookingMapper _bookingMapper;
+    private readonly PaymentMapper _paymentMapper;
+
+    public AdminService(
+        IUserRepository userRepository,
+        IBookingRepository bookingRepository,
+        IPaymentRepository paymentRepository,
+        UserMapper userMapper,
+        BookingMapper bookingMapper,
+        PaymentMapper paymentMapper)
+    {
+        _userRepository = userRepository;
+        _bookingRepository = bookingRepository;
+        _paymentRepository = paymentRepository;
+        _userMapper = userMapper;
+        _bookingMapper = bookingMapper;
+        _paymentMapper = paymentMapper;
+    }
+
+    public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken)
+    {
+        var users = await _userRepository.GetAllAsync(cancellationToken);
+        return users.Select(_userMapper.Map).ToList();
+    }
+
+    public async Task<bool> UpdateUserRoleAsync(string userId, string role, CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (user == null) return false;
+
+        user.Role = role;
+        await _userRepository.UpdateAsync(user, cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> DeactivateUserAsync(string userId, CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (user == null) return false;
+
+        user.IsActive = false;
+        await _userRepository.UpdateAsync(user, cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> ActivateUserAsync(string userId, CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (user == null) return false;
+
+        user.IsActive = true;
+        await _userRepository.UpdateAsync(user, cancellationToken);
+        return true;
+    }
+
+    public async Task<List<BookingDto>> GetAllBookingsAsync(BookingStatus? status, CancellationToken cancellationToken)
+    {
+        var bookings = status.HasValue
+            ? await _bookingRepository.GetByStatusAsync(status.Value, cancellationToken)
+            : await _bookingRepository.GetAllAsync(cancellationToken);
+
+        return bookings.Select(_bookingMapper.Map).ToList();
+    }
+
+    public async Task<List<PaymentDto>> GetAllPaymentsAsync(CancellationToken cancellationToken)
+    {
+        var payments = await _paymentRepository.GetAllAsync(cancellationToken);
+        return payments.Select(_paymentMapper.Map).ToList();
+    }
+}

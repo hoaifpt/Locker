@@ -30,3 +30,5 @@ dependencies.lock
 
 # Env
 .env
+
+.builder/config/data.json

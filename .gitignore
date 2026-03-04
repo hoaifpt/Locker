@@ -30,5 +30,9 @@ dependencies.lock
 
 # Env
 .env
+<<<<<<< HEAD
 
 .builder/config/data.json
+=======
+mobile/google-chrome-stable_current_amd64.deb
+>>>>>>> 3ed3072013472df2feedbacadabcb05799b5c05d

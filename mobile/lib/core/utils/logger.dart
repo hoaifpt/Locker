@@ -1,6 +1,13 @@
 import 'package:flutter/foundation.dart';
 
-// Logger đơn giản
-void log(String message) {
-  debugPrint('[LOG] $message');
+void logInfo(String message) {
+  debugPrint('[INFO] $message');
+}
+
+void logWarn(String message) {
+  debugPrint('[WARN] $message');
+}
+
+void logError(String message) {
+  debugPrint('[ERROR] $message');
 }

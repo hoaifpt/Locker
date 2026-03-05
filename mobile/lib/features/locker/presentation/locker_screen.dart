@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+
+import '../../../shared/extensions/context_extensions.dart';
 import '../data/locker_repository.dart';
-import '../models/locker_model.dart';
+import '../domain/entities/locker.dart';
 
 class LockerScreen extends StatefulWidget {
   const LockerScreen({super.key});
@@ -11,7 +13,7 @@ class LockerScreen extends StatefulWidget {
 
 class _LockerScreenState extends State<LockerScreen> {
   final _repository = LockerRepository();
-  List<LockerModel> _lockers = [];
+  List<Locker> _lockers = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -27,7 +29,7 @@ class _LockerScreenState extends State<LockerScreen> {
         _isLoading = true;
         _errorMessage = null;
       });
-      final data = await _repository.getLockers();
+      final data = await _repository.getAvailableLockers();
       setState(() {
         _lockers = data;
         _isLoading = false;
@@ -40,126 +42,74 @@ class _LockerScreenState extends State<LockerScreen> {
     }
   }
 
-  Future<void> _openLocker(String id, String code) async {
-    try {
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => const Center(child: CircularProgressIndicator()),
-      );
-
-      await _repository.openLocker(id);
-
-      // Hide loading
-      if (mounted) Navigator.pop(context);
-
-      // Show success
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Đã mở tủ $code thành công!')));
-      }
-
-      // Refresh list
-      _loadData();
-    } catch (e) {
-      // Hide loading
-      if (mounted) Navigator.pop(context);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Danh sách Locker"),
+        title: const Text('Tủ khả dụng'),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadData,
+          ),
         ],
       ),
-      body: _buildBody(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_errorMessage!),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: _loadData,
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
+                )
+              : _lockers.isEmpty
+                  ? const Center(child: Text('Không có tủ khả dụng'))
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _lockers.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final locker = _lockers[index];
+                        return _LockerCard(
+                          locker: locker,
+                          onTap: () => context.showSnack('Chọn tủ: ${locker.code}'),
+                        );
+                      },
+                    ),
     );
   }
+}
 
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+class _LockerCard extends StatelessWidget {
+  final Locker locker;
+  final VoidCallback onTap;
 
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _errorMessage!,
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadData, child: const Text("Thử lại")),
-          ],
-        ),
-      );
-    }
+  const _LockerCard({required this.locker, required this.onTap});
 
-    if (_lockers.isEmpty) {
-      return const Center(child: Text("Không có tủ nào."));
-    }
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.5,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: _lockers.length,
-      itemBuilder: (context, index) {
-        final locker = _lockers[index];
-        return _buildLockerItem(locker);
-      },
-    );
-  }
-
-  Widget _buildLockerItem(LockerModel locker) {
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
-      elevation: 4,
-      color: locker.isOccupied ? Colors.red.shade100 : Colors.green.shade100,
-      child: InkWell(
-        onTap: () => _openLocker(locker.id, locker.code),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              locker.isOccupied ? Icons.lock : Icons.lock_open,
-              size: 32,
-              color: locker.isOccupied ? Colors.red : Colors.green,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Tủ ${locker.code}",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            Text(
-              locker.isOccupied ? "Đang sử dụng" : "Trống",
-              style: TextStyle(
-                color: locker.isOccupied ? Colors.red : Colors.green,
-              ),
-            ),
-          ],
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        leading: CircleAvatar(
+          backgroundColor: cs.primary.withValues(alpha: 0.15),
+          child: Icon(Icons.inbox, color: cs.primary),
         ),
+        title: Text(locker.code, style: const TextStyle(fontWeight: FontWeight.w700)),
+        subtitle: Text(locker.location.isEmpty ? 'Không có địa chỉ' : locker.location),
+        trailing: Icon(Icons.chevron_right, color: cs.primary),
+        onTap: onTap,
       ),
     );
   }

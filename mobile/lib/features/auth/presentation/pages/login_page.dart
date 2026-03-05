@@ -1,182 +1,191 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../shared/extensions/context_extensions.dart';
+import '../../../../shared/widgets/app_button.dart';
+import '../../data/auth_repository.dart';
+import '../../domain/usecases/check_login_usecase.dart';
+import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/logout_usecase.dart';
+import '../controllers/auth_cubit.dart';
+import '../controllers/auth_state.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFDE7DC), Color(0xFFF7D5C3)],
+    final repo = AuthRepository();
+    return BlocProvider(
+      create: (_) => AuthCubit(
+        loginUsecase: LoginUsecase(repo),
+        logoutUsecase: LogoutUsecase(repo),
+        checkLoginUsecase: CheckLoginUsecase(repo),
+      ),
+      child: const _LoginView(),
+    );
+  }
+}
+
+class _LoginView extends StatefulWidget {
+  const _LoginView();
+
+  @override
+  State<_LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<_LoginView> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          context.pushReplacementNamed('/home');
+        } else if (state is AuthError) {
+          context.showSnackError(state.message);
+        }
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFFDE7DC), Color(0xFFF7D5C3)],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text('Trợ giúp'),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 180,
-                    child: Image.asset(
-                      'assets/ebox_logo.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'E-BOX',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                      color: Color(0xFFEB6C4B),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'Chào mừng trở lại',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1C1C1E),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Đăng nhập để quản lý tủ đồ thông minh của bạn',
-                    style: TextStyle(
-                      color: Color(0xFF6C6C6C),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Số điện thoại',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1C1C1E),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {},
+                        child: const Text('Tro giup'),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 12,
-                          color: Color(0x22000000),
-                          offset: Offset(0, 6),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 160,
+                      child: Image.asset(
+                        'assets/ebox_logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.inbox,
+                          size: 80,
+                          color: Color(0xFFEB6C4B),
                         ),
-                      ],
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 12),
-                        const Icon(Icons.flag_outlined,
-                            color: Color(0xFFEB6C4B)),
-                        const SizedBox(width: 8),
-                        DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: '+84',
-                            items: const [
-                              DropdownMenuItem(
-                                  value: '+84', child: Text('+84')),
-                              DropdownMenuItem(value: '+1', child: Text('+1')),
-                            ],
-                            onChanged: (_) {},
-                          ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'E-BOX',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: Color(0xFFEB6C4B),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Chao mung tro lai',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1C1C1E),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Dang nhap de quan ly tu do thong minh cua ban',
+                      style: TextStyle(color: Color(0xFF6C6C6C)),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+                    _InputField(
+                      controller: _usernameController,
+                      hint: 'Tai khoan / Email',
+                      icon: Icons.person_outline,
+                    ),
+                    const SizedBox(height: 14),
+                    _InputField(
+                      controller: _passwordController,
+                      hint: 'Mat khau',
+                      icon: Icons.lock_outline,
+                      obscure: _obscure,
+                      suffix: IconButton(
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: const Color(0xFFEB6C4B),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            keyboardType: TextInputType.phone,
-                            decoration: const InputDecoration(
-                              hintText: '090 123 4567',
-                              border: InputBorder.none,
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          'Quen mat khau?',
+                          style: TextStyle(color: Color(0xFFEB6C4B)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    BlocBuilder<AuthCubit, AuthState>(
+                      builder: (context, state) {
+                        final loading = state is AuthLoading;
+                        return AppButton(
+                          label: 'Dang nhap',
+                          loading: loading,
+                          onPressed: loading
+                              ? null
+                              : () => context.read<AuthCubit>().login(
+                                    _usernameController.text.trim(),
+                                    _passwordController.text,
+                                  ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: const TextSpan(
+                        style: TextStyle(color: Color(0xFF6C6C6C)),
+                        children: [
+                          TextSpan(text: 'Chua co tai khoan? '),
+                          TextSpan(
+                            text: 'Dang ky ngay',
+                            style: TextStyle(
+                              color: Color(0xFFEB6C4B),
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.phone_outlined,
-                              color: Color(0xFFEB6C4B)),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _GradientButton(text: 'Tiếp tục', onPressed: () {}),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'HOẶC',
-                    style: TextStyle(
-                      color: Color(0xFF9E9E9E),
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(32),
-                        side: const BorderSide(color: Color(0xFFE0E0E0)),
+                        ],
                       ),
                     ),
-                    onPressed: () {},
-                    icon: Image.asset(
-                      'assets/icons/google.png',
-                      height: 20,
-                      width: 20,
-                    ),
-                    label: const Text(
-                      'Tiếp tục với Google',
-                      style: TextStyle(
-                        color: Color(0xFF1C1C1E),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: const TextSpan(
-                      style: TextStyle(color: Color(0xFF6C6C6C)),
-                      children: [
-                        TextSpan(text: 'Chưa có tài khoản? '),
-                        TextSpan(
-                          text: 'Đăng ký ngay',
-                          style: TextStyle(
-                            color: Color(0xFFEB6C4B),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                ],
+                    const SizedBox(height: 18),
+                  ],
+                ),
               ),
             ),
           ),
@@ -186,48 +195,46 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-class _GradientButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  const _GradientButton({required this.text, required this.onPressed});
+class _InputField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hint;
+  final IconData icon;
+  final bool obscure;
+  final Widget? suffix;
+
+  const _InputField({
+    required this.controller,
+    required this.hint,
+    required this.icon,
+    this.obscure = false,
+    this.suffix,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFD9C74), Color(0xFFEB6C4B)],
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
         boxShadow: const [
           BoxShadow(
-            blurRadius: 12,
-            color: Color(0x22000000),
-            offset: Offset(0, 6),
+            blurRadius: 10,
+            color: Color(0x18000000),
+            offset: Offset(0, 4),
           ),
         ],
       ),
-      child: SizedBox(
-        width: double.infinity,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(32),
-            onTap: onPressed,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Center(
-                child: Text(
-                  text,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
-          ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType:
+            obscure ? TextInputType.visiblePassword : TextInputType.text,
+        decoration: InputDecoration(
+          hintText: hint,
+          prefixIcon: Icon(icon, color: const Color(0xFFEB6C4B)),
+          suffixIcon: suffix,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );

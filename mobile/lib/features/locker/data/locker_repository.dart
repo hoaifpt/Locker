@@ -1,33 +1,41 @@
+import '../../../core/exceptions/app_exception.dart';
 import '../../../core/network/api_client.dart';
-import '../models/locker_model.dart';
+import '../domain/entities/locker.dart';
+import '../domain/repositories/i_locker_repository.dart';
+import 'models/locker_model.dart';
 
-class LockerRepository {
+class LockerRepository implements ILockerRepository {
   final ApiClient _apiClient = ApiClient();
 
-  // Lấy danh sách tủ
-  Future<List<LockerModel>> getLockers() async {
+  /// Lấy danh sách tủ (cần bearer token vì controller có [Authorize])
+  @override
+  Future<List<Locker>> getLockers() async {
     try {
       final response = await _apiClient.client.get('/lockers');
-
       if (response.statusCode == 200 && response.data is List) {
         return (response.data as List)
-            .map((e) => LockerModel.fromJson(e))
+            .map((e) => LockerModel.fromJson(e as Map<String, dynamic>))
             .toList();
       }
       return [];
     } catch (e) {
-      // Xử lý lỗi hoặc ném tiếp ra ngoài
-      throw Exception('Lỗi khi tải danh sách tủ: $e');
+      throw NetworkException('Lỗi khi tải danh sách tủ: $e');
     }
   }
 
-  // Mở tủ
-  Future<bool> openLocker(String id) async {
+  /// Lấy tủ khả dụng (public endpoint: GET /api/lockers/available)
+  @override
+  Future<List<Locker>> getAvailableLockers() async {
     try {
-      final response = await _apiClient.client.post('/lockers/$id/open');
-      return response.statusCode == 200;
+      final response = await _apiClient.client.get('/lockers/available');
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((e) => LockerModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
     } catch (e) {
-      throw Exception('Không thể mở tủ: $e');
+      throw NetworkException('Lỗi khi tải tủ khả dụng: $e');
     }
   }
 }

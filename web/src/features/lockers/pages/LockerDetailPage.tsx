@@ -4,6 +4,7 @@ import { MapPin, Package, ChevronRight, Phone, ArrowLeft, Mail, MessageSquare } 
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import BookingConfirmationModal, { BookingConfirmationData } from '../../../components/ui/BookingConfirmationModal';
+import MapView from '../../../components/ui/MapView';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { getLockerById, SEED_PACKAGES, SeedLocker as Locker, SeedPackage as PackageDto } from '../../../mocks/seed';
 import { validatePhoneNumber, validateEmail } from '../../../lib/validators';
@@ -11,10 +12,10 @@ import { useLockerSizeInfo } from '../../../components/ui/LockerSizeInfo';
 import { useToast } from '../../../context/ToastContext';
 
 const STATUS_STYLE: Record<string, { label: string; cls: string; dotCls: string }> = {
-  Available: { label: 'Trống',     cls: 'border-green-300 bg-green-50',   dotCls: 'bg-green-400' },
-  Active:    { label: 'Đang dùng', cls: 'border-orange-300 bg-orange-50', dotCls: 'bg-orange-400' },
-  Pending:   { label: 'Chờ xử lý', cls: 'border-yellow-300 bg-yellow-50', dotCls: 'bg-yellow-400' },
-  Complete:  { label: 'Đã dùng',   cls: 'border-gray-200 bg-gray-50',     dotCls: 'bg-gray-300' },
+  Available: { label: 'Trống', cls: 'border-green-300 bg-green-50', dotCls: 'bg-green-400' },
+  Active: { label: 'Đang dùng', cls: 'border-orange-300 bg-orange-50', dotCls: 'bg-orange-400' },
+  Pending: { label: 'Chờ xử lý', cls: 'border-yellow-300 bg-yellow-50', dotCls: 'bg-yellow-400' },
+  Complete: { label: 'Đã dùng', cls: 'border-gray-200 bg-gray-50', dotCls: 'bg-gray-300' },
 };
 
 export default function LockerDetailPage() {
@@ -66,7 +67,7 @@ export default function LockerDetailPage() {
 
   const handleBook = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
     if (selectedSlot === null) return;
 
@@ -97,10 +98,10 @@ export default function LockerDetailPage() {
     await new Promise((r) => setTimeout(r, 1000));
     setSubmitting(false);
     setShowConfirmation(false);
-    
+
     showToast('✓ Đặt chỗ thành công!', 'success');
     showToast('📧 Hướng dẫn đã được gửi đến email của bạn', 'notification');
-    
+
     navigate('/bookings');
   };
 
@@ -154,13 +155,12 @@ export default function LockerDetailPage() {
                     key={slot.index}
                     disabled={!isAvailable}
                     onClick={() => setSelectedSlot(slot.index)}
-                    className={`relative flex flex-col items-center rounded-xl border-2 p-2.5 text-xs font-semibold transition ${
-                      selectedSlot === slot.index
+                    className={`relative flex flex-col items-center rounded-xl border-2 p-2.5 text-xs font-semibold transition ${selectedSlot === slot.index
                         ? 'border-orange-500 bg-orange-50 text-orange-600'
                         : isAvailable
-                        ? 'border-green-300 bg-green-50 text-green-700 hover:border-orange-400'
-                        : 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed'
-                    }`}
+                          ? 'border-green-300 bg-green-50 text-green-700 hover:border-orange-400'
+                          : 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed'
+                      }`}
                   >
                     <span className={`mb-1 h-2 w-2 rounded-full ${selectedSlot === slot.index ? 'bg-orange-500' : style.dotCls}`} />
                     Ô {slot.index + 1}
@@ -194,9 +194,8 @@ export default function LockerDetailPage() {
                     const pkg = packages.find((p) => p.id === e.target.value);
                     if (pkg) setSelectedSize(pkg.size);
                   }}
-                  className={`w-full rounded-xl border py-3 px-4 text-sm text-gray-900 outline-none transition bg-gray-50 ${
-                    errors.selectedPackage ? 'border-red-400 focus:ring-red-100' : 'border-gray-200 focus:ring-orange-100'
-                  } focus:border-orange-400 focus:bg-white focus:ring-2`}
+                  className={`w-full rounded-xl border py-3 px-4 text-sm text-gray-900 outline-none transition bg-gray-50 ${errors.selectedPackage ? 'border-red-400 focus:ring-red-100' : 'border-gray-200 focus:ring-orange-100'
+                    } focus:border-orange-400 focus:bg-white focus:ring-2`}
                 >
                   <option value="">-- Chọn gói --</option>
                   {packages.map((p) => (
@@ -243,9 +242,8 @@ export default function LockerDetailPage() {
                       if (errors.mobile) setErrors({ ...errors, mobile: '' });
                     }}
                     placeholder="0912 345 678"
-                    className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition bg-gray-50 placeholder:text-gray-400 ${
-                      errors.mobile ? 'border-red-400 focus:ring-red-100' : 'border-gray-200 focus:ring-orange-100'
-                    } focus:border-orange-400 focus:bg-white focus:ring-2`}
+                    className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition bg-gray-50 placeholder:text-gray-400 ${errors.mobile ? 'border-red-400 focus:ring-red-100' : 'border-gray-200 focus:ring-orange-100'
+                      } focus:border-orange-400 focus:bg-white focus:ring-2`}
                   />
                 </div>
                 {errors.mobile && <p className="mt-1 text-xs text-red-500">{errors.mobile}</p>}
@@ -268,9 +266,8 @@ export default function LockerDetailPage() {
                       if (errors.email) setErrors({ ...errors, email: '' });
                     }}
                     placeholder="your@email.com"
-                    className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition bg-gray-50 placeholder:text-gray-400 ${
-                      errors.email ? 'border-red-400 focus:ring-red-100' : 'border-gray-200 focus:ring-orange-100'
-                    } focus:border-orange-400 focus:bg-white focus:ring-2`}
+                    className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition bg-gray-50 placeholder:text-gray-400 ${errors.email ? 'border-red-400 focus:ring-red-100' : 'border-gray-200 focus:ring-orange-100'
+                      } focus:border-orange-400 focus:bg-white focus:ring-2`}
                   />
                 </div>
                 {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
@@ -294,9 +291,8 @@ export default function LockerDetailPage() {
                     placeholder="Mô tả sản phẩm mà bạn sắp gửi..."
                     maxLength={500}
                     rows={3}
-                    className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition bg-gray-50 placeholder:text-gray-400 ${
-                      errors.productNote ? 'border-red-400 focus:ring-red-100' : 'border-gray-200 focus:ring-orange-100'
-                    } focus:border-orange-400 focus:bg-white focus:ring-2 resize-none`}
+                    className={`w-full rounded-xl border py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition bg-gray-50 placeholder:text-gray-400 ${errors.productNote ? 'border-red-400 focus:ring-red-100' : 'border-gray-200 focus:ring-orange-100'
+                      } focus:border-orange-400 focus:bg-white focus:ring-2 resize-none`}
                   />
                 </div>
                 <p className="mt-1 text-xs text-gray-400">{productNote.length}/500</p>
@@ -334,6 +330,11 @@ export default function LockerDetailPage() {
             />
           )}
         </AnimatePresence>
+
+        {/* Location map - Bottom */}
+        <motion.div initial={hidden} animate={visible} transition={trans(0.3)} className="mt-12">
+          <MapView locker={locker} height="400px" />
+        </motion.div>
       </main>
     </div>
   );

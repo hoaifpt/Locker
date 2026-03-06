@@ -43,6 +43,8 @@ public class LockerService
         {
             Name = request.Name,
             Location = request.Location,
+            Latitude = request.Latitude,
+            Longitude = request.Longitude,
             Slots = Enumerable.Range(1, request.Slots)
                 .Select(index => new LockerSlot { Index = index })
                 .ToList()
@@ -59,6 +61,8 @@ public class LockerService
 
         locker.Name = request.Name;
         locker.Location = request.Location;
+        locker.Latitude = request.Latitude;
+        locker.Longitude = request.Longitude;
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
         return true;
     }

@@ -15,14 +15,14 @@ public class LockerRepository : ILockerRepository
         _collection = context.Database.GetCollection<LockerEntity>(context.Settings.LockersCollection);
     }
 
-    public Task<List<LockerEntity>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<List<LockerEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return _collection.Find(_ => true).ToListAsync(cancellationToken);
+        return await _collection.Find(l => !l.IsDeleted).ToListAsync(cancellationToken);
     }
 
     public async Task<LockerEntity?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
-        var cursor = await _collection.FindAsync(l => l.Id == id, cancellationToken: cancellationToken);
+        var cursor = await _collection.FindAsync(l => l.Id == id && !l.IsDeleted, cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -36,8 +36,13 @@ public class LockerRepository : ILockerRepository
         return _collection.ReplaceOneAsync(l => l.Id == locker.Id, locker, cancellationToken: cancellationToken);
     }
 
-    public Task DeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
     {
-        return _collection.DeleteOneAsync(l => l.Id == id, cancellationToken);
+        var locker = await GetByIdAsync(id, cancellationToken);
+        if (locker == null) return false;
+
+        locker.IsDeleted = true;
+        await UpdateAsync(locker, cancellationToken);
+        return true;
     }
 }

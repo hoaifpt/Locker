@@ -9,5 +9,5 @@ public interface IPackageRepository
     Task<Package?> GetByIdAsync(string id, CancellationToken cancellationToken);
     Task CreateAsync(Package package, CancellationToken cancellationToken);
     Task UpdateAsync(Package package, CancellationToken cancellationToken);
-    Task DeleteAsync(string id, CancellationToken cancellationToken);
+    Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken);
 }

@@ -8,5 +8,5 @@ public interface ILockerRepository
     Task<LockerEntity?> GetByIdAsync(string id, CancellationToken cancellationToken);
     Task CreateAsync(LockerEntity locker, CancellationToken cancellationToken);
     Task UpdateAsync(LockerEntity locker, CancellationToken cancellationToken);
-    Task DeleteAsync(string id, CancellationToken cancellationToken);
+    Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken);
 }

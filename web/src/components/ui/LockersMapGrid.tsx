@@ -1,5 +1,5 @@
 import { LockerDto } from '../../types';
-import MapPin from 'lucide-react/dist/icons/map-pin';
+import { MapPin } from 'lucide-react';
 
 interface LockersMapGridProps {
     lockers: LockerDto[];
@@ -45,8 +45,8 @@ export default function LockersMapGrid({
                                 key={locker.id}
                                 onClick={() => onLockerSelect(locker)}
                                 className={`rounded-lg border-2 p-4 text-left transition ${selectedLockerId === locker.id
-                                        ? 'border-orange-500 bg-orange-50'
-                                        : 'border-gray-200 bg-white hover:border-orange-300'
+                                    ? 'border-orange-500 bg-orange-50'
+                                    : 'border-gray-200 bg-white hover:border-orange-300'
                                     }`}
                             >
                                 <div className="space-y-2">

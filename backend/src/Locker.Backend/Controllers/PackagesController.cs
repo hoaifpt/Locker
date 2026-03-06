@@ -50,11 +50,11 @@ public class PackagesController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpPut("{id}/soft-delete")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> SoftDelete(string id, CancellationToken cancellationToken)
     {
-        var success = await _packageService.DeleteAsync(id, cancellationToken);
+        var success = await _packageService.SoftDeleteAsync(id, cancellationToken);
         if (!success) return NotFound();
         return NoContent();
     }

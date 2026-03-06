@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { getBookingById, SeedBooking as BookingDetail } from '../../../mocks/seed';
+import { useToast } from '../../../context/ToastContext';
 
 const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
   Pending:   { label: 'Chờ PIN',    cls: 'bg-yellow-100 text-yellow-700' },
@@ -16,6 +17,7 @@ const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
 
 export default function BookingDetailPage() {
   const { id } = useParams();
+  const { show: showToast } = useToast();
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [pin, setPin] = useState(['', '', '', '', '', '']);
@@ -42,9 +44,21 @@ export default function BookingDetailPage() {
     setActionLoading(action);
     // TODO: POST /api/bookings/:id/:action
     await new Promise((r) => setTimeout(r, 800));
-    if (action === 'set-pin') setBooking((b) => b ? { ...b, status: 'Active', startedAt: new Date().toISOString() } : b);
-    if (action === 'complete') setBooking((b) => b ? { ...b, status: 'Completed', completedAt: new Date().toISOString(), totalAmount: 50000 } : b);
-    if (action === 'cancel') setBooking((b) => b ? { ...b, status: 'Canceled' } : b);
+    
+    if (action === 'set-pin') {
+      setBooking((b) => b ? { ...b, status: 'Active', startedAt: new Date().toISOString() } : b);
+      showToast('✓ Tủ khóa được kích hoạt thành công!', 'success');
+      showToast('📦 Sản phẩm được đặt vào tủ khóa', 'notification', 3000);
+    }
+    if (action === 'complete') {
+      setBooking((b) => b ? { ...b, status: 'Completed', completedAt: new Date().toISOString(), totalAmount: 50000 } : b);
+      showToast('✓ Thanh toán hoàn thành!', 'success');
+      showToast('💳 Số tiền: 50.000đ đã được trừ', 'info', 4000);
+    }
+    if (action === 'cancel') {
+      setBooking((b) => b ? { ...b, status: 'Canceled' } : b);
+      showToast('✓ Đặt chỗ đã được hủy', 'success');
+    }
     setActionLoading(null);
   };
 

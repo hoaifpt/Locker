@@ -5,24 +5,16 @@ using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository : GenericRepository<User>, IUserRepository
 {
-    private readonly IMongoCollection<User> _collection;
-
     public UserRepository(MongoContext context)
+        : base(context.Database.GetCollection<User>(context.Settings.UsersCollection))
     {
-        _collection = context.Database.GetCollection<User>(context.Settings.UsersCollection);
     }
 
     public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(u => u.Username == username, cancellationToken: cancellationToken);
-        return await cursor.FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<User?> GetByIdAsync(string id, CancellationToken cancellationToken)
-    {
-        var cursor = await _collection.FindAsync(u => u.Id == id, cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -42,21 +34,5 @@ public class UserRepository : IUserRepository
     {
         var cursor = await _collection.FindAsync(u => u.EmailVerificationToken == token, cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken)
-    {
-        var cursor = await _collection.FindAsync(_ => true, cancellationToken: cancellationToken);
-        return await cursor.ToListAsync(cancellationToken);
-    }
-
-    public Task CreateAsync(User user, CancellationToken cancellationToken)
-    {
-        return _collection.InsertOneAsync(user, cancellationToken: cancellationToken);
-    }
-
-    public Task UpdateAsync(User user, CancellationToken cancellationToken)
-    {
-        return _collection.ReplaceOneAsync(u => u.Id == user.Id, user, cancellationToken: cancellationToken);
     }
 }

@@ -5,19 +5,23 @@ using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Repositories;
 
-public class PackageRepository : IPackageRepository
+public class PackageRepository : GenericRepository<Package>, IPackageRepository
 {
-    private readonly IMongoCollection<Package> _collection;
-
     public PackageRepository(MongoContext context)
+        : base(context.Database.GetCollection<Package>(context.Settings.PackagesCollection))
     {
-        _collection = context.Database.GetCollection<Package>(context.Settings.PackagesCollection);
     }
 
-    public async Task<List<Package>> GetAllAsync(CancellationToken cancellationToken)
+    public override async Task<List<Package>> GetAllAsync(CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(p => !p.IsDeleted, cancellationToken: cancellationToken);
         return await cursor.ToListAsync(cancellationToken);
+    }
+
+    public override async Task<Package?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    {
+        var cursor = await _collection.FindAsync(p => p.Id == id && !p.IsDeleted, cancellationToken: cancellationToken);
+        return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<List<Package>> GetActiveAsync(CancellationToken cancellationToken)
@@ -25,18 +29,6 @@ public class PackageRepository : IPackageRepository
         var cursor = await _collection.FindAsync(p => p.IsActive && !p.IsDeleted, cancellationToken: cancellationToken);
         return await cursor.ToListAsync(cancellationToken);
     }
-
-    public async Task<Package?> GetByIdAsync(string id, CancellationToken cancellationToken)
-    {
-        var cursor = await _collection.FindAsync(p => p.Id == id && !p.IsDeleted, cancellationToken: cancellationToken);
-        return await cursor.FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public Task CreateAsync(Package package, CancellationToken cancellationToken)
-        => _collection.InsertOneAsync(package, cancellationToken: cancellationToken);
-
-    public Task UpdateAsync(Package package, CancellationToken cancellationToken)
-        => _collection.ReplaceOneAsync(p => p.Id == package.Id, package, cancellationToken: cancellationToken);
 
     public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
     {

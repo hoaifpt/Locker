@@ -5,17 +5,12 @@ using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Repositories;
 
-public class OtpRepository : IOtpRepository
+public class OtpRepository : GenericRepository<OtpCode>, IOtpRepository
 {
-    private readonly IMongoCollection<OtpCode> _collection;
-
     public OtpRepository(MongoContext context)
+        : base(context.Database.GetCollection<OtpCode>(context.Settings.OtpCodesCollection))
     {
-        _collection = context.Database.GetCollection<OtpCode>(context.Settings.OtpCodesCollection);
     }
-
-    public Task CreateAsync(OtpCode otpCode, CancellationToken cancellationToken)
-        => _collection.InsertOneAsync(otpCode, cancellationToken: cancellationToken);
 
     public async Task<OtpCode?> GetLatestValidAsync(string userId, string target, CancellationToken cancellationToken)
     {

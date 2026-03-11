@@ -76,7 +76,7 @@ class _LoginViewState extends State<_LoginView> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {},
-                        child: const Text('Tro giup'),
+                        child: const Text('Trợ giúp'),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -94,17 +94,7 @@ class _LoginViewState extends State<_LoginView> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'E-BOX',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                        color: Color(0xFFEB6C4B),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Chao mung tro lai',
+                      'Chào mừng đến với Ebox',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,

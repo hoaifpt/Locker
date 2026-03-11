@@ -1,0 +1,40 @@
+import '../../../core/exceptions/app_exception.dart';
+import '../../../core/network/api_client.dart';
+import '../domain/entities/scan_result.dart';
+import '../domain/repositories/i_qr_scanner_repository.dart';
+import 'models/scan_result_model.dart';
+
+class QrScannerRepository implements IQrScannerRepository {
+  final ApiClient _apiClient = ApiClient();
+
+  /// POST /api/lockers/qr-scan — validate QR code và trả về thông tin tủ
+  @override
+  Future<ScanResult> validateQrCode(String qrCode) async {
+    try {
+      final response = await _apiClient.client.post(
+        '/lockers/qr-scan',
+        data: {'qrCode': qrCode},
+      );
+      return ScanResultModel.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw NetworkException('Mã QR không hợp lệ hoặc đã hết hạn');
+    }
+  }
+
+  /// GET /api/lockers/scan-history — lịch sử quét gần đây
+  @override
+  Future<List<ScanResult>> getScanHistory() async {
+    try {
+      final response = await _apiClient.client.get('/lockers/scan-history');
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((e) => ScanResultModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      throw NetworkException('Lỗi khi tải lịch sử quét: $e');
+    }
+  }
+}

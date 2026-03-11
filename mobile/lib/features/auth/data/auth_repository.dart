@@ -1,14 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/exceptions/app_exception.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/repositories/i_auth_repository.dart';
 
 class AuthRepository implements IAuthRepository {
   final ApiClient _apiClient = ApiClient();
-  static const String _accessTokenKey = 'auth_access_token';
-  static const String _refreshTokenKey = 'auth_refresh_token';
 
   /// Đăng nhập với username/password theo API backend (`/api/auth/login`)
   @override
@@ -44,7 +43,7 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<void> refreshToken() async {
     final prefs = await SharedPreferences.getInstance();
-    final refresh = prefs.getString(_refreshTokenKey);
+    final refresh = prefs.getString(AppConstants.refreshTokenKey);
     if (refresh == null) {
       throw UnauthorizedException('Thiếu refresh token');
     }
@@ -65,8 +64,8 @@ class AuthRepository implements IAuthRepository {
   /// Lưu token vào máy & Cập nhật cho ApiClient dùng luôn
   Future<void> _saveTokens(String access, String refresh) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_accessTokenKey, access);
-    await prefs.setString(_refreshTokenKey, refresh);
+    await prefs.setString(AppConstants.accessTokenKey, access);
+    await prefs.setString(AppConstants.refreshTokenKey, refresh);
     _apiClient.setToken(access);
   }
 
@@ -74,7 +73,7 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<bool> checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(_accessTokenKey);
+    final token = prefs.getString(AppConstants.accessTokenKey);
     if (token != null && token.isNotEmpty) {
       _apiClient.setToken(token);
       return true;
@@ -86,7 +85,7 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<void> logout({bool callServer = false}) async {
     final prefs = await SharedPreferences.getInstance();
-    final refresh = prefs.getString(_refreshTokenKey);
+    final refresh = prefs.getString(AppConstants.refreshTokenKey);
 
     if (callServer && refresh != null) {
       try {
@@ -98,8 +97,8 @@ class AuthRepository implements IAuthRepository {
       }
     }
 
-    await prefs.remove(_accessTokenKey);
-    await prefs.remove(_refreshTokenKey);
+    await prefs.remove(AppConstants.accessTokenKey);
+    await prefs.remove(AppConstants.refreshTokenKey);
     _apiClient.clearToken();
   }
 }

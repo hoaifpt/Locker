@@ -52,7 +52,7 @@ class ApiClient {
 
   Future<bool> _tryRefreshToken() async {
     final prefs = await SharedPreferences.getInstance();
-    final refresh = prefs.getString('auth_refresh_token');
+    final refresh = prefs.getString(AppConstants.refreshTokenKey);
     if (refresh == null) return false;
 
     final res =
@@ -61,8 +61,8 @@ class ApiClient {
       final access = res.data['token'] as String?;
       final newRefresh = res.data['refreshToken'] as String? ?? refresh;
       if (access != null) {
-        await prefs.setString('auth_access_token', access);
-        await prefs.setString('auth_refresh_token', newRefresh);
+        await prefs.setString(AppConstants.accessTokenKey, access);
+        await prefs.setString(AppConstants.refreshTokenKey, newRefresh);
         setToken(access);
         return true;
       }

@@ -1,6 +1,5 @@
 ﻿import 'package:flutter/material.dart';
 
-import '../../../shared/extensions/context_extensions.dart';
 import '../data/locker_repository.dart';
 import '../domain/entities/locker.dart';
 
@@ -80,7 +79,11 @@ class _LockerScreenState extends State<LockerScreen> {
                         final locker = _lockers[index];
                         return _LockerCard(
                           locker: locker,
-                          onTap: () => context.showSnack('Chọn tủ: ${locker.code}'),
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            '/locker-detail',
+                            arguments: locker.id,
+                          ),
                         );
                       },
                     ),
@@ -101,13 +104,16 @@ class _LockerCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
           backgroundColor: cs.primary.withValues(alpha: 0.15),
           child: Icon(Icons.inbox, color: cs.primary),
         ),
-        title: Text(locker.code, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(locker.location.isEmpty ? 'Không có địa chỉ' : locker.location),
+        title: Text(locker.code,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
+        subtitle: Text(
+            locker.location.isEmpty ? 'Không có địa chỉ' : locker.location),
         trailing: Icon(Icons.chevron_right, color: cs.primary),
         onTap: onTap,
       ),

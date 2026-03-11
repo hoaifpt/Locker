@@ -49,16 +49,16 @@ class ScannerBottomBar extends StatelessWidget {
                 child: Container(
                   width: 80,
                   height: 80,
-                  decoration: ShapeDecoration(
-                    gradient: const LinearGradient(
+                  decoration: const ShapeDecoration(
+                    gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [Color(0xFFFF8A65), AppColors.scannerAccentDark],
                     ),
-                    shape: const OvalBorder(
+                    shape: OvalBorder(
                       side: BorderSide(width: 4, color: AppColors.scannerBg),
                     ),
-                    shadows: const [
+                    shadows: [
                       BoxShadow(
                         color: Color(0x4DFF7043),
                         blurRadius: 20,

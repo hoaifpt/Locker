@@ -35,7 +35,7 @@ class QrScannerCubit extends Cubit<QrScannerState> {
     } on AppException catch (e) {
       emit(QrScannerError(e.message));
     } catch (e) {
-      emit(QrScannerError('Mã QR không hợp lệ'));
+      emit(const QrScannerError('Mã QR không hợp lệ'));
     }
   }
 

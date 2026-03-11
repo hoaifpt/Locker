@@ -156,8 +156,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     const SizedBox(height: 24),
                     // Progress card (only when processing)
                     if (isProcessing)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 32),
                         child: ScanProgressCard(
                           progress: 0.75,
                           status: 'Đang nhận diện...',

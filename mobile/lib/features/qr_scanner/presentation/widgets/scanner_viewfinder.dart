@@ -50,15 +50,15 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                 child: Container(
                   width: 254,
                   height: 2,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
                       colors: [
                         Color(0x00FF7043),
                         AppColors.scannerAccent,
                         Color(0x00FF7043),
                       ],
                     ),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
                         color: AppColors.scannerAccent,
                         blurRadius: 20,
@@ -70,22 +70,22 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
             },
           ),
           // 4 góc bracket
-          _Corner(
+          const _Corner(
               alignment: Alignment.topLeft,
               borderRadius:
-                  const BorderRadius.only(topLeft: Radius.circular(24))),
-          _Corner(
+                  BorderRadius.only(topLeft: Radius.circular(24))),
+          const _Corner(
               alignment: Alignment.topRight,
               borderRadius:
-                  const BorderRadius.only(topRight: Radius.circular(24))),
-          _Corner(
+                  BorderRadius.only(topRight: Radius.circular(24))),
+          const _Corner(
               alignment: Alignment.bottomLeft,
               borderRadius:
-                  const BorderRadius.only(bottomLeft: Radius.circular(24))),
-          _Corner(
+                  BorderRadius.only(bottomLeft: Radius.circular(24))),
+          const _Corner(
               alignment: Alignment.bottomRight,
               borderRadius:
-                  const BorderRadius.only(bottomRight: Radius.circular(24))),
+                  BorderRadius.only(bottomRight: Radius.circular(24))),
         ],
       ),
     );

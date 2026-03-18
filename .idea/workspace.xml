@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.builder/config/data.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IGenericRepository.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Mongo/FlexibleStringIdSerializer.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/GenericRepository.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/src/components/ui/BookingConfirmationModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/src/components/ui/LockerSizeInfo.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/src/components/ui/LockersMapGrid.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/src/components/ui/MapView.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/src/components/ui/Toast.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/src/context/ToastContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/src/lib/validators.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IBookingRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IBookingRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/ILockerRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/ILockerRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IOtpRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IOtpRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IPackageRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IPackageRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IPaymentRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IPaymentRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IRefreshTokenRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IRefreshTokenRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IUserRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IUserRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Locker.Backend.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Locker.Backend.Application.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Mapping/LockerMapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Mapping/LockerMapper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/AuthRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/AuthRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/CreateLockerRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/CreateLockerRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/LockerDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/LockerDto.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/UpdateLockerRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/UpdateLockerRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/AuthService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/AuthService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/LockerService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/LockerService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/PackageService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/PackageService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Validators/RequestValidators.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Validators/RequestValidators.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/BaseEntity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/BaseEntity.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Locker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Locker.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Package.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Package.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Locker.Backend.Domain.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Locker.Backend.Domain.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Locker.Backend.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Locker.Backend.Infrastructure.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Mongo/MongoContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Mongo/MongoContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/BookingRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/BookingRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/LockerRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/LockerRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/OtpRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/OtpRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/PackageRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/PackageRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/PaymentRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/PaymentRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/RefreshTokenRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/RefreshTokenRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/UserRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/UserRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/AuthController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/AuthController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/LockersController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/LockersController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/PackagesController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/PackagesController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Locker.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Locker.Backend.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tests/Locker.Backend.Tests/Locker.Backend.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/Locker.Backend.Tests/Locker.Backend.Tests.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/locker/domain/models/locker_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/locker/domain/models/locker_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/src/features/bookings/pages/BookingDetailPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/features/bookings/pages/BookingDetailPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/src/features/lockers/pages/LockerDetailPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/features/lockers/pages/LockerDetailPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/src/features/packages/pages/PackagesPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/features/packages/pages/PackagesPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/src/mocks/seed.ts" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/mocks/seed.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/types/index.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 6
+}]]></component>
+  <component name="ProjectId" id="3B6n85YQ5tj0m0U7MBL9aYLRJxq" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "Merging master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "E:/FPTUNI/semester_7/locker",
+    "settings.editor.selected.configurable": "AndroidSdkUpdater"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="" />
+      <created>1773818226141</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773818226141</updated>
+    </task>
+    <servers />
+  </component>
+</project>

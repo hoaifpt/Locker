@@ -64,6 +64,22 @@ public static class ApiEndpoints
         public const string Delete = $"{Base}/{{id}}";
     }
 
+    public static class Orders
+    {
+        private const string Base = $"{ApiBase}/orders";
+        public const string GetById = $"{Base}/{{id}}";
+        public const string GetMy = $"{Base}/my";
+        public const string Reserve = $"{Base}/reserve";
+        public const string Confirm = $"{Base}/{{id}}/confirm";
+        public const string SetPin = $"{Base}/{{id}}/set-pin";
+        public const string Activate = $"{Base}/{{id}}/activate";
+        public const string Complete = $"{Base}/{{id}}/complete";
+        public const string Cancel = $"{Base}/{{id}}/cancel";
+        public const string Extend = $"{Base}/{{id}}/extend";
+        public const string GetAvailableSlots = $"{Base}/availability/slots";
+        public const string LinkPayment = $"{Base}/{{id}}/payment";
+    }
+
     public static class Payments
     {
         private const string Base = $"{ApiBase}/payments";

@@ -3,8 +3,6 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Bson.Serialization.IdGenerators;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Mongo;
@@ -24,8 +22,7 @@ public class MongoContext
         {
             cm.AutoMap();
             cm.MapIdProperty(x => x.Id)
-              .SetSerializer(new StringSerializer(BsonType.ObjectId))
-              .SetIdGenerator(StringObjectIdGenerator.Instance);
+              .SetSerializer(new FlexibleStringIdSerializer());
         });
     }
 

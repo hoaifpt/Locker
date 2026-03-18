@@ -27,6 +27,8 @@ public class LockerMapper : IMapper<LockerEntity, LockerDto>
         Id = source.Id,
         Name = source.Name,
         Location = source.Location,
+        Latitude = source.Latitude,
+        Longitude = source.Longitude,
         Slots = source.Slots.Select(_slotMapper.Map).ToList()
     };
 }

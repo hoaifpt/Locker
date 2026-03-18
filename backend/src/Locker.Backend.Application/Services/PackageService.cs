@@ -44,12 +44,8 @@ public class PackageService
         return true;
     }
 
-    public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
     {
-        var package = await _packageRepository.GetByIdAsync(id, cancellationToken);
-        if (package == null) return false;
-
-        await _packageRepository.DeleteAsync(id, cancellationToken);
-        return true;
+        return await _packageRepository.SoftDeleteAsync(id, cancellationToken);
     }
 }

@@ -1,43 +1,35 @@
 using Locker.Backend.Application.Interfaces;
-using Locker.Backend.Domain.Entities;
 using LockerEntity = Locker.Backend.Domain.Entities.Locker;
 using Locker.Backend.Infrastructure.Mongo;
 using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Repositories;
 
-public class LockerRepository : ILockerRepository
+public class LockerRepository : GenericRepository<LockerEntity>, ILockerRepository
 {
-    private readonly IMongoCollection<LockerEntity> _collection;
-
     public LockerRepository(MongoContext context)
+        : base(context.Database.GetCollection<LockerEntity>(context.Settings.LockersCollection))
     {
-        _collection = context.Database.GetCollection<LockerEntity>(context.Settings.LockersCollection);
     }
 
-    public Task<List<LockerEntity>> GetAllAsync(CancellationToken cancellationToken)
+    public override async Task<List<LockerEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return _collection.Find(_ => true).ToListAsync(cancellationToken);
+        return await _collection.Find(l => !l.IsDeleted).ToListAsync(cancellationToken);
     }
 
-    public async Task<LockerEntity?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public override async Task<LockerEntity?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
-        var cursor = await _collection.FindAsync(l => l.Id == id, cancellationToken: cancellationToken);
+        var cursor = await _collection.FindAsync(l => l.Id == id && !l.IsDeleted, cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
-    public Task CreateAsync(LockerEntity locker, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
     {
-        return _collection.InsertOneAsync(locker, cancellationToken: cancellationToken);
-    }
+        var locker = await GetByIdAsync(id, cancellationToken);
+        if (locker == null) return false;
 
-    public Task UpdateAsync(LockerEntity locker, CancellationToken cancellationToken)
-    {
-        return _collection.ReplaceOneAsync(l => l.Id == locker.Id, locker, cancellationToken: cancellationToken);
-    }
-
-    public Task DeleteAsync(string id, CancellationToken cancellationToken)
-    {
-        return _collection.DeleteOneAsync(l => l.Id == id, cancellationToken);
+        locker.IsDeleted = true;
+        await UpdateAsync(locker, cancellationToken);
+        return true;
     }
 }

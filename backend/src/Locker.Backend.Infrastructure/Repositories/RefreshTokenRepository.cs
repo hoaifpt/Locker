@@ -5,24 +5,17 @@ using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Repositories;
 
-public class RefreshTokenRepository : IRefreshTokenRepository
+public class RefreshTokenRepository : GenericRepository<RefreshToken>, IRefreshTokenRepository
 {
-    private readonly IMongoCollection<RefreshToken> _collection;
-
     public RefreshTokenRepository(MongoContext context)
+        : base(context.Database.GetCollection<RefreshToken>(context.Settings.RefreshTokensCollection))
     {
-        _collection = context.Database.GetCollection<RefreshToken>(context.Settings.RefreshTokensCollection);
     }
 
     public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(rt => rt.Token == token, cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public Task CreateAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
-    {
-        return _collection.InsertOneAsync(refreshToken, cancellationToken: cancellationToken);
     }
 
     public Task RevokeAsync(string token, CancellationToken cancellationToken)

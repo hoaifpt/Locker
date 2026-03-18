@@ -51,6 +51,8 @@ export interface LockerDto {
   id: string;
   name: string;
   location: string;
+  latitude: number;
+  longitude: number;
   slots: LockerSlotDto[];
 }
 

@@ -43,6 +43,8 @@ public class LockerService
         {
             Name = request.Name,
             Location = request.Location,
+            Latitude = request.Latitude,
+            Longitude = request.Longitude,
             Slots = Enumerable.Range(1, request.Slots)
                 .Select(index => new LockerSlot { Index = index })
                 .ToList()
@@ -59,17 +61,15 @@ public class LockerService
 
         locker.Name = request.Name;
         locker.Location = request.Location;
+        locker.Latitude = request.Latitude;
+        locker.Longitude = request.Longitude;
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
         return true;
     }
 
-    public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
     {
-        var existing = await _lockerRepository.GetByIdAsync(id, cancellationToken);
-        if (existing == null) return false;
-
-        await _lockerRepository.DeleteAsync(id, cancellationToken);
-        return true;
+        return await _lockerRepository.SoftDeleteAsync(id, cancellationToken);
     }
 
     public async Task<bool> UpdateSlotStatusAsync(string lockerId, int slotIndex, LockerSlotStatus status, CancellationToken cancellationToken)

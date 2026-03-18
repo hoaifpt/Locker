@@ -6,25 +6,11 @@ using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Repositories;
 
-public class BookingRepository : IBookingRepository
+public class BookingRepository : GenericRepository<Booking>, IBookingRepository
 {
-    private readonly IMongoCollection<Booking> _collection;
-
     public BookingRepository(MongoContext context)
+        : base(context.Database.GetCollection<Booking>(context.Settings.BookingsCollection))
     {
-        _collection = context.Database.GetCollection<Booking>(context.Settings.BookingsCollection);
-    }
-
-    public async Task<Booking?> GetByIdAsync(string id, CancellationToken cancellationToken)
-    {
-        var cursor = await _collection.FindAsync(b => b.Id == id, cancellationToken: cancellationToken);
-        return await cursor.FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<List<Booking>> GetAllAsync(CancellationToken cancellationToken)
-    {
-        var cursor = await _collection.FindAsync(_ => true, cancellationToken: cancellationToken);
-        return await cursor.ToListAsync(cancellationToken);
     }
 
     public async Task<List<Booking>> GetByUserIdAsync(string userId, CancellationToken cancellationToken)
@@ -47,10 +33,4 @@ public class BookingRepository : IBookingRepository
             cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
-
-    public Task CreateAsync(Booking booking, CancellationToken cancellationToken)
-        => _collection.InsertOneAsync(booking, cancellationToken: cancellationToken);
-
-    public Task UpdateAsync(Booking booking, CancellationToken cancellationToken)
-        => _collection.ReplaceOneAsync(b => b.Id == booking.Id, booking, cancellationToken: cancellationToken);
 }

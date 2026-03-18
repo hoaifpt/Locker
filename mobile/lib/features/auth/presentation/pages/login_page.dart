@@ -68,7 +68,8 @@ class _LoginViewState extends State<_LoginView> {
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -80,15 +81,18 @@ class _LoginViewState extends State<_LoginView> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      height: 160,
-                      child: Image.asset(
-                        'assets/ebox_logo.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.inbox,
-                          size: 80,
-                          color: Color(0xFFEB6C4B),
+                    Align(
+                      alignment: Alignment(-1.0, 0.0),
+                      child: SizedBox(
+                        height: 320, // Giảm chiều cao để không bị tràn
+                        child: Image.asset(
+                          'assets/ebox_logo.png',
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.inbox,
+                            size: 80,
+                            color: Color(0xFFEB6C4B),
+                          ),
                         ),
                       ),
                     ),
@@ -104,20 +108,20 @@ class _LoginViewState extends State<_LoginView> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Dang nhap de quan ly tu do thong minh cua ban',
+                      'Đăng nhập để quản lý tủ đồ thông minh của bạn',
                       style: TextStyle(color: Color(0xFF6C6C6C)),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 28),
                     _InputField(
                       controller: _usernameController,
-                      hint: 'Tai khoan / Email',
+                      hint: 'Tài khoản / Email',
                       icon: Icons.person_outline,
                     ),
                     const SizedBox(height: 14),
                     _InputField(
                       controller: _passwordController,
-                      hint: 'Mat khau',
+                      hint: 'Mật khẩu',
                       icon: Icons.lock_outline,
                       obscure: _obscure,
                       suffix: IconButton(
@@ -135,7 +139,7 @@ class _LoginViewState extends State<_LoginView> {
                       child: TextButton(
                         onPressed: () {},
                         child: const Text(
-                          'Quen mat khau?',
+                          'Quên mật khẩu?',
                           style: TextStyle(color: Color(0xFFEB6C4B)),
                         ),
                       ),
@@ -145,7 +149,7 @@ class _LoginViewState extends State<_LoginView> {
                       builder: (context, state) {
                         final loading = state is AuthLoading;
                         return AppButton(
-                          label: 'Dang nhap',
+                          label: 'Đăng nhập',
                           loading: loading,
                           onPressed: loading
                               ? null
@@ -162,9 +166,9 @@ class _LoginViewState extends State<_LoginView> {
                       text: const TextSpan(
                         style: TextStyle(color: Color(0xFF6C6C6C)),
                         children: [
-                          TextSpan(text: 'Chua co tai khoan? '),
+                          TextSpan(text: 'Chưa có tài khoản? '),
                           TextSpan(
-                            text: 'Dang ky ngay',
+                            text: 'Đăng ký ngay',
                             style: TextStyle(
                               color: Color(0xFFEB6C4B),
                               fontWeight: FontWeight.w700,
@@ -224,7 +228,8 @@ class _InputField extends StatelessWidget {
           prefixIcon: Icon(icon, color: const Color(0xFFEB6C4B)),
           suffixIcon: suffix,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );

@@ -29,6 +29,11 @@ public static class DependencyInjection
         services.AddScoped<BookingService>();
         services.AddScoped<PaymentService>();
         services.AddScoped<AdminService>();
+
+        // MVP Virtual Locker Services
+        services.AddScoped<Interfaces.ITransactionService, TransactionService>();
+        services.AddScoped<Interfaces.IQrCodeService, QrCodeService>();
+
         return services;
     }
 }

@@ -134,6 +134,8 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+app.UseMiddleware<Locker.Backend.Middleware.ExceptionHandlingMiddleware>();
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {

@@ -10,8 +10,11 @@ public class MongoSettings
     public string PackagesCollection { get; set; } = "packages";
     public string BookingsCollection { get; set; } = "bookings";
     public string PaymentsCollection { get; set; } = "payments";
-<<<<<<< HEAD
+    public string LockerSlotsCollection { get; set; } = "locker_slots";
+    public string TransactionsCollection { get; set; } = "transactions";
+    public string FoodOrdersCollection { get; set; } = "food_orders";
+    public string PersonalStorageCollection { get; set; } = "personal_storage";
+    public string NotificationsCollection { get; set; } = "notifications";
+    public string QrCodesCollection { get; set; } = "qr_codes";
     public string OtpCodesCollection { get; set; } = "otp_codes";
-=======
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
 }

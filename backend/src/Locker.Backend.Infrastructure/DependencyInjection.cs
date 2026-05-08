@@ -26,10 +26,16 @@ public static class DependencyInjection
         services.AddScoped<IPackageRepository, PackageRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
-<<<<<<< HEAD
         services.AddScoped<IOtpRepository, OtpRepository>();
-=======
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+        
+        // New Repositories for MVP
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<ILockerSlotRepository, LockerSlotRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IFoodOrderRepository, FoodOrderRepository>();
+        services.AddScoped<IQrCodeRepository, QrCodeRepository>();
+        services.AddScoped<IPersonalStorageRepository, PersonalStorageRepository>();
+        
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IEmailService, EmailService>();

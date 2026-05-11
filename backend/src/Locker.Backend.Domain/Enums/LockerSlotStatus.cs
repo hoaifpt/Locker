@@ -6,5 +6,7 @@ public enum LockerSlotStatus
     Reserved,
     Occupied,
     Expired,
-    Maintenance
+    Maintenance,
+    Pending,
+    Active
 }

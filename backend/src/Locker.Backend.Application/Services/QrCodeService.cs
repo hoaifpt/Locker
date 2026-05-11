@@ -31,7 +31,7 @@ public class QrCodeService : IQrCodeService
             IsUsed = false
         };
 
-        await _qrCodeRepository.AddAsync(qrCode, cancellationToken);
+        await _qrCodeRepository.CreateAsync(qrCode, cancellationToken);
 
         return new QrCodeDto
         {
@@ -47,7 +47,7 @@ public class QrCodeService : IQrCodeService
     public async Task<bool> ValidateAndUseQrCodeAsync(string code, CancellationToken cancellationToken)
     {
         var validQr = await _qrCodeRepository.GetValidCodeAsync(code, cancellationToken);
-        
+
         if (validQr == null)
             return false;
 

@@ -13,13 +13,13 @@ public class RegisterRequest
 
     public string? FullName { get; set; }
 
-<<<<<<< HEAD
+
     [Phone]
     public string? PhoneNumber { get; set; }
 
-=======
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
     [Required]
     [MinLength(6)]
     public string Password { get; set; } = string.Empty;
 }
+

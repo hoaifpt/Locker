@@ -56,7 +56,7 @@ public class TransactionService : ITransactionService
             transaction.TotalAmount = request.FoodItems?.Sum(x => x.Price * x.Quantity) ?? 0;
         }
 
-        await _transactionRepository.AddAsync(transaction, cancellationToken);
+        await _transactionRepository.CreateAsync(transaction, cancellationToken);
 
         // Sub-entity creation
         if (request.Type == TransactionType.FoodDelivery && request.FoodItems != null)
@@ -69,7 +69,7 @@ public class TransactionService : ITransactionService
                 FoodTotal = transaction.TotalAmount,
                 Items = request.FoodItems.Select(i => new Domain.Entities.OrderItem { Name = i.Name, Price = i.Price, Quantity = i.Quantity }).ToList()
             };
-            await _foodOrderRepository.AddAsync(foodOrder, cancellationToken);
+            await _foodOrderRepository.CreateAsync(foodOrder, cancellationToken);
         }
         else if (request.Type == TransactionType.PersonalStorage && request.ExpectedEndTime.HasValue)
         {
@@ -79,7 +79,7 @@ public class TransactionService : ITransactionService
                 UserId = userId,
                 ExpectedEndTime = request.ExpectedEndTime.Value
             };
-            await _storageRepository.AddAsync(storage, cancellationToken);
+            await _storageRepository.CreateAsync(storage, cancellationToken);
         }
 
         return MapToDto(transaction);
@@ -110,13 +110,13 @@ public class TransactionService : ITransactionService
             // Free up the slot
             if (!string.IsNullOrEmpty(transaction.SlotId))
             {
-               var slot = await _slotRepository.GetByIdAsync(transaction.SlotId, cancellationToken);
-               if (slot != null)
-               {
-                   slot.Status = LockerSlotStatus.Available;
-                   slot.ActiveTransactionId = null;
-                   await _slotRepository.UpdateAsync(slot, cancellationToken);
-               }
+                var slot = await _slotRepository.GetByIdAsync(transaction.SlotId, cancellationToken);
+                if (slot != null)
+                {
+                    slot.Status = LockerSlotStatus.Available;
+                    slot.ActiveTransactionId = null;
+                    await _slotRepository.UpdateAsync(slot, cancellationToken);
+                }
             }
         }
         else if (status == TransactionStatus.InProgress)
@@ -124,13 +124,13 @@ public class TransactionService : ITransactionService
             transaction.StartedAt = DateTime.UtcNow;
             if (!string.IsNullOrEmpty(transaction.SlotId))
             {
-               var slot = await _slotRepository.GetByIdAsync(transaction.SlotId, cancellationToken);
-               if (slot != null && slot.Status == LockerSlotStatus.Reserved)
-               {
-                   slot.Status = LockerSlotStatus.Occupied;
-                   slot.ActiveTransactionId = transaction.Id;
-                   await _slotRepository.UpdateAsync(slot, cancellationToken);
-               }
+                var slot = await _slotRepository.GetByIdAsync(transaction.SlotId, cancellationToken);
+                if (slot != null && slot.Status == LockerSlotStatus.Reserved)
+                {
+                    slot.Status = LockerSlotStatus.Occupied;
+                    slot.ActiveTransactionId = transaction.Id;
+                    await _slotRepository.UpdateAsync(slot, cancellationToken);
+                }
             }
         }
 

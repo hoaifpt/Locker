@@ -1,8 +1,7 @@
 using Locker.Backend.Application.Interfaces;
-<<<<<<< HEAD
+
 using Locker.Backend.Application.Mapping;
-=======
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
@@ -16,52 +15,44 @@ public class BookingService
     private readonly IPackageRepository _packageRepository;
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPasswordHasher _passwordHasher;
-<<<<<<< HEAD
+
     private readonly BookingMapper _bookingMapper;
-=======
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
 
     public BookingService(
         IBookingRepository bookingRepository,
         ILockerRepository lockerRepository,
         IPackageRepository packageRepository,
         IPaymentRepository paymentRepository,
-<<<<<<< HEAD
+
         IPasswordHasher passwordHasher,
         BookingMapper bookingMapper)
-=======
-        IPasswordHasher passwordHasher)
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
     {
         _bookingRepository = bookingRepository;
         _lockerRepository = lockerRepository;
         _packageRepository = packageRepository;
         _paymentRepository = paymentRepository;
         _passwordHasher = passwordHasher;
-<<<<<<< HEAD
+
         _bookingMapper = bookingMapper;
-=======
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
     }
 
     public async Task<BookingDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(id, cancellationToken);
-<<<<<<< HEAD
+
         return booking == null ? null : _bookingMapper.Map(booking);
-=======
-        return booking == null ? null : ToDto(booking);
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
     }
 
     public async Task<List<BookingDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         var bookings = await _bookingRepository.GetAllAsync(cancellationToken);
-<<<<<<< HEAD
+
         return bookings.Select(_bookingMapper.Map).ToList();
-=======
-        return bookings.Select(ToDto).ToList();
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
     }
 
     public async Task<List<BookingDto>> GetMyBookingsAsync(string userId, BookingStatus? status, CancellationToken cancellationToken)
@@ -69,11 +60,9 @@ public class BookingService
         var bookings = await _bookingRepository.GetByUserIdAsync(userId, cancellationToken);
         if (status.HasValue)
             bookings = bookings.Where(b => b.Status == status.Value).ToList();
-<<<<<<< HEAD
+
         return bookings.Select(_bookingMapper.Map).ToList();
-=======
-        return bookings.Select(ToDto).ToList();
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
     }
 
     public async Task<BookingDto?> CreateAsync(string userId, CreateBookingRequest request, CancellationToken cancellationToken)
@@ -104,11 +93,9 @@ public class BookingService
         await _bookingRepository.CreateAsync(booking, cancellationToken);
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
 
-<<<<<<< HEAD
+
         return _bookingMapper.Map(booking);
-=======
-        return ToDto(booking);
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
     }
 
     public async Task<bool> SetPinAsync(string bookingId, string userId, SetPinRequest request, CancellationToken cancellationToken)
@@ -133,11 +120,9 @@ public class BookingService
 
         var slot = locker.Slots.FirstOrDefault(s => s.Index == booking.SlotIndex);
         if (slot != null)
-<<<<<<< HEAD
+
             slot.Status = LockerSlotStatus.Active;
-=======
-            slot.Status = LockerSlotStatus.Ative;
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
 
         await _bookingRepository.UpdateAsync(booking, cancellationToken);
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
@@ -149,11 +134,10 @@ public class BookingService
         var booking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
         if (booking == null || booking.Status != BookingStatus.Active) return false;
 
-<<<<<<< HEAD
+
         if (string.IsNullOrEmpty(booking.PinHash)) return false;
 
-=======
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
         return _passwordHasher.Verify(request.Pin, booking.PinHash);
     }
 
@@ -203,23 +187,7 @@ public class BookingService
         await _bookingRepository.UpdateAsync(booking, cancellationToken);
         return true;
     }
-<<<<<<< HEAD
-=======
 
-    private static BookingDto ToDto(Booking b) => new()
-    {
-        Id = b.Id,
-        UserId = b.UserId,
-        LockerId = b.LockerId,
-        SlotIndex = b.SlotIndex,
-        PackageId = b.PackageId,
-        MobileNumber = b.MobileNumber,
-        Status = b.Status,
-        TotalAmount = b.TotalAmount,
-        PaymentId = b.PaymentId,
-        CreatedAt = b.CreatedAt,
-        StartedAt = b.StartedAt,
-        CompletedAt = b.CompletedAt
-    };
->>>>>>> cd41969f38b41cd3f098ee3ee44d55472bf88075
+
 }
+

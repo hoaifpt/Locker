@@ -7,19 +7,24 @@ import '../utils/logger.dart';
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   late final Dio _dio;
+  late final Dio _refreshDio;
 
   factory ApiClient() => _instance;
 
   ApiClient._internal() {
-    _dio = Dio(BaseOptions(
+    final baseOptions = BaseOptions(
       baseUrl: AppConstants.apiBaseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 5),
+      connectTimeout: const Duration(seconds: 30),
+      // Increase receive timeout to 60s to avoid transient receive timeouts
+      receiveTimeout: const Duration(seconds: 60),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-    ));
+    );
+
+    _dio = Dio(baseOptions);
+    _refreshDio = Dio(baseOptions);
 
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
@@ -27,9 +32,43 @@ class ApiClient {
       logPrint: (obj) => logInfo(obj.toString()),
     ));
 
+    // Timing interceptor: measure elapsed time for each request
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        options.extra['requestStartTime'] = DateTime.now();
+        return handler.next(options);
+      },
+      onResponse: (response, handler) {
+        final start =
+            response.requestOptions.extra['requestStartTime'] as DateTime?;
+        if (start != null) {
+          final elapsed = DateTime.now().difference(start).inMilliseconds;
+          logInfo(
+              '[API] ${response.requestOptions.method} ${response.requestOptions.path} -> ${response.statusCode} (${elapsed}ms)');
+        }
+        return handler.next(response);
+      },
+      onError: (err, handler) {
+        final start = err.requestOptions.extra['requestStartTime'] as DateTime?;
+        if (start != null) {
+          final elapsed = DateTime.now().difference(start).inMilliseconds;
+          logWarn(
+              '[API] ${err.requestOptions.method} ${err.requestOptions.path} -> ERROR (${elapsed}ms): ${err.message}');
+        }
+        return handler.next(err);
+      },
+    ));
+
     // Refresh token interceptor: tự gia hạn token khi API trả 401
     _dio.interceptors.add(InterceptorsWrapper(
       onError: (e, handler) async {
+        final path = e.requestOptions.path;
+        if (path.contains('/auth/login') ||
+            path.contains('/auth/refresh') ||
+            path.contains('/auth/register')) {
+          return handler.next(e);
+        }
+
         if (e.response?.statusCode == 401) {
           try {
             final refreshed = await _tryRefreshToken();
@@ -55,18 +94,26 @@ class ApiClient {
     final refresh = prefs.getString(AppConstants.refreshTokenKey);
     if (refresh == null) return false;
 
-    final res =
-        await _dio.post('/auth/refresh', data: {'refreshToken': refresh});
-    if (res.statusCode == 200) {
-      final access = res.data['token'] as String?;
-      final newRefresh = res.data['refreshToken'] as String? ?? refresh;
-      if (access != null) {
-        await prefs.setString(AppConstants.accessTokenKey, access);
-        await prefs.setString(AppConstants.refreshTokenKey, newRefresh);
-        setToken(access);
-        return true;
+    try {
+      final res = await _refreshDio
+          .post('/auth/refresh', data: {'refreshToken': refresh});
+      if (res.statusCode == 200) {
+        final access = res.data['token'] as String?;
+        final newRefresh = res.data['refreshToken'] as String? ?? refresh;
+        if (access != null) {
+          await prefs.setString(AppConstants.accessTokenKey, access);
+          await prefs.setString(AppConstants.refreshTokenKey, newRefresh);
+          setToken(access);
+          return true;
+        }
       }
+    } catch (_) {
+      await prefs.remove(AppConstants.accessTokenKey);
+      await prefs.remove(AppConstants.refreshTokenKey);
+      clearToken();
+      return false;
     }
+
     return false;
   }
 

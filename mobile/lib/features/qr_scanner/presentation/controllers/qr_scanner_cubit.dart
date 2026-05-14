@@ -1,22 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/exceptions/app_exception.dart';
-import '../../domain/usecases/get_scan_history_usecase.dart';
 import '../../domain/usecases/validate_qr_code_usecase.dart';
 import 'qr_scanner_state.dart';
 
 class QrScannerCubit extends Cubit<QrScannerState> {
   final ValidateQrCodeUsecase _validateQrCode;
-  final GetScanHistoryUsecase _getScanHistory;
 
   // Phòng chống quét trùng lặp trong khi đang xử lý
   bool _isProcessing = false;
 
   QrScannerCubit({
     required ValidateQrCodeUsecase validateQrCode,
-    required GetScanHistoryUsecase getScanHistory,
   })  : _validateQrCode = validateQrCode,
-        _getScanHistory = getScanHistory,
         super(const QrScannerInitial());
 
   void startScanning() {

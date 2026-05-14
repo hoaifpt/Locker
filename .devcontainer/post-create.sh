@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# Install .NET 10 SDK
+echo "📦 Installing .NET 10 SDK..."
+curl -fsSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+sudo chmod +x dotnet-install.sh
+./dotnet-install.sh --channel 10.0 --install-dir /usr/share/dotnet --no-path
+rm dotnet-install.sh
+
 # Install system dependencies for Flutter desktop
 echo "🔧 Installing system dependencies for Flutter desktop..."
 sudo apt update

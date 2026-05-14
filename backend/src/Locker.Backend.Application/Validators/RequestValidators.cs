@@ -189,3 +189,77 @@ public class CreatePaymentRequestValidator : AbstractValidator<CreatePaymentRequ
             .WithMessage("Invalid payment method. Allowed: cash, card, momo, vnpay, zalopay.");
     }
 }
+
+public class CreateOrderRequestValidator : AbstractValidator<CreateOrderRequest>
+{
+    public CreateOrderRequestValidator()
+    {
+        RuleFor(x => x.LockerId)
+            .NotEmpty().WithMessage("Mã tủ khóa không được để trống.");
+
+        RuleFor(x => x.SlotIndex)
+            .GreaterThanOrEqualTo(0).WithMessage("Vị trí khoang phải >= 0.");
+
+        RuleFor(x => x.PackageId)
+            .NotEmpty().WithMessage("Mã gói không được để trống.");
+
+        RuleFor(x => x.MobileNumber)
+            .NotEmpty().WithMessage("Số điện thoại không được để trống.")
+            .Matches(@"^\+?[0-9]{7,15}$").WithMessage("Định dạng số điện thoại không hợp lệ.");
+
+        RuleFor(x => x.CheckInTime)
+            .Must(d => d > DateTime.UtcNow).WithMessage("Giờ nhận phải trong tương lai.");
+
+        RuleFor(x => x.DurationHours)
+            .GreaterThanOrEqualTo(1).WithMessage("Thời gian tối thiểu là 1 giờ.")
+            .LessThanOrEqualTo(7 * 24).WithMessage("Thời gian tối đa là 7 ngày.");
+    }
+}
+
+public class ConfirmOrderRequestValidator : AbstractValidator<ConfirmOrderRequest>
+{
+    public ConfirmOrderRequestValidator()
+    {
+        // Notes are optional
+    }
+}
+
+public class SetOrderPinRequestValidator : AbstractValidator<SetOrderPinRequest>
+{
+    public SetOrderPinRequestValidator()
+    {
+        RuleFor(x => x.Pin)
+            .NotEmpty().WithMessage("Mã PIN không được để trống.")
+            .Length(4, 8).WithMessage("Mã PIN phải từ 4 đến 8 chữ số.")
+            .Matches("^[0-9]+$").WithMessage("Mã PIN chỉ chứa các chữ số.");
+    }
+}
+
+public class CompleteOrderRequestValidator : AbstractValidator<CompleteOrderRequest>
+{
+    public CompleteOrderRequestValidator()
+    {
+        // Notes are optional
+    }
+}
+
+public class CancelOrderRequestValidator : AbstractValidator<CancelOrderRequest>
+{
+    public CancelOrderRequestValidator()
+    {
+        RuleFor(x => x.CancellationReason)
+            .MaximumLength(500).WithMessage("Lý do hủy không được vượt quá 500 ký tự.")
+            .When(x => !string.IsNullOrEmpty(x.CancellationReason));
+    }
+}
+
+public class ExtendOrderRequestValidator : AbstractValidator<ExtendOrderRequest>
+{
+    public ExtendOrderRequestValidator()
+    {
+        RuleFor(x => x.AdditionalHours)
+            .GreaterThanOrEqualTo(1).WithMessage("Phải gia hạn ít nhất 1 giờ.")
+            .LessThanOrEqualTo(7 * 24).WithMessage("Không thể gia hạn quá 7 ngày.");
+    }
+}
+

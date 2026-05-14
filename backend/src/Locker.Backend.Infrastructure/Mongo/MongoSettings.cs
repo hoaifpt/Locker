@@ -9,6 +9,7 @@ public class MongoSettings
     public string RefreshTokensCollection { get; set; } = "refresh_tokens";
     public string PackagesCollection { get; set; } = "packages";
     public string BookingsCollection { get; set; } = "bookings";
+    public string OrdersCollection { get; set; } = "orders";
     public string PaymentsCollection { get; set; } = "payments";
     public string OtpCodesCollection { get; set; } = "otp_codes";
 }

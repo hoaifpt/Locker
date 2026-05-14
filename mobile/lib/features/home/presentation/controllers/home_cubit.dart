@@ -19,13 +19,11 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> load() async {
     emit(const HomeLoading());
     try {
-      final results = await Future.wait([
-        _getActiveLockers(),
-        _getNearbyLockers(),
-      ]);
+      final activeLockers = await _getActiveLockers();
+      final nearbyLockers = await _getNearbyLockers();
       emit(HomeLoaded(
-        activeLockers: results[0] as dynamic,
-        nearbyLockers: results[1] as dynamic,
+        activeLockers: activeLockers,
+        nearbyLockers: nearbyLockers,
       ));
     } on AppException catch (e) {
       emit(HomeError(e.message));

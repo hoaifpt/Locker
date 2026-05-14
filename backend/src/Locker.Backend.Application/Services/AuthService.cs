@@ -44,7 +44,7 @@ public class AuthService
 
     public async Task<(AuthResponse? Response, string? Error)> LoginAsync(AuthRequest request, CancellationToken cancellationToken)
     {
-        // Try to find user by email or phone number
+        // Try to find user by email, phone number, or username
         User? user = null;
 
         // Check if identifier is email format
@@ -56,6 +56,9 @@ public class AuthService
         {
             // Try as phone number
             user = await _userRepository.GetByPhoneNumberAsync(request.Identifier.Trim(), cancellationToken);
+
+            // Fallback to username so seeded accounts can log in from the mobile UI
+            user ??= await _userRepository.GetByUsernameAsync(request.Identifier.Trim(), cancellationToken);
         }
 
         if (user == null)

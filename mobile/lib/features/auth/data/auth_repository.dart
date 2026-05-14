@@ -9,12 +9,12 @@ import '../domain/repositories/i_auth_repository.dart';
 class AuthRepository implements IAuthRepository {
   final ApiClient _apiClient = ApiClient();
 
-  /// Đăng nhập với username/password theo API backend (`/api/auth/login`)
+  /// Đăng nhập với identifier/password theo API backend (`/api/auth/login`)
   @override
   Future<bool> login(String username, String password) async {
     try {
       final response = await _apiClient.client.post('/auth/login', data: {
-        'username': username,
+        'identifier': username,
         'password': password,
       });
 

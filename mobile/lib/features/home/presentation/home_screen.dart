@@ -5,6 +5,7 @@ import '../../locker/domain/entities/locker.dart';
 import '../domain/entities/active_locker.dart';
 import 'controllers/home_cubit.dart';
 import 'controllers/home_state.dart';
+import 'widgets/index.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,649 +13,486 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5EC),
+      backgroundColor: const Color(0xFFFFFBF2),
       body: SafeArea(
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
             if (state is HomeInitial || state is HomeLoading) {
               return const Center(
-                child: CircularProgressIndicator(color: Color(0xFFFF7E5F)),
+                child: CircularProgressIndicator(color: Color(0xFFFB923C)),
               );
             }
 
             if (state is HomeError) {
               return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(state.message),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () => context.read<HomeCubit>().load(),
-                      child: const Text('Thử lại'),
-                    ),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline,
+                          size: 48, color: Color(0xFFEF4444)),
+                      const SizedBox(height: 12),
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFF334155),
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.read<HomeCubit>().load(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFB923C),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
 
             final loaded = state as HomeLoaded;
 
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-                        _buildActionButtons(),
-                        const SizedBox(height: 24),
-                        _buildSectionHeader(
-                          title: 'Tủ bạn đang dùng',
-                          trailing: GestureDetector(
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/lockers'),
-                            child: Text(
-                              'Tất cả (${loaded.activeLockers.length})',
-                              style: const TextStyle(
-                                color: Color(0xFFFF7E5F),
-                                fontSize: 14,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildActiveLockersList(loaded.activeLockers),
-                        const SizedBox(height: 24),
-                        _buildSectionHeader(
-                          title: 'Gợi ý tủ gần đây',
-                          trailing: const SizedBox.shrink(),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildNearbyLockersList(context, loaded.nearbyLockers),
-                        const SizedBox(height: 24),
-                      ],
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _HomeHeader(onNotificationsTap: () {}),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                    child: HomeSearchBar(
+                      hintText: 'Tìm dịch vụ hoặc vị trí tủ...',
+                      onTap: () {},
                     ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-      bottomNavigationBar: Builder(
-        builder: (context) => Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: _buildBottomNav(context),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 24, left: 20, right: 20, bottom: 20),
-      decoration: const BoxDecoration(color: Color(0xE5FFF5EC)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            spacing: 12,
-            children: [
-              // Avatar with gradient ring
-              Container(
-                width: 44,
-                height: 44,
-                padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment(0, 0),
-                    end: Alignment(1, 1),
-                    colors: [Color(0xFFFF7E5F), Color(0xFFFEB47B)],
-                  ),
-                  shape: BoxShape.circle,
                 ),
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                      color: Colors.white, shape: BoxShape.circle),
-                  child: ClipOval(
-                    child: Image.network(
-                      'https://placehold.co/36x36',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.person,
-                        size: 20,
-                        color: Color(0xFFFF7E5F),
+                SliverToBoxAdapter(
+                  child: _Section(
+                    title: 'Dịch vụ của E-BOX',
+                    child: SizedBox(
+                      height: 136,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _services.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (context, index) {
+                          final service = _services[index];
+                          return ServiceCard(
+                            label: service.label,
+                            icon: service.icon,
+                            onTap: () {
+                              if (service.route != null) {
+                                Navigator.pushNamed(context, service.route!);
+                              } else {
+                                service.onTap();
+                              }
+                            },
+                          );
+                        },
                       ),
                     ),
                   ),
                 ),
-              ),
-              // Greeting text
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Chào buổi sáng,',
-                    style: TextStyle(
-                      color: Color(0xFF8B5E3C),
-                      fontSize: 12,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
+                SliverToBoxAdapter(
+                  child: _Section(
+                    title: 'Tủ bạn đang dùng',
+                    trailing: Text(
+                      'Tất cả (${loaded.activeLockers.length})',
+                      style: const TextStyle(
+                        color: Color(0xFFFB923C),
+                        fontSize: 13,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _ActiveLockerSection(
+                          activeLockers: loaded.activeLockers),
                     ),
                   ),
-                  Text(
-                    'Nguyễn Minh',
-                    style: TextStyle(
-                      color: Color(0xFF1E293B),
-                      fontSize: 18,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
+                ),
+                SliverToBoxAdapter(
+                  child: _Section(
+                    title: 'Gợi ý tủ gần đây',
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _NearbyLockerList(
+                          nearbyLockers: loaded.nearbyLockers),
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-          // City badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.60),
-              border: Border.all(color: const Color(0xFFFFEDD5)),
-              borderRadius: BorderRadius.circular(9999),
-            ),
-            child: const Row(
-              spacing: 6,
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                    child: PromoCard(
+                      title: 'Liên Kết Sàn TMĐT',
+                      subtitle: 'Mua sắm ưu đãi, giao tận tủ E-BOX',
+                      onTap: () {},
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+      bottomNavigationBar: const _BottomNavBar(),
+    );
+  }
+}
+
+class _HomeHeader extends StatelessWidget {
+  final VoidCallback onNotificationsTap;
+
+  const _HomeHeader({required this.onNotificationsTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFF7ED), Color(0xFFFFFBF2)],
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
               children: [
-                Icon(Icons.location_on, size: 14, color: Color(0xFFFF7E5F)),
-                Text(
-                  'Hồ Chí Minh',
-                  style: TextStyle(
-                    color: Color(0xFF334155),
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(9999),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0D000000),
+                        blurRadius: 16,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.asset(
+                    'assets/ebox_logo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.person,
+                      color: Color(0xFFFB923C),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Xin chào, Minh Anh!',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Color(0xFF1E293B),
+                          fontSize: 18,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_outlined,
+                              size: 14, color: Color(0xFF6B7280)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Hồ Chí Minh',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 13,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      spacing: 16,
-      children: [
-        // QR Scan
-        Expanded(
-          child: GestureDetector(
-            onTap: () {},
+          GestureDetector(
+            onTap: onNotificationsTap,
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 26),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment(0.03, -0.04),
-                  end: Alignment(0.97, 1.04),
-                  colors: [Color(0xFFFF7E5F), Color(0xFFFEB47B)],
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x33FF7E5F),
-                    blurRadius: 40,
-                    offset: Offset(0, 10),
-                    spreadRadius: -10,
-                  ),
-                ],
-              ),
-              child: const Column(
-                spacing: 12,
-                children: [
-                  SizedBox(
-                    width: 56,
-                    height: 56,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Color(0x33FFFFFF),
-                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                        border: Border.fromBorderSide(
-                          BorderSide(color: Color(0x4DFFFFFF)),
-                        ),
-                      ),
-                      child: Icon(Icons.qr_code_scanner,
-                          color: Colors.white, size: 28),
-                    ),
-                  ),
-                  Text(
-                    'Quét QR',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.40,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Enter code
-        Expanded(
-          child: GestureDetector(
-            onTap: () {},
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 26),
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0x33FF7E5F), width: 2),
+                borderRadius: BorderRadius.circular(9999),
                 boxShadow: const [
                   BoxShadow(
-                      color: Color(0x0C000000),
-                      blurRadius: 2,
-                      offset: Offset(0, 1)),
+                    color: Color(0x14FB923C),
+                    blurRadius: 20,
+                    offset: Offset(0, 4),
+                  ),
                 ],
               ),
-              child: const Column(
-                spacing: 12,
+              child: Stack(
                 children: [
-                  SizedBox(
-                    width: 56,
-                    height: 56,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFFFF7ED),
-                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                      ),
-                      child: Icon(Icons.dialpad,
-                          color: Color(0xFFFF7E5F), size: 28),
-                    ),
+                  const Center(
+                    child: Icon(Icons.notifications_none_rounded,
+                        color: Color(0xFF334155)),
                   ),
-                  Text(
-                    'Nhập mã tủ',
-                    style: TextStyle(
-                      color: Color(0xFF1E293B),
-                      fontSize: 16,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
+                  Positioned(
+                    right: 11,
+                    top: 11,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFB923C),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionHeader(
-      {required String title, required Widget trailing}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Color(0xFF1E293B),
-            fontSize: 18,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        trailing,
-      ],
-    );
-  }
-
-  static const _mockActiveLockers = [
-    _ActiveLockerData(
-      code: 'Locker A-102',
-      location: 'Cơ sở Quận 1',
-      statusLabel: 'ACTIVE',
-      statusDotColor: Color(0xFF22C55E),
-      statusBgColor: Color(0xFFF0FDF4),
-      statusTextColor: Color(0xFF16A34A),
-      usagePercent: 0.75,
-      usageLabel: '75%',
-      timeRemaining: '02h 45m',
-      timeBgColor: Color(0xFFFFF5EC),
-      isGradientButton: true,
-    ),
-    _ActiveLockerData(
-      code: 'Locker B-205',
-      location: 'Cơ sở Thủ Đức',
-      statusLabel: 'ACTIVE',
-      statusDotColor: Color(0xFFF97316),
-      statusBgColor: Color(0xFFFFF7ED),
-      statusTextColor: Color(0xFFEA580C),
-      usagePercent: 0.30,
-      usageLabel: '30%',
-      timeRemaining: '15h 20m',
-      timeBgColor: Color(0xFFF8FAFC),
-      isGradientButton: false,
-    ),
-  ];
-
-  _ActiveLockerData _toCardData(ActiveLocker locker, int index) {
-    final isFirst = index == 0;
-    return _ActiveLockerData(
-      code: locker.code,
-      location: locker.location,
-      statusLabel: locker.status,
-      statusDotColor:
-          isFirst ? const Color(0xFF22C55E) : const Color(0xFFF97316),
-      statusBgColor:
-          isFirst ? const Color(0xFFF0FDF4) : const Color(0xFFFFF7ED),
-      statusTextColor:
-          isFirst ? const Color(0xFF16A34A) : const Color(0xFFEA580C),
-      usagePercent: locker.usagePercent,
-      usageLabel: '${(locker.usagePercent * 100).toInt()}%',
-      timeRemaining: locker.timeRemaining,
-      timeBgColor: isFirst ? const Color(0xFFFFF5EC) : const Color(0xFFF8FAFC),
-      isGradientButton: isFirst,
-    );
-  }
-
-  Widget _buildActiveLockersList(List<ActiveLocker> activeLockers) {
-    final cards = activeLockers.isNotEmpty
-        ? activeLockers
-            .asMap()
-            .entries
-            .map((e) => _toCardData(e.value, e.key))
-            .toList()
-        : _mockActiveLockers;
-
-    return SizedBox(
-      height: 254,
-      child: PageView.builder(
-        controller: PageController(viewportFraction: 0.88),
-        itemCount: cards.length,
-        itemBuilder: (_, i) => Padding(
-          padding: EdgeInsets.only(right: i < cards.length - 1 ? 16 : 0),
-          child: _ActiveLockerCard(data: cards[i]),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNearbyLockersList(
-      BuildContext context, List<Locker> nearbyLockers) {
-    final items = nearbyLockers.isNotEmpty
-        ? nearbyLockers
-            .map((l) => (
-                  name: l.code,
-                  distance: l.location.isNotEmpty ? l.location : 'Gần đây',
-                  slots: l.isOccupied ? 0 : 1,
-                ))
-            .toList()
-        : [
-            (name: 'Hub Trung tâm Crescent', distance: '450m', slots: 12),
-            (name: 'Vincom Landmark 81', distance: '1.2km', slots: 5),
-          ];
-
-    return Column(
-      spacing: 12,
-      children: items
-          .map((item) => _NearbyLockerCard(
-                name: item.name,
-                distance: item.distance,
-                availableSlots: item.slots,
-                onTap: () => Navigator.pushNamed(context, '/lockers'),
-              ))
-          .toList(),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.65),
-        borderRadius: BorderRadius.circular(9999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.50)),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x26FF7E5F), blurRadius: 32, offset: Offset(0, 8)),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          // Home — active
-          Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFF7E5F), Color(0xFFFEB47B)],
-              ),
-              shape: BoxShape.circle,
-            ),
-            child:
-                const Icon(Icons.home_rounded, color: Colors.white, size: 22),
-          ),
-          _navIcon(Icons.search_rounded),
-          Stack(
-            children: [
-              _navIcon(Icons.notifications_none_rounded),
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          _navIcon(Icons.qr_code_rounded),
-          GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/settings'),
-            child: _navIcon(Icons.person_outline_rounded),
-          ),
         ],
       ),
     );
   }
-
-  Widget _navIcon(IconData icon) {
-    return SizedBox(
-      width: 40,
-      height: 40,
-      child: Icon(icon, color: const Color(0xFF94A3B8), size: 22),
-    );
-  }
 }
 
-// ─── Data models ───────────────────────────────────────────────────────────────
+class _Section extends StatelessWidget {
+  final String title;
+  final Widget child;
+  final Widget? trailing;
 
-class _ActiveLockerData {
-  final String code, location, statusLabel, usageLabel, timeRemaining;
-  final Color statusDotColor, statusBgColor, statusTextColor, timeBgColor;
-  final double usagePercent;
-  final bool isGradientButton;
-
-  const _ActiveLockerData({
-    required this.code,
-    required this.location,
-    required this.statusLabel,
-    required this.statusDotColor,
-    required this.statusBgColor,
-    required this.statusTextColor,
-    required this.usagePercent,
-    required this.usageLabel,
-    required this.timeRemaining,
-    required this.timeBgColor,
-    required this.isGradientButton,
-  });
-}
-
-// ─── Active locker card ────────────────────────────────────────────────────────
-
-class _ActiveLockerCard extends StatelessWidget {
-  final _ActiveLockerData data;
-  const _ActiveLockerCard({required this.data});
+  const _Section({required this.title, required this.child, this.trailing});
 
   @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (trailing != null) trailing!,
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _ActiveLockerSection extends StatelessWidget {
+  final List<ActiveLocker> activeLockers;
+
+  const _ActiveLockerSection({required this.activeLockers});
+
+  @override
+  Widget build(BuildContext context) {
+    if (activeLockers.isEmpty) {
+      return const _EmptyCard(
+        icon: Icons.lock_outline_rounded,
+        title: 'Chưa có tủ đang dùng',
+        description: 'Các tủ đã thuê sẽ xuất hiện ở đây.',
+      );
+    }
+
+    return SizedBox(
+      height: 220,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: activeLockers.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (_, index) {
+          final locker = activeLockers[index];
+          return SizedBox(
+            width: 300,
+            child: _ActiveLockerCard(locker: locker),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ActiveLockerCard extends StatelessWidget {
+  final ActiveLocker locker;
+
+  const _ActiveLockerCard({required this.locker});
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = locker.status.toLowerCase() == 'active';
+
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: ShapeDecoration(
+      height: 220,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
         color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 1, color: Color(0x7FFFEDD5)),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        shadows: const [
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFFF1E8)),
+        boxShadow: const [
           BoxShadow(
-              color: Color(0x0C000000), blurRadius: 2, offset: Offset(0, 1)),
+            color: Color(0x0D000000),
+            blurRadius: 20,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Status + name + usage circle
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: data.statusBgColor,
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 4,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: data.statusDotColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        Text(
-                          data.statusLabel,
-                          style: TextStyle(
-                            color: data.statusTextColor,
-                            fontSize: 10,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    data.code,
-                    style: const TextStyle(
-                      color: Color(0xFF1E293B),
-                      fontSize: 18,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    data.location,
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 12,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              // Usage circle
-              SizedBox(
-                width: 56,
-                height: 56,
-                child: Stack(
-                  alignment: Alignment.center,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircularProgressIndicator(
-                      value: data.usagePercent,
-                      strokeWidth: 4.67,
-                      backgroundColor: const Color(0xFFFFEDD5),
-                      valueColor:
-                          const AlwaysStoppedAnimation(Color(0xFFFF7E5F)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? const Color(0xFFEFFAF3)
+                            : const Color(0xFFFFF7ED),
+                        borderRadius: BorderRadius.circular(9999),
+                      ),
+                      child: Text(
+                        locker.status.toUpperCase(),
+                        style: TextStyle(
+                          color: isActive
+                              ? const Color(0xFF16A34A)
+                              : const Color(0xFFEA580C),
+                          fontSize: 10,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: 10),
                     Text(
-                      data.usageLabel,
+                      locker.code,
                       style: const TextStyle(
-                        color: Color(0xFFFF7E5F),
-                        fontSize: 12,
+                        color: Color(0xFF0F172A),
+                        fontSize: 18,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      locker.location.isEmpty
+                          ? 'Cập nhật vị trí sau'
+                          : locker.location,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 12,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFFF7ED),
+                  border: Border.all(color: const Color(0xFFFFE4CC)),
+                ),
+                child: Center(
+                  child: Text(
+                    '${(locker.usagePercent * 100).toInt()}%',
+                    style: const TextStyle(
+                      color: Color(0xFFFB923C),
+                      fontSize: 12,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
-          // Time remaining
+          const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: data.timeBgColor,
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFFFFFBF2),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 8,
               children: [
                 const Icon(Icons.access_time_rounded,
-                    size: 16, color: Color(0xFFFF7E5F)),
+                    size: 16, color: Color(0xFFFB923C)),
+                const SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'THỜI GIAN CÒN LẠI',
+                    Text(
+                      'Còn lại',
                       style: TextStyle(
-                        color: Color(0xFF94A3B8),
+                        color: Colors.grey.shade500,
                         fontSize: 10,
                         fontFamily: 'Inter',
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.50,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.4,
                       ),
                     ),
                     Text(
-                      data.timeRemaining,
+                      locker.timeRemaining.isEmpty
+                          ? '--:--'
+                          : locker.timeRemaining,
                       style: const TextStyle(
-                        color: Color(0xFF334155),
+                        color: Color(0xFF1E293B),
                         fontSize: 14,
                         fontFamily: 'Inter',
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -663,47 +501,26 @@ class _ActiveLockerCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // Unlock button
-          GestureDetector(
-            onTap: () {},
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                gradient: data.isGradientButton
-                    ? const LinearGradient(
-                        colors: [Color(0xFFFF7E5F), Color(0xFFFEB47B)],
-                      )
-                    : null,
-                color: data.isGradientButton ? null : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: data.isGradientButton
-                    ? null
-                    : Border.all(color: const Color(0xFFFF7E5F)),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {},
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFFFB923C),
+                side: const BorderSide(color: Color(0xFFFB923C)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 8,
-                children: [
-                  Icon(
-                    Icons.lock_open_rounded,
-                    size: 16,
-                    color: data.isGradientButton
-                        ? Colors.white
-                        : const Color(0xFFFF7E5F),
-                  ),
-                  Text(
-                    'Mở khóa',
-                    style: TextStyle(
-                      color: data.isGradientButton
-                          ? Colors.white
-                          : const Color(0xFFFF7E5F),
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
+              icon: const Icon(Icons.lock_open_rounded, size: 18),
+              label: const Text(
+                'Mở khóa',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -713,160 +530,288 @@ class _ActiveLockerCard extends StatelessWidget {
   }
 }
 
-// ─── Nearby locker card ────────────────────────────────────────────────────────
+class _NearbyLockerList extends StatelessWidget {
+  final List<Locker> nearbyLockers;
 
-class _NearbyLockerCard extends StatelessWidget {
-  final String name, distance;
-  final int availableSlots;
-  final VoidCallback onTap;
-
-  const _NearbyLockerCard({
-    required this.name,
-    required this.distance,
-    required this.availableSlots,
-    required this.onTap,
-  });
+  const _NearbyLockerList({required this.nearbyLockers});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Colors.white),
-            borderRadius: BorderRadius.circular(16),
+    if (nearbyLockers.isEmpty) {
+      return const _EmptyCard(
+        icon: Icons.location_on_outlined,
+        title: 'Chưa có gợi ý tủ gần đây',
+        description: 'Các tủ khả dụng gần bạn sẽ hiển thị ở đây.',
+      );
+    }
+
+    return Column(
+      children: [
+        for (final locker in nearbyLockers) ...[
+          _NearbyLockerTile(locker: locker),
+          const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _NearbyLockerTile extends StatelessWidget {
+  final Locker locker;
+
+  const _NearbyLockerTile({required this.locker});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasLocation = locker.location.trim().isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
           ),
-          shadows: const [
-            BoxShadow(
-                color: Color(0x0C000000), blurRadius: 2, offset: Offset(0, 1)),
-          ],
-        ),
-        child: Row(
-          spacing: 16,
-          children: [
-            // Thumbnail
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(Icons.inbox_rounded,
-                      size: 32, color: Color(0xFFFF7E5F)),
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.40),
-                            Colors.transparent,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(14),
             ),
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 4,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      color: Color(0xFF1E293B),
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
-                    ),
+            child:
+                const Icon(Icons.storefront_rounded, color: Color(0xFFFB923C)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  locker.code,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
                   ),
-                  Row(
-                    spacing: 8,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFF7ED),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          spacing: 4,
-                          children: [
-                            const Icon(Icons.location_on,
-                                size: 10, color: Color(0xFFEA580C)),
-                            Text(
-                              distance,
-                              style: const TextStyle(
-                                color: Color(0xFFEA580C),
-                                fontSize: 10,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '$availableSlots ô trống',
-                          style: const TextStyle(
-                            color: Color(0xFF475569),
-                            fontSize: 10,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  hasLocation ? locker.location : 'Khu vực khả dụng gần bạn',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            // Arrow button
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFFFEDD5)),
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0x0C000000),
-                      blurRadius: 2,
-                      offset: Offset(0, 1)),
-                ],
-              ),
-              child: const Icon(
-                Icons.chevron_right_rounded,
-                color: Color(0xFFFF7E5F),
-                size: 20,
-              ),
-            ),
-          ],
-        ),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+        ],
       ),
     );
   }
 }
+
+class _EmptyCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _EmptyCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFFFF1E8)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: const Color(0xFFFB923C), size: 28),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF0F172A),
+              fontSize: 14,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            description,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 12,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BottomNavBar extends StatelessWidget {
+  const _BottomNavBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14FB923C),
+            blurRadius: 24,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _BottomNavItem(
+              icon: Icons.home_rounded, label: 'Trang chủ', active: true),
+          _BottomNavItem(icon: Icons.shopping_bag_outlined, label: 'Mua sắm'),
+          _BottomNavItem(
+              icon: Icons.receipt_long_outlined,
+              label: 'Đơn hàng',
+              routeName: '/orders'),
+          _BottomNavItem(
+              icon: Icons.person_outline_rounded, label: 'Tài khoản'),
+        ],
+      ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool active;
+  final String? routeName;
+
+  const _BottomNavItem({
+    required this.icon,
+    required this.label,
+    this.active = false,
+    this.routeName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final iconColor =
+        active ? const Color(0xFFFB923C) : const Color(0xFF94A3B8);
+    final labelColor =
+        active ? const Color(0xFFFB923C) : const Color(0xFF94A3B8);
+
+    final child = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFFFFF7ED) : Colors.transparent,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: iconColor, size: 22),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: labelColor,
+            fontSize: 10,
+            fontFamily: 'Inter',
+            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+
+    if (routeName == null) {
+      return child;
+    }
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pushNamed(routeName!),
+      child: child,
+    );
+  }
+}
+
+class _ServiceItem {
+  final String label;
+  final IconData icon;
+  final String? route;
+  final VoidCallback onTap;
+
+  const _ServiceItem({
+    required this.label,
+    required this.icon,
+    this.route,
+    required this.onTap,
+  });
+}
+
+final List<_ServiceItem> _services = [
+  const _ServiceItem(
+    label: 'Giao Nhận Đồ',
+    icon: Icons.local_shipping_outlined,
+    route: '/send-receive',
+    onTap: _noop,
+  ),
+  const _ServiceItem(
+    label: 'Đặt Đồ Ăn',
+    icon: Icons.restaurant_outlined,
+    route: '/food-order',
+    onTap: _noop,
+  ),
+  const _ServiceItem(
+    label: 'Gửi Nhận Đồ',
+    icon: Icons.move_to_inbox_outlined,
+    route: '/send-receive',
+    onTap: _noop,
+  ),
+  const _ServiceItem(
+    label: 'Nhập Mã Tủ',
+    icon: Icons.pin_outlined,
+    onTap: _noop,
+  ),
+];
+
+void _noop() {}

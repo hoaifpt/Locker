@@ -17,6 +17,7 @@ public static class DependencyInjection
         services.AddSingleton<PackageMapper>();
         services.AddSingleton<BookingMapper>();
         services.AddSingleton<PaymentMapper>();
+        services.AddSingleton<OrderMapper>();
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<AuthRequestValidator>();
@@ -29,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<BookingService>();
         services.AddScoped<PaymentService>();
         services.AddScoped<AdminService>();
+        services.AddScoped<OrderService>();
         return services;
     }
 }

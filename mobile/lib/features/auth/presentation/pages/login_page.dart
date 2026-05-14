@@ -82,7 +82,7 @@ class _LoginViewState extends State<_LoginView> {
                     ),
                     const SizedBox(height: 8),
                     Align(
-                      alignment: Alignment(-1.0, 0.0),
+                      alignment: const Alignment(-1.0, 0.0),
                       child: SizedBox(
                         height: 320, // Giảm chiều cao để không bị tràn
                         child: Image.asset(
@@ -161,21 +161,26 @@ class _LoginViewState extends State<_LoginView> {
                       },
                     ),
                     const SizedBox(height: 24),
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: const TextSpan(
-                        style: TextStyle(color: Color(0xFF6C6C6C)),
-                        children: [
-                          TextSpan(text: 'Chưa có tài khoản? '),
-                          TextSpan(
-                            text: 'Đăng ký ngay',
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Chưa có tài khoản? ',
+                          style: TextStyle(color: Color(0xFF6C6C6C)),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            context.pushNamed('/sign-up');
+                          },
+                          child: const Text(
+                            'Đăng ký ngay',
                             style: TextStyle(
                               color: Color(0xFFEB6C4B),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 18),
                   ],

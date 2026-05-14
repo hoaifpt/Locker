@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();

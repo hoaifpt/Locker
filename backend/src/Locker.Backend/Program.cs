@@ -1,16 +1,14 @@
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
-using FluentValidation;
 using FluentValidation.AspNetCore;
-using Locker.Backend;
 using Locker.Backend.Application;
 using Locker.Backend.Infrastructure;
 using Locker.Backend.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,22 +26,14 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Description = "JWT Authorization header using the Bearer scheme."
     });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
+            new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document),
+            new List<string>()
         }
     });
 });
-
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

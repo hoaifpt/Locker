@@ -290,14 +290,15 @@ public class AuthService
 
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)
     {
-        var accessToken = _jwtTokenService.CreateToken(user);
-        var refreshTokenValue = _jwtTokenService.CreateRefreshToken();
+        var roles = new List<string> { user.Role };
+        var accessToken = _jwtTokenService.GenerateAccessToken(user, roles);
+        var refreshTokenValue = _jwtTokenService.GenerateRefreshTokenJwt(user, roles);
 
         var refreshToken = new RefreshToken
         {
             UserId = user.Id,
             Token = refreshTokenValue,
-            ExpiresAt = _jwtTokenService.GetRefreshTokenExpiry(),
+            ExpiresAt = _jwtTokenService.GetRefreshTokenExpiryTime(),
             CreatedAt = DateTime.UtcNow,
             IsRevoked = false
         };
@@ -310,7 +311,7 @@ public class AuthService
             RefreshToken = refreshTokenValue,
             Username = user.Username,
             Role = user.Role,
-            ExpiresAt = _jwtTokenService.GetAccessTokenExpiry()
+            ExpiresAt = _jwtTokenService.GetAccessTokenExpiryTime()
         };
     }
 }

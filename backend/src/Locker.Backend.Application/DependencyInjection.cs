@@ -1,4 +1,5 @@
 using FluentValidation;
+using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Services;
 using Locker.Backend.Application.Validators;
@@ -23,7 +24,7 @@ public static class DependencyInjection
 
         // Services
         services.AddScoped<LockerService>();
-        services.AddScoped<AuthService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<UserService>();
         services.AddScoped<PackageService>();
         services.AddScoped<BookingService>();

@@ -1,5 +1,5 @@
+using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
-using Locker.Backend.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +12,9 @@ namespace Locker.Backend.Controllers;
 [EnableRateLimiting("auth")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthService _authService;
+    private readonly IAuthService _authService;
 
-    public AuthController(AuthService authService)
+    public AuthController(IAuthService authService)
     {
         _authService = authService;
     }
@@ -36,10 +36,7 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
-        // RegisterAsync returns null on duplicate username OR after successful registration
-        // We distinguish by trying to look up the user before calling register.
-        // To keep it simple, RegisterAsync now throws on duplicate and returns null on success.
-        // See the updated contract below.
+
         var (success, error) = await _authService.RegisterAsync(request, cancellationToken);
         if (!success)
             return Conflict(new { message = error });

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Locker.Backend.Application.Services;
 
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -126,7 +126,7 @@ public class AuthService
 
             PhoneNumber = request.PhoneNumber,
             PasswordHash = _passwordHasher.Hash(request.Password),
-            Role = "User",
+            Role = Domain.Enums.UserRole.User.ToString(),
             IsActive = false,          // inactive until email verified
             IsEmailVerified = false,
             EmailVerificationToken = verificationToken
@@ -134,7 +134,18 @@ public class AuthService
         };
 
         await _userRepository.CreateAsync(user, cancellationToken);
-        var response = await GenerateAuthResponseAsync(user, cancellationToken);
+        
+        try
+        {
+            var verificationLink = $"{_baseUrl}/api/auth/verify-email?token={user.EmailVerificationToken}";
+            await _emailService.SendVerificationEmailAsync(user.Email, user.FullName ?? user.Username, verificationLink, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send verification email to {Email} during registration.", user.Email);
+            // We don't fail the whole registration, but the user will need to use the "resend" functionality.
+        }
+
         return (true, null);
     }
 

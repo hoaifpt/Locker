@@ -75,4 +75,29 @@ public class PaymentService
         await _paymentRepository.UpdateAsync(payment, cancellationToken);
         return true;
     }
+
+    public async Task<PaymentWebhookResult> ProcessWebhookAsync(PaymentWebhookRequest request, CancellationToken cancellationToken)
+    {
+        var payment = await _paymentRepository.GetByIdAsync(request.PaymentId, cancellationToken);
+        if (payment == null) return PaymentWebhookResult.NotFound;
+
+        if (payment.Status == PaymentStatus.Completed)
+        {
+            return PaymentWebhookResult.Ignored;
+        }
+
+        payment.TransactionId = request.TransactionId;
+        payment.PaidAt = DateTime.UtcNow;
+        payment.Status = request.IsSuccess ? PaymentStatus.Completed : PaymentStatus.Failed;
+
+        await _paymentRepository.UpdateAsync(payment, cancellationToken);
+        return PaymentWebhookResult.Updated;
+    }
+}
+
+public enum PaymentWebhookResult
+{
+    Updated,
+    NotFound,
+    Ignored
 }

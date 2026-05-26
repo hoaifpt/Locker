@@ -39,7 +39,11 @@ public static class ApiEndpoints
         public const string Update = $"{Base}/{{id}}";
         public const string Delete = $"{Base}/{{id}}";
         public const string GetAvailable = $"{Base}/available";
+        public const string GetMap = $"{Base}/map";
+        public const string Open = $"{Base}/{{id}}/open";
+        public const string UpdateSettings = $"{Base}/{{id}}/settings";
         public const string UpdateSlotStatus = $"{Base}/{{id}}/slots/{{slotIndex}}/status";
+        public const string RecordOpenEvent = $"{Base}/{{id}}/slots/{{slotIndex}}/open-event";
     }
 
     public static class Bookings
@@ -88,6 +92,16 @@ public static class ApiEndpoints
         public const string GetMy = $"{Base}/my";
         public const string Create = Base;
         public const string Complete = $"{Base}/{{id}}/complete";
+        public const string Webhook = $"{Base}/webhook";
+    }
+
+    public static class Notifications
+    {
+        private const string Base = $"{ApiBase}/notifications";
+        public const string GetMy = $"{Base}/my";
+        public const string MarkAsRead = $"{Base}/{{id}}/mark-as-read";
+        public const string MarkAllAsRead = $"{Base}/mark-all-as-read";
+        public const string RegisterDevice = $"{Base}/register-device";
     }
 
     public static class Admin

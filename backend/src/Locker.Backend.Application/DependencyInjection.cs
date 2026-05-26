@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<PaymentService>();
         services.AddScoped<AdminService>();
         services.AddScoped<OrderService>();
+        services.AddScoped<NotificationService>();
         return services;
     }
 }

@@ -9,7 +9,9 @@ public class LockerSlotMapper : IMapper<LockerSlot, LockerSlotDto>
     public LockerSlotDto Map(LockerSlot source) => new()
     {
         Index = source.Index,
-        Status = source.Status
+        Status = source.Status,
+        Size = source.Size,
+        SensorState = source.SensorState
     };
 }
 
@@ -29,6 +31,8 @@ public class LockerMapper : IMapper<LockerEntity, LockerDto>
         Location = source.Location,
         Latitude = source.Latitude,
         Longitude = source.Longitude,
+        IsAutoLockEnabled = source.IsAutoLockEnabled,
+        IsIntrusionAlertEnabled = source.IsIntrusionAlertEnabled,
         Slots = source.Slots.Select(_slotMapper.Map).ToList()
     };
 }

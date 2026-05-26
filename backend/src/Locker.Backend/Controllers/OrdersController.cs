@@ -218,13 +218,19 @@ public class OrdersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> LinkPayment(
         string id,
-        [FromBody] dynamic paymentData,
+        [FromBody] LinkPaymentRequest request,
         CancellationToken cancellationToken)
     {
-        // TODO: Implement payment linking logic
-        return Ok(new { message = "Payment linked" });
+        var updated = await _orderService.LinkPaymentAsync(id, request.PaymentId, cancellationToken);
+        if (!updated) return NotFound();
+        return NoContent();
     }
 
     private string? GetUserId()
         => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+}
+
+public class LinkPaymentRequest
+{
+    public string PaymentId { get; set; } = string.Empty;
 }

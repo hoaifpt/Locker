@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Application.Services;
 using Locker.Backend.Domain.Enums;
@@ -45,6 +46,14 @@ public class LockersController : ControllerBase
         return Ok(items);
     }
 
+    [HttpGet("map")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetMap(CancellationToken cancellationToken)
+    {
+        var items = await _lockerService.GetMapAsync(cancellationToken);
+        return Ok(items);
+    }
+
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateLockerRequest request, CancellationToken cancellationToken)
@@ -79,12 +88,53 @@ public class LockersController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id}/open")]
+    public async Task<IActionResult> Open(string id, [FromBody] OpenLockerRequest request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        var isPrivileged = User.IsInRole("Admin") || User.IsInRole("Shipper");
+
+        var result = await _lockerService.OpenSlotAsync(
+            id,
+            request.SlotIndex,
+            userId,
+            isPrivileged,
+            cancellationToken);
+
+        return result switch
+        {
+            OpenLockerResult.Success => NoContent(),
+            OpenLockerResult.Forbidden => Forbid(),
+            _ => NotFound()
+        };
+    }
+
+    [HttpPatch("{id}/settings")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateSettings(string id, [FromBody] UpdateLockerSettingsRequest request, CancellationToken cancellationToken)
+    {
+        var updated = await _lockerService.UpdateSettingsAsync(id, request, cancellationToken);
+        if (!updated) return NotFound();
+        var locker = await _lockerService.GetByIdAsync(id, cancellationToken);
+        return Ok(locker);
+    }
+
     /// <summary>Called by firmware/ESP32 to report slot status change.</summary>
     [HttpPost("{id}/slots/{slotIndex}/status")]
     [Authorize(Roles = "Admin,Shipper")]
     public async Task<IActionResult> UpdateSlotStatus(string id, int slotIndex, [FromBody] UpdateSlotStatusRequest request, CancellationToken cancellationToken)
     {
         var updated = await _lockerService.UpdateSlotStatusAsync(id, slotIndex, request.Status, cancellationToken);
+        if (!updated) return NotFound();
+        return NoContent();
+    }
+
+    /// <summary>Called by firmware/ESP32 to report slot open events.</summary>
+    [HttpPost("{id}/slots/{slotIndex}/open-event")]
+    [Authorize(Roles = "Admin,Shipper")]
+    public async Task<IActionResult> RecordOpenEvent(string id, int slotIndex, [FromBody] LockerOpenEventRequest request, CancellationToken cancellationToken)
+    {
+        var updated = await _lockerService.RecordOpenEventAsync(id, slotIndex, request, cancellationToken);
         if (!updated) return NotFound();
         return NoContent();
     }

@@ -63,7 +63,14 @@ class HomeScreen extends StatelessWidget {
             return CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
-                  child: _HomeHeader(onNotificationsTap: () {}),
+                  child: _HomeHeader(
+                      onProfileTap: () {
+                        Navigator.pushNamed(context, '/personal-info');
+                      },
+                    onNotificationsTap: () {
+                      Navigator.pushNamed(context, '/notifications');
+                    },
+                  ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
@@ -152,9 +159,13 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _HomeHeader extends StatelessWidget {
+  final VoidCallback onProfileTap;
   final VoidCallback onNotificationsTap;
 
-  const _HomeHeader({required this.onNotificationsTap});
+  const _HomeHeader({
+    required this.onProfileTap,
+    required this.onNotificationsTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -173,27 +184,30 @@ class _HomeHeader extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(9999),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x0D000000),
-                        blurRadius: 16,
-                        offset: Offset(0, 4),
+                GestureDetector(
+                  onTap: onProfileTap,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(9999),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x0D000000),
+                          blurRadius: 16,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
+                      'assets/ebox_logo.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.person,
+                        color: Color(0xFFFB923C),
                       ),
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Image.asset(
-                    'assets/ebox_logo.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.person,
-                      color: Color(0xFFFB923C),
                     ),
                   ),
                 ),
@@ -711,7 +725,9 @@ class _BottomNavBar extends StatelessWidget {
               label: 'Đơn hàng',
               routeName: '/orders'),
           _BottomNavItem(
-              icon: Icons.person_outline_rounded, label: 'Tài khoản'),
+              icon: Icons.person_outline_rounded,
+              label: 'Tài khoản',
+              routeName: '/profile'),
         ],
       ),
     );
@@ -792,7 +808,7 @@ final List<_ServiceItem> _services = [
   const _ServiceItem(
     label: 'Giao Nhận Đồ',
     icon: Icons.local_shipping_outlined,
-    route: '/send-receive',
+    route: '/delivery',
     onTap: _noop,
   ),
   const _ServiceItem(

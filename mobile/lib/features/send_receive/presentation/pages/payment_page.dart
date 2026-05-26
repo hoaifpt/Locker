@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../payment_failed/domain/entities/payment_failed_info.dart';
 import '../../../payment_success/domain/entities/payment_success_info.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -377,6 +378,24 @@ class _PaymentPageState extends State<PaymentPage> {
                 widget.orderData['lockerCode'] as String? ?? 'Locker A-102';
             final transactionId =
                 'TXN_${DateTime.now().millisecondsSinceEpoch}_${selectedPaymentMethod.toUpperCase()}';
+            final shouldFail = widget.orderData['forcePaymentFailed'] == true;
+
+            if (shouldFail) {
+              final paymentFailedRequest = PaymentFailedRequest(
+                amount: totalPrice,
+                paymentMethod: selectedPaymentMethod,
+                lockerHub: lockerCode,
+                reason: widget.orderData['failureReason'] as String? ??
+                    'Không thể xác thực giao dịch',
+                referenceCode: transactionId,
+              );
+
+              Navigator.of(context).pushNamed(
+                '/payment-failed',
+                arguments: paymentFailedRequest,
+              );
+              return;
+            }
 
             final paymentSuccessRequest = PaymentSuccessRequest(
               paidAmount: totalPrice,

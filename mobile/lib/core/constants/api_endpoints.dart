@@ -3,7 +3,7 @@
 library;
 
 class ApiEndpoints {
-  static const String apiBase = '/api';
+  static const String apiBase = '';
 
   // Auth endpoints
   static const String login = '$apiBase/auth/login';
@@ -74,6 +74,13 @@ class ApiEndpoints {
 
   // Health endpoint
   static const String healthCheck = '$apiBase/health';
+
+  // Notifications endpoints
+  static const String notificationsGetMy = '$apiBase/notifications/my';
+  static String notificationsMarkAsRead(String id) =>
+      '$apiBase/notifications/$id/mark-as-read';
+  static const String notificationsMarkAllAsRead =
+      '$apiBase/notifications/mark-all-as-read';
 
   /// Build URL with query parameters
   /// Example: buildUrl(ApiEndpoints.bookingsGetMy, {'status': 'Active'})

@@ -1,5 +1,6 @@
-import '../entities/profile_info.dart';
+import '../entities/user_profile.dart';
 
 abstract class IProfileRepository {
-  Future<ProfileInfo> getProfile();
+  Future<UserProfile> getUserProfile();
+  Future<void> logout();
 }

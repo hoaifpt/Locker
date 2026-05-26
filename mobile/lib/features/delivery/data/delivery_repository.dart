@@ -37,12 +37,23 @@ class DeliveryRepository implements IDeliveryRepository {
   @override
   Future<String> createSendRequest(SendDeliveryRequest request) async {
     await Future<void>.delayed(const Duration(milliseconds: 120));
+    // Demo: if trackingCode contains 'OVERDUE' treat as an overdue locker case
+    if ((request.trackingCode ?? '').toLowerCase().contains('overdue')) {
+      // return a special token that UI listens for to show overdue page
+      return 'LOCKER_OVERDUE:${request.packageSizeId}';
+    }
+
     return 'Đã tạo yêu cầu gửi hàng cho size ${request.packageSizeId}';
   }
 
   @override
   Future<String> submitReceiveCode(String code) async {
     await Future<void>.delayed(const Duration(milliseconds: 120));
+    // Demo: if code contains 'OVERDUE' simulate server response indicating overdue
+    if (code.toLowerCase().contains('overdue')) {
+      return 'LOCKER_OVERDUE:A-102';
+    }
+
     return 'Đã xác nhận mã nhận hàng: $code';
   }
 }

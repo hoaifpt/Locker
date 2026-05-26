@@ -9,17 +9,25 @@ import '../../features/food_order/presentation/pages/food_cart_payment_page.dart
 import '../../features/menu/presentation/pages/menu_page.dart';
 import '../../features/payment_success/domain/entities/payment_success_info.dart';
 import '../../features/payment_success/presentation/pages/payment_success_page.dart';
+import '../../features/payment_failed/domain/entities/payment_failed_info.dart';
+import '../../features/payment_failed/presentation/pages/payment_failed_page.dart';
 import '../../features/photo_confirmation/presentation/pages/photo_confirmation_page.dart';
 import '../../features/send_success/domain/entities/send_success_info.dart';
 import '../../features/send_success/presentation/pages/send_success_page.dart';
 import '../../features/send_receive/presentation/pages/send_receive_page.dart';
 import '../../features/send_receive/presentation/pages/payment_page.dart';
+import '../../features/delivery/presentation/pages/send_receive_page.dart'
+    as delivery;
+import '../../features/wallet/presentation/pages/wallet_page.dart';
 import '../../features/locker/presentation/locker_screen.dart';
 import '../../features/locker_detail/presentation/pages/locker_detail_page.dart';
 import '../../features/locker_map/presentation/pages/locker_map_page.dart';
 import '../../features/qr_scanner/presentation/pages/qr_scanner_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/notifications/presentation/pages/notification_page.dart';
+import '../../features/security_privacy/presentation/pages/security_privacy_page.dart';
+import '../../features/personal_info/presentation/pages/personal_info_page.dart';
 
 class AppRouter {
   static const initialRoute = '/login';
@@ -29,8 +37,10 @@ class AppRouter {
         '/sign-up': (context) => const SignUpPage(),
         '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfilePage(),
+        '/wallet': (context) => const WalletPage(),
         '/orders': (context) => const OrdersPage(),
         '/send-receive': (context) => const SendReceivePage(),
+        '/delivery': (context) => const delivery.SendReceivePage(),
         '/payment': (context) => PaymentPage(
               orderData: (ModalRoute.of(context)?.settings.arguments
                       as Map<String, dynamic>?) ??
@@ -44,6 +54,10 @@ class AppRouter {
         '/payment-success': (context) => PaymentSuccessPage(
               request: ModalRoute.of(context)?.settings.arguments
                   as PaymentSuccessRequest?,
+            ),
+        '/payment-failed': (context) => PaymentFailedPage(
+              request: ModalRoute.of(context)?.settings.arguments
+                  as PaymentFailedRequest?,
             ),
         '/send-success': (context) => SendSuccessPage(
               request: ModalRoute.of(context)?.settings.arguments
@@ -62,5 +76,8 @@ class AppRouter {
             ),
         '/qr-scanner': (context) => const QrScannerPage(),
         '/settings': (context) => const SettingsPage(),
+        '/notifications': (context) => const NotificationPage(),
+        '/security-privacy': (context) => const SecurityPrivacyPage(),
+        '/personal-info': (context) => const PersonalInfoPage(),
       };
 }

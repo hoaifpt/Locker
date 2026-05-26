@@ -1,4 +1,4 @@
-import '../entities/profile_info.dart';
+import '../entities/user_profile.dart';
 import '../repositories/i_profile_repository.dart';
 
 class GetProfileUsecase {
@@ -6,5 +6,5 @@ class GetProfileUsecase {
 
   GetProfileUsecase({required this.repository});
 
-  Future<ProfileInfo> call() => repository.getProfile();
+  Future<UserProfile> call() => repository.getUserProfile();
 }

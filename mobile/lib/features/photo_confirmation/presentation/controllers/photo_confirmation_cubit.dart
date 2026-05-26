@@ -47,6 +47,7 @@ class PhotoConfirmationCubit extends Cubit<PhotoConfirmationState> {
     final sendReq = SendSuccessRequest(
       lockerHub: lockerHub,
       pin: '882109',
+      orderCode: lockerHub != null ? 'EBOX-$lockerHub' : null,
       amount: null,
     );
 

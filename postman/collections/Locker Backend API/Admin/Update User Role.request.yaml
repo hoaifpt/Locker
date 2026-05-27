@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/admin/users/:id/role"
+method: PUT
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "role": "admin"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 2000

@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{base_url}}/api/lockers/:id/slots/:slotIndex/status"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+  slotIndex: "0"
+body:
+  type: json
+  content: |-
+    {
+      "status": "available"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 7000

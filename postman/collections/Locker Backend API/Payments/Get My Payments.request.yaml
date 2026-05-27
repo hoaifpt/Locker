@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{base_url}}/api/payments/my"
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 3000

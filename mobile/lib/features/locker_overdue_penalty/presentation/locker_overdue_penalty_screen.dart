@@ -56,8 +56,8 @@ class LockerOverduePenaltyScreen extends StatelessWidget {
           Container(
             width: 56,
             height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0x19F27B50),
+            decoration: const BoxDecoration(
+              color: Color(0x19F27B50),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.warning_amber_rounded,

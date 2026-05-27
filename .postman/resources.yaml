@@ -2,8 +2,16 @@
 workspace:
   id: 0466c63b-923e-4a5e-a4fd-ffcb4a579e2f
 
-# All resources in the `postman/` folder are automatically registered in Local View.
-# Point to additional files outside the `postman/` folder to register them individually. Example:
-#localResources:
-#  collections:
-#    - ../tests/E2E Test Collection/
+localResources:
+  docs:
+    - ..\web\README.md
+    - ..\mobile\ios\Runner\Assets.xcassets\LaunchImage.imageset\README.md
+    - ..\web\TEST_ACCOUNTS.md
+    - ..\firmware\README.md
+    - ..\mobile\README.md
+    - ..\firmware\BUILD_INSTRUCTIONS.md
+    - ..\docs\MOBILE_API_MAPPING_AND_MISSING_ENDPOINTS.md
+    - ..\backend\README.md
+    - ..\backend\SEED_DATA_GUIDE.md
+    - ..\README.md
+G_APIS.md

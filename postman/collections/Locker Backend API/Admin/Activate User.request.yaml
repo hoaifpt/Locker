@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{base_url}}/api/admin/users/:id/activate"
+method: PUT
+headers:
+  Authorization: Bearer {{token}}
+pathVariables:
+  id: "1"
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 4000

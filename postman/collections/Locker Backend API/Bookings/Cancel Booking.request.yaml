@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{base_url}}/api/bookings/:id/cancel"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+pathVariables:
+  id: "1"
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 7000

@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/orders/:id/extend"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "newEndTime": "2025-01-01T14:00:00Z"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 9000

@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{base_url}}/api/packages/:id"
+method: PUT
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "name": "Medium Package",
+      "price": 20000,
+      "durationHours": 4
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 4000

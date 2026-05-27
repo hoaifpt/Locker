@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/payments"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "orderId": 1,
+      "amount": 10000,
+      "paymentMethod": "wallet"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 4000

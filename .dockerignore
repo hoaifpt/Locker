@@ -1,0 +1,20 @@
+**/bin/
+**/obj/
+
+# Loại bỏ các thư mục của các phần khác trong monorepo
+mobile/
+web/
+firmware/
+infra/
+docs/
+
+# Bỏ qua các file và thư mục của Git
+.git/
+.gitignore
+.gitattributes
+
+# Bỏ qua các file cấu hình của IDE/editor
+.vs/
+.vscode/
+*.suo
+*.user

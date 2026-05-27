@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/bookings/:id/set-pin"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "pin": "123456"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 4000

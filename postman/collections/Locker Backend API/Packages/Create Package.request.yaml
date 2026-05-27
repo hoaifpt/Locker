@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/packages"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Small Package",
+      "price": 10000,
+      "durationHours": 2
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 3000

@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/lockers"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Locker A",
+      "location": "Building A",
+      "slotCount": 10
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 4000

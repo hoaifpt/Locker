@@ -112,12 +112,12 @@ class _SecurityPrivacyView extends StatelessWidget {
                           children: [
                             const SizedBox(height: 8),
                             const SizedBox(height: 24),
-                            SecurityPrivacySectionHeader(
+                            const SecurityPrivacySectionHeader(
                                 title: 'TRUY CẬP NHANH'),
                             const SizedBox(height: 8),
-                            _QuickAccessGrid(),
+                            const _QuickAccessGrid(),
                             const SizedBox(height: 24),
-                            SecurityPrivacySectionHeader(
+                            const SecurityPrivacySectionHeader(
                                 title: 'CÀI ĐẶT BẢO VỆ'),
                             const SizedBox(height: 12),
                             Container(
@@ -183,7 +183,7 @@ class _SecurityPrivacyView extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            SecurityPrivacySectionHeader(
+                            const SecurityPrivacySectionHeader(
                                 title: 'QUẢN LÝ TÀI KHOẢN'),
                             const SizedBox(height: 12),
                             Container(
@@ -262,8 +262,8 @@ class _QuickAccessGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
+    return const Column(
+      children: [
         _QuickAccessCard(
           icon: Icons.fingerprint_rounded,
           title: 'Xác thực sinh trắc',

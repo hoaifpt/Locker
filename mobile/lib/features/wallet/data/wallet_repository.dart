@@ -1,5 +1,4 @@
 import '../domain/entities/wallet_overview.dart';
-import '../domain/entities/wallet_transaction.dart';
 import '../domain/repositories/i_wallet_repository.dart';
 import 'models/wallet_overview_model.dart';
 import 'models/wallet_transaction_model.dart';
@@ -9,11 +8,11 @@ class WalletRepository implements IWalletRepository {
   Future<WalletOverview> getWalletOverview() async {
     await Future<void>.delayed(const Duration(milliseconds: 250));
 
-    final overview = WalletOverviewModel(
+    const overview = WalletOverviewModel(
       balance: 2450000,
       monthlyChange: -120000,
       points: 1250,
-      transactions: const [
+      transactions: [
         WalletTransactionModel(
           id: 'txn-001',
           title: 'Thanh toán tủ đồ EB-102',

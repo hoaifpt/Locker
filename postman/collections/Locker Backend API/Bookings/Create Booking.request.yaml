@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{base_url}}/api/bookings"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "lockerId": 1,
+      "slotIndex": 0,
+      "startTime": "2025-01-01T10:00:00Z",
+      "endTime": "2025-01-01T12:00:00Z"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 3000

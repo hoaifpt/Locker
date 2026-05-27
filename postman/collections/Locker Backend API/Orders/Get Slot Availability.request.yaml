@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{base_url}}/api/orders/availability/slots?lockerId=1&startTime=2025-01-01T10:00:00Z&endTime=2025-01-01T12:00:00Z"
+method: GET
+queryParams:
+  lockerId: "1"
+  startTime: 2025-01-01T10:00:00Z
+  endTime: 2025-01-01T12:00:00Z
+order: 10000

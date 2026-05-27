@@ -131,7 +131,7 @@ class _PersonalInfoView extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                                .toList(growable: false),
+                                ,
                             const SizedBox(height: 12),
                             const PersonalInfoSectionHeader(
                                 title: 'QUẢN LÝ TÀI KHOẢN'),
@@ -148,7 +148,7 @@ class _PersonalInfoView extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                                .toList(growable: false),
+                                ,
                             const SizedBox(height: 12),
                             Container(
                               width: double.infinity,

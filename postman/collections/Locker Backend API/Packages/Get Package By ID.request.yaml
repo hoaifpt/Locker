@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{base_url}}/api/packages/:id"
+method: GET
+pathVariables:
+  id: "1"
+order: 2000

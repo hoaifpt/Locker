@@ -12,4 +12,6 @@ public class MongoSettings
     public string OrdersCollection { get; set; } = "orders";
     public string PaymentsCollection { get; set; } = "payments";
     public string OtpCodesCollection { get; set; } = "otp_codes";
+    public string NotificationsCollection { get; set; } = "notifications";
+    public string DeviceTokensCollection { get; set; } = "device_tokens";
 }

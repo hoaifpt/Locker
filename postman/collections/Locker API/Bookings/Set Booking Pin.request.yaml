@@ -1,0 +1,14 @@
+$kind: http-request
+name: Set Booking Pin
+method: POST
+url: '{{baseUrl}}/api/bookings/{{bookingId}}/set-pin'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "pin": "1234"
+    }

@@ -25,3 +25,10 @@ public class CompletePaymentRequest
 {
     public string TransactionId { get; set; } = string.Empty;
 }
+
+public class PaymentWebhookRequest
+{
+    public string PaymentId { get; set; } = string.Empty;
+    public string TransactionId { get; set; } = string.Empty;
+    public bool IsSuccess { get; set; }
+}

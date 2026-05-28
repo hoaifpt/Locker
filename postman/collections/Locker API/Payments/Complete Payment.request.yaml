@@ -1,0 +1,14 @@
+$kind: http-request
+name: Complete Payment
+method: POST
+url: '{{baseUrl}}/api/payments/{{paymentId}}/complete'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "transactionId": "TXN123456"
+    }

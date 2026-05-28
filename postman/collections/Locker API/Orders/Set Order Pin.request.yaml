@@ -1,0 +1,14 @@
+$kind: http-request
+name: Set Order Pin
+method: POST
+url: '{{baseUrl}}/api/orders/{{orderId}}/set-pin'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "pin": "1234"
+    }

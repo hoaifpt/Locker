@@ -1,0 +1,20 @@
+$kind: collection
+name: Locker API
+auth:
+  - id: fc27395b-08e0-4b91-88ca-b258fdf04c41
+    type: bearer
+    name: Bearer Token
+    credentials:
+      token: ""
+variables:
+  baseUrl: http://localhost:5000
+  accessToken: ""
+  refreshToken: ""
+  lockerId: ""
+  bookingId: ""
+  orderId: ""
+  packageId: ""
+  paymentId: ""
+  notificationId: ""
+  userId: ""
+  slotIndex: "1"

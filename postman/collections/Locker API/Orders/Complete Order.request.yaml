@@ -1,0 +1,14 @@
+$kind: http-request
+name: Complete Order
+method: POST
+url: '{{baseUrl}}/api/orders/{{orderId}}/complete'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "notes": null
+    }

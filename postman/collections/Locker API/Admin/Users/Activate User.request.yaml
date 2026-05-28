@@ -1,0 +1,5 @@
+$kind: http-request
+name: Activate User
+method: POST
+url: '{{baseUrl}}/api/admin/users/{{userId}}/activate'
+order: 4000

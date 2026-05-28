@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Available Lockers
+method: GET
+url: '{{baseUrl}}/api/lockers/available'
+order: 6000

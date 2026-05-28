@@ -66,6 +66,19 @@ public class PaymentsController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("webhook")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Webhook([FromBody] PaymentWebhookRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _paymentService.ProcessWebhookAsync(request, cancellationToken);
+        return result switch
+        {
+            PaymentWebhookResult.Updated => Ok(new { message = "Payment updated" }),
+            PaymentWebhookResult.Ignored => Ok(new { message = "Payment already completed" }),
+            _ => NotFound()
+        };
+    }
+
     private string? GetUserId()
         => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
 }

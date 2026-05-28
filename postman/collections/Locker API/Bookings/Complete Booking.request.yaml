@@ -1,0 +1,5 @@
+$kind: http-request
+name: Complete Booking
+method: POST
+url: '{{baseUrl}}/api/bookings/{{bookingId}}/complete'
+order: 6000

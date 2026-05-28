@@ -1,0 +1,17 @@
+$kind: http-request
+name: Create Package
+method: POST
+url: '{{baseUrl}}/api/packages'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Small Package",
+      "size": "S",
+      "description": "Small locker slot",
+      "pricePerHour": 5000
+    }

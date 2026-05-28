@@ -79,6 +79,29 @@ public class OrderService
 
     #endregion
 
+    #region Payment Link
+
+    public async Task<bool> LinkPaymentAsync(string orderId, string paymentId, CancellationToken cancellationToken)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        if (order == null) return false;
+
+        var payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken);
+        if (payment == null) return false;
+
+        order.PaymentId = payment.Id;
+        if (payment.Status == PaymentStatus.Completed)
+        {
+            order.Status = OrderStatus.Paid;
+            order.PaidAt = payment.PaidAt ?? DateTime.UtcNow;
+        }
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+        return true;
+    }
+
+    #endregion
+
     #region Create & Reserve
 
     /// <summary>

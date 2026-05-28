@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Locker Map
+method: GET
+url: '{{baseUrl}}/api/lockers/map'
+order: 7000

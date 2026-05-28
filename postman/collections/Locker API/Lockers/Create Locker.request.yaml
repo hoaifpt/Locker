@@ -1,0 +1,18 @@
+$kind: http-request
+name: Create Locker
+method: POST
+url: '{{baseUrl}}/api/lockers'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Locker A1",
+      "location": "Building A, Floor 1",
+      "latitude": 10.7769,
+      "longitude": 106.7009,
+      "slots": 12
+    }

@@ -124,12 +124,18 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+app.UseStaticFiles();
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Locker API v1");
     options.RoutePrefix = "swagger";
+    options.InjectStylesheet("/swagger-ui/cyberpunk.css");
+    options.DocumentTitle = "Locker API - Cyberpunk";
 });
+
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseCors("AllowAll");
 

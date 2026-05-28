@@ -1,0 +1,18 @@
+$kind: http-request
+name: Update Locker
+method: PUT
+url: '{{baseUrl}}/api/lockers/{{lockerId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Locker A1 Updated",
+      "location": "Building A, Floor 1",
+      "latitude": 10.7769,
+      "longitude": 106.7009,
+      "slots": 12
+    }

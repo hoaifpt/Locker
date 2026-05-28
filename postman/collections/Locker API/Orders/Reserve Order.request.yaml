@@ -1,0 +1,21 @@
+$kind: http-request
+name: Reserve Order
+method: POST
+url: '{{baseUrl}}/api/orders/reserve'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "lockerId": "{{lockerId}}",
+      "slotIndex": 1,
+      "packageId": "{{packageId}}",
+      "mobileNumber": "0901234567",
+      "checkInTime": "2026-01-01T08:00:00Z",
+      "durationHours": 2,
+      "couponCode": null,
+      "notes": null
+    }

@@ -1,0 +1,14 @@
+$kind: http-request
+name: Extend Order
+method: POST
+url: '{{baseUrl}}/api/orders/{{orderId}}/extend'
+order: 9000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "additionalHours": 1
+    }

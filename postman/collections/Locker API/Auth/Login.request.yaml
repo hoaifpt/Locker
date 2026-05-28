@@ -1,0 +1,39 @@
+$kind: http-request
+name: Login
+method: POST
+url: '{{baseUrl}}/api/auth/login'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "identifier": "user@example.com",
+      "password": "password123"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const res = pm.response.json();
+
+      if (pm.response.code === 200) {
+        if (res.accessToken) {
+          pm.environment.set("accessToken", res.accessToken);
+          console.log("accessToken saved.");
+        }
+        if (res.refreshToken) {
+          pm.environment.set("refreshToken", res.refreshToken);
+          console.log("refreshToken saved.");
+        }
+        pm.test("Login successful", () => {
+          pm.response.to.have.status(200);
+        });
+      } else {
+        pm.test("Login failed - check credentials", () => {
+          pm.response.to.have.status(200);
+        });
+        console.error("Login failed:", res);
+      }

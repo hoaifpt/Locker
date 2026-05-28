@@ -1,0 +1,5 @@
+$kind: http-request
+name: Cancel Booking
+method: POST
+url: '{{baseUrl}}/api/bookings/{{bookingId}}/cancel'
+order: 7000

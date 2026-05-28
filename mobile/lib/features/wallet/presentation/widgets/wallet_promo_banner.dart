@@ -39,12 +39,12 @@ class WalletPromoBanner extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(24),
+          const Padding(
+            padding: EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Text(
                   'ƯU ĐÃI ĐẶC BIỆT',
                   style: TextStyle(

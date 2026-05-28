@@ -1,0 +1,5 @@
+$kind: http-request
+name: Deactivate User
+method: POST
+url: '{{baseUrl}}/api/admin/users/{{userId}}/deactivate'
+order: 3000

@@ -1,0 +1,15 @@
+$kind: http-request
+name: Update Locker Settings
+method: PUT
+url: '{{baseUrl}}/api/lockers/{{lockerId}}/settings'
+order: 9000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "isAutoLockEnabled": true,
+      "isIntrusionAlertEnabled": true
+    }

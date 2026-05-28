@@ -1,0 +1,17 @@
+$kind: http-request
+name: Create Booking
+method: POST
+url: '{{baseUrl}}/api/bookings'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "lockerId": "{{lockerId}}",
+      "slotIndex": 1,
+      "packageId": "{{packageId}}",
+      "mobileNumber": "0901234567"
+    }

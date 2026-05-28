@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Package
+method: DELETE
+url: '{{baseUrl}}/api/packages/{{packageId}}'
+order: 5000

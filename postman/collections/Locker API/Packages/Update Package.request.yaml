@@ -1,0 +1,18 @@
+$kind: http-request
+name: Update Package
+method: PUT
+url: '{{baseUrl}}/api/packages/{{packageId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Small Package",
+      "size": "S",
+      "description": "Small locker slot",
+      "pricePerHour": 5000,
+      "isActive": true
+    }

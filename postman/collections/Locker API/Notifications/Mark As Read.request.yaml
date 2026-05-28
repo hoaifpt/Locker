@@ -1,0 +1,5 @@
+$kind: http-request
+name: Mark As Read
+method: POST
+url: '{{baseUrl}}/api/notifications/{{notificationId}}/mark-as-read'
+order: 2000

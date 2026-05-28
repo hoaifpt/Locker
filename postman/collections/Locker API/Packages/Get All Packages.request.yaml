@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get All Packages
+method: GET
+url: '{{baseUrl}}/api/packages'
+order: 1000

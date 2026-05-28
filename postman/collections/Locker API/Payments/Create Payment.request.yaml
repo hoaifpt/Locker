@@ -1,0 +1,15 @@
+$kind: http-request
+name: Create Payment
+method: POST
+url: '{{baseUrl}}/api/payments'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "bookingId": "{{bookingId}}",
+      "method": "VNPay"
+    }

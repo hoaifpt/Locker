@@ -9,7 +9,7 @@ class WalletRepository implements IWalletRepository {
   Future<WalletOverview> getWalletOverview() async {
     await Future<void>.delayed(const Duration(milliseconds: 250));
 
-    final overview = WalletOverviewModel(
+    const overview = WalletOverviewModel(
       balance: 2450000,
       monthlyChange: -120000,
       points: 1250,

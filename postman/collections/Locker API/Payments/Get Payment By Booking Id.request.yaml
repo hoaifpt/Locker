@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Payment By Booking Id
+method: GET
+url: '{{baseUrl}}/api/payments/booking/{{bookingId}}'
+order: 2000

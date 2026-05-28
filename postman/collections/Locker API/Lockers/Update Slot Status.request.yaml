@@ -1,0 +1,14 @@
+$kind: http-request
+name: Update Slot Status
+method: PUT
+url: '{{baseUrl}}/api/lockers/{{lockerId}}/slots/{{slotIndex}}/status'
+order: 10000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": 0
+    }

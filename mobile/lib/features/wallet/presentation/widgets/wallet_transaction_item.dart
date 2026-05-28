@@ -13,7 +13,7 @@ class WalletTransactionItem extends StatelessWidget {
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
         );
-    return '$prefix${value}đ';
+    return '$prefix$valueđ';
   }
 
   @override

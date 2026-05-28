@@ -1,0 +1,14 @@
+$kind: http-request
+name: Link Payment
+method: POST
+url: '{{baseUrl}}/api/orders/{{orderId}}/payment'
+order: 11000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "paymentId": "{{paymentId}}"
+    }

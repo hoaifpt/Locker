@@ -1,0 +1,15 @@
+$kind: http-request
+name: Record Open Event
+method: POST
+url: '{{baseUrl}}/api/lockers/{{lockerId}}/slots/{{slotIndex}}/open-event'
+order: 11000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "sensorState": "Open",
+      "occurredAt": "2026-01-01T00:00:00Z"
+    }

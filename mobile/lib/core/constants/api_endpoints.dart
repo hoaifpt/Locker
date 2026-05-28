@@ -25,6 +25,8 @@ class ApiEndpoints {
   static const String lockersGetAll = '$apiBase/lockers';
   static const String lockersCreate = '$apiBase/lockers';
   static const String lockersGetAvailable = '$apiBase/lockers/available';
+  static const String lockersQrScan = '$apiBase/lockers/qr-scan';
+  static const String lockersScanHistory = '$apiBase/lockers/scan-history';
 
   static String lockersGetById(String id) => '$apiBase/lockers/$id';
   static String lockersUpdate(String id) => '$apiBase/lockers/$id';
@@ -42,6 +44,20 @@ class ApiEndpoints {
       '$apiBase/bookings/$id/verify-pin';
   static String bookingsComplete(String id) => '$apiBase/bookings/$id/complete';
   static String bookingsCancel(String id) => '$apiBase/bookings/$id/cancel';
+
+  // Orders endpoints
+  static const String ordersGetMy = '$apiBase/orders/my';
+  static const String ordersCreate = '$apiBase/orders';
+
+  static String ordersGetById(String id) => '$apiBase/orders/$id';
+  static String ordersConfirm(String id) => '$apiBase/orders/$id/confirm';
+  static String ordersActivate(String id) => '$apiBase/orders/$id/activate';
+  static String ordersComplete(String id) => '$apiBase/orders/$id/complete';
+  static String ordersCancel(String id) => '$apiBase/orders/$id/cancel';
+  static String ordersExtend(String id) => '$apiBase/orders/$id/extend';
+  static String ordersSetPin(String id) => '$apiBase/orders/$id/set-pin';
+  static String ordersPaymentLink(String id) =>
+      '$apiBase/orders/$id/payment-link';
 
   // Packages endpoints
   static const String packagesGetAll = '$apiBase/packages';

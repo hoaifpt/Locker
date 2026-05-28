@@ -1,3 +1,4 @@
+import '../../../core/constants/api_endpoints.dart';
 import '../../../core/exceptions/app_exception.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/entities/scan_result.dart';
@@ -12,7 +13,7 @@ class QrScannerRepository implements IQrScannerRepository {
   Future<ScanResult> validateQrCode(String qrCode) async {
     try {
       final response = await _apiClient.client.post(
-        '/lockers/qr-scan',
+        ApiEndpoints.lockersQrScan,
         data: {'qrCode': qrCode},
       );
       return ScanResultModel.fromJson(response.data as Map<String, dynamic>);
@@ -26,7 +27,8 @@ class QrScannerRepository implements IQrScannerRepository {
   @override
   Future<List<ScanResult>> getScanHistory() async {
     try {
-      final response = await _apiClient.client.get('/lockers/scan-history');
+      final response =
+          await _apiClient.client.get(ApiEndpoints.lockersScanHistory);
       if (response.statusCode == 200 && response.data is List) {
         return (response.data as List)
             .map((e) => ScanResultModel.fromJson(e as Map<String, dynamic>))

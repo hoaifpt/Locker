@@ -27,7 +27,10 @@ class LockerDetailRepository implements ILockerDetailRepository {
   @override
   Future<void> openLocker(String lockerId) async {
     try {
-      await _apiClient.client.post('/lockers/$lockerId/open');
+      await _apiClient.client.post(
+        '/lockers/$lockerId/open',
+        data: {'slotIndex': 0},
+      );
     } catch (e) {
       throw NetworkException('Lỗi khi mở tủ: $e');
     }

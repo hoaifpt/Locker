@@ -23,6 +23,7 @@ import '../../features/locker/presentation/locker_screen.dart';
 import '../../features/locker_detail/presentation/pages/locker_detail_page.dart';
 import '../../features/locker_map/presentation/pages/locker_map_page.dart';
 import '../../features/qr_scanner/presentation/pages/qr_scanner_page.dart';
+import '../../features/qr_scanner/presentation/pages/scan_history_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/notifications/presentation/pages/notification_page.dart';
@@ -75,6 +76,7 @@ class AppRouter {
               lockerId: ModalRoute.of(context)!.settings.arguments as String,
             ),
         '/qr-scanner': (context) => const QrScannerPage(),
+        '/scan-history': (context) => const ScanHistoryPage(),
         '/settings': (context) => const SettingsPage(),
         '/notifications': (context) => const NotificationPage(),
         '/security-privacy': (context) => const SecurityPrivacyPage(),

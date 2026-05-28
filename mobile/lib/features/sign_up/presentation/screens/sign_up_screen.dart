@@ -47,7 +47,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
         }
 
         if (state.response != null) {
-          Navigator.pushReplacementNamed(context, '/home');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Đăng ký thành công. Vui lòng kiểm tra email để xác thực.'),
+              backgroundColor: Color(0xFF16A34A),
+            ),
+          );
+          Navigator.pushReplacementNamed(context, '/login');
         }
       },
       child: Scaffold(

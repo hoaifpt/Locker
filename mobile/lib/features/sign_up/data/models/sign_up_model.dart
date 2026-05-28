@@ -9,8 +9,9 @@ class SignUpRequestModel extends SignUpRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'fullName': fullName,
+      'username': email,
       'email': email,
+      'fullName': fullName,
       'password': password,
     };
   }

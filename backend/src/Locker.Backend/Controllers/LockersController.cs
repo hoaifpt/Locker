@@ -109,6 +109,32 @@ public class LockersController : ControllerBase
         };
     }
 
+    [HttpPost("qr-scan")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ValidateQrCode([FromBody] QrScanRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.QrCode))
+        {
+            return BadRequest(new { message = "Mã QR không được để trống." });
+        }
+
+        var result = await _lockerService.ValidateQrCodeAsync(request.QrCode, cancellationToken);
+        if (result == null)
+        {
+            return BadRequest(new { message = "Mã QR không hợp lệ hoặc không tìm thấy tủ." });
+        }
+
+        return Ok(result);
+    }
+
+    [HttpGet("scan-history")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetScanHistory(CancellationToken cancellationToken)
+    {
+        var history = await _lockerService.GetScanHistoryAsync(cancellationToken);
+        return Ok(history);
+    }
+
     [HttpPatch("{id}/settings")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateSettings(string id, [FromBody] UpdateLockerSettingsRequest request, CancellationToken cancellationToken)

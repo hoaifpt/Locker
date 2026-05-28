@@ -117,6 +117,36 @@ public class LockerService
         return results;
     }
 
+    public async Task<QrScanResultDto?> ValidateQrCodeAsync(string qrCode, CancellationToken cancellationToken)
+    {
+        var lockers = await _lockerRepository.GetAllAsync(cancellationToken);
+        var normalizedQrCode = qrCode.Trim().ToLowerInvariant();
+
+        var locker = lockers.FirstOrDefault(l =>
+            l.Id.Equals(normalizedQrCode, StringComparison.OrdinalIgnoreCase) ||
+            l.Name.Equals(normalizedQrCode, StringComparison.OrdinalIgnoreCase));
+
+        if (locker == null)
+        {
+            return null;
+        }
+
+        return new QrScanResultDto
+        {
+            Id = Guid.NewGuid().ToString(),
+            QrCode = qrCode,
+            LockerId = locker.Id,
+            LockerCode = locker.Name,
+            ScannedAt = DateTime.UtcNow,
+            IsValid = true,
+        };
+    }
+
+    public Task<List<QrScanResultDto>> GetScanHistoryAsync(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new List<QrScanResultDto>());
+    }
+
     public async Task<bool> UpdateSettingsAsync(string lockerId, UpdateLockerSettingsRequest request, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(lockerId, cancellationToken);

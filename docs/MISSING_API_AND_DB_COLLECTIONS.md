@@ -135,3 +135,21 @@ public static class DeviceTokens
 2. UI mobile gọi đúng endpoint mới.
 3. Kiểm tra lại schema MongoDB để field trùng với model mobile.
 4. Tạo index cho các collection mới nếu cần.
+
+POST /api/send-receive/orders
+Mục đích: Tạo một đơn hàng gửi/nhận mới.
+Hoạt động: Người gửi sẽ gọi API này sau khi đã nhập đủ thông tin về người nhận và chọn ngăn tủ. Backend sẽ xử lý yêu cầu, tạo một bản ghi trong collection send_receive_orders, và chuẩn bị gửi thông báo cho người nhận.
+Dữ liệu đầu vào (dự kiến): { "recipientContact": "0987654321", "lockerId": "...", "slotIndex": 5, "notes": "Gửi bạn A cuốn sách" }.
+Kết quả: Trả về thông tin xác nhận đơn hàng đã được tạo.
+GET /api/send-receive/orders/my
+Mục đích: Lấy danh sách các đơn hàng gửi/nhận liên quan đến người dùng hiện tại.
+Hoạt động: API này sẽ trả về một danh sách bao gồm cả những đơn hàng mà người dùng đã gửi và những đơn hàng họ được nhận. Điều này giúp người dùng theo dõi trạng thái các giao dịch của mình.
+GET /api/send-receive/orders/{id}
+Mục đích: Lấy thông tin chi tiết của một đơn hàng gửi/nhận cụ thể.
+Hoạt động: Cung cấp đầy đủ thông tin về một giao dịch, ví dụ: người gửi, người nhận, trạng thái (đang chờ gửi, đang chờ nhận, đã hoàn thành), thời gian, địa điểm...
+PATCH /api/send-receive/orders/{id}/confirm
+Mục đích: Xác nhận một bước nào đó trong quy trình.
+Hoạt động: Endpoint này có thể được dùng cho nhiều mục đích, ví dụ như người nhận xác nhận đã nhận được thông báo, hoặc một bước trung gian nào đó trước khi hoàn tất.
+PATCH /api/send-receive/orders/{id}/complete
+Mục đích: Đánh dấu đơn hàng đã hoàn tất.
+Hoạt động: API này sẽ được gọi sau khi người nhận đã lấy đồ thành công khỏi tủ. Backend sẽ cập nhật trạng thái đơn hàng thành Completed và giải phóng ngăn tủ để người khác có thể sử dụng.

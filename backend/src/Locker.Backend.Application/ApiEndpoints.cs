@@ -44,6 +44,8 @@ public static class ApiEndpoints
         public const string UpdateSettings = $"{Base}/{{id}}/settings";
         public const string UpdateSlotStatus = $"{Base}/{{id}}/slots/{{slotIndex}}/status";
         public const string RecordOpenEvent = $"{Base}/{{id}}/slots/{{slotIndex}}/open-event";
+        public const string QrScan = $"{Base}/qr-scan";
+        public const string ScanHistory = $"{Base}/scan-history";
     }
 
     public static class Bookings
@@ -133,5 +135,42 @@ public static class ApiEndpoints
     public static class Health
     {
         public const string Check = $"{ApiBase}/health";
+    }
+
+    public static class SendReceive
+    {
+        private const string Base = $"{ApiBase}/send-receive/orders";
+        public const string Create = Base;
+        public const string GetMy = $"{Base}/my";
+        public const string GetById = $"{Base}/{{id}}";
+        public const string Confirm = $"{Base}/{{id}}/confirm";
+        public const string Complete = $"{Base}/{{id}}/complete";
+    }
+
+    public static class Wallet
+    {
+        private const string Base = $"{ApiBase}/wallet";
+        public const string Overview = $"{Base}/overview";
+        public const string Transactions = $"{Base}/transactions";
+        public const string Balance = $"{Base}/balance";
+        public const string TopUp = Base; // POST /api/wallet
+        public const string Transfer = $"{Base}/transfer";
+    }
+
+    public static class Delivery
+    {
+        private const string Base = $"{ApiBase}/delivery";
+        public const string GetPackageSizes = $"{Base}/package-sizes";
+        public const string CreateRequest = $"{Base}/requests";
+        public const string GetMyRequests = $"{Base}/requests/my";
+        public const string GetRequestById = $"{Base}/requests/{{id}}";
+        public const string TrackRequest = $"{Base}/requests/track/{{trackingCode}}";
+    }
+
+    public static class DeviceTokens
+    {
+        private const string Base = $"{ApiBase}/device-tokens";
+        public const string GetMy = $"{Base}/my";
+        public const string Delete = $"{Base}/{{id}}";
     }
 }

@@ -128,16 +128,20 @@ var app = builder.Build();
 
 app.UseStaticFiles();
 
-app.UseSwagger();
-app.UseSwaggerUI(options =>
+// Swagger UI Configuration
+if (app.Environment.IsDevelopment())
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Locker API v1");
-    options.RoutePrefix = "swagger";
-    options.InjectStylesheet("/swagger-ui/cyberpunk.css");
-    options.DocumentTitle = "Locker API - Cyberpunk";
-});
-
-app.MapGet("/", () => Results.Redirect("/swagger"));
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Locker API v1");
+        options.RoutePrefix = string.Empty;
+        
+        // Inject Custom Cyberpunk Swagger Theme
+        options.InjectStylesheet("/swagger-ui/cyberpunk.css");
+        options.DocumentTitle = "Locker API - Cyberpunk";
+    });
+}
 
 app.UseMiddleware<Locker.Backend.Middlewares.ExceptionHandlingMiddleware>();
 
@@ -160,5 +164,6 @@ app.UseAuthorization();
 
 app.MapControllers().RequireRateLimiting("api");
 
+await app.Services.UseDatabaseSeeder();
 
 app.Run();

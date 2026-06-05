@@ -6,5 +6,5 @@ public abstract class BaseEntity
     /// Unique identifier using GUID v7 (timestamp-based, sortable)
     /// Auto-generated when entity is instantiated
     /// </summary>
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid Id { get; set; }
 }

@@ -46,12 +46,13 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
 
         var mongoConnectionString = configuration.GetSection("Mongo:ConnectionString").Value ?? "mongodb://localhost:27017/LockerDb";
+        var mongoDatabaseName = configuration.GetSection("Mongo:DatabaseName").Value ?? "LockerDb";
         var mongoDbIdentityConfig = new MongoDbIdentityConfiguration
         {
             MongoDbSettings = new MongoDbSettings
             {
                 ConnectionString = mongoConnectionString,
-                DatabaseName = "LockerDb"
+                DatabaseName = mongoDatabaseName
             },
             IdentityOptionsAction = identityOptions =>
             {
@@ -67,5 +68,10 @@ public static class DependencyInjection
         services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfig);
 
         return services;
+    }
+
+    public static async Task UseDatabaseSeeder(this IServiceProvider serviceProvider)
+    {
+        await Data.DbSeeder.SeedAsync(serviceProvider);
     }
 }

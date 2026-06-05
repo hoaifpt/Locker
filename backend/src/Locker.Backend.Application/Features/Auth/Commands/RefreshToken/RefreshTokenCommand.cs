@@ -46,7 +46,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
 
         var tokenSubject = new TokenSubject(user.Id, user.UserName, user.Email, role);
         var accessToken = _jwtTokenService.CreateToken(tokenSubject);
-        var newRefreshTokenValue = _jwtTokenService.CreateRefreshToken();
+        var newRefreshTokenValue = _jwtTokenService.CreateRefreshToken(tokenSubject);
 
         storedToken.IsRevoked = true;
         await _refreshTokenRepository.UpdateAsync(storedToken, cancellationToken);

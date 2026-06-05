@@ -43,12 +43,31 @@ public class JwtTokenService : IJwtTokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public string CreateRefreshToken()
+    public string CreateRefreshToken(TokenSubject subject)
     {
-        var randomBytes = new byte[64];
-        using var rng = RandomNumberGenerator.Create();
-        rng.GetBytes(randomBytes);
-        return Convert.ToBase64String(randomBytes);
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, subject.UserId.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, subject.UserId.ToString()),
+            new Claim(JwtRegisteredClaimNames.UniqueName, subject.Username),
+            new Claim(ClaimTypes.Name, subject.Username),
+            new Claim(ClaimTypes.Role, subject.Role),
+            new Claim(JwtRegisteredClaimNames.Email, subject.Email ?? string.Empty),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("token_type", "refresh_token")
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            _settings.Issuer,
+            _settings.Audience,
+            claims,
+            expires: GetRefreshTokenExpiry(),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public DateTime GetAccessTokenExpiry()

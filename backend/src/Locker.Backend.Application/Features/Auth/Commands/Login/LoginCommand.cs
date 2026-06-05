@@ -80,7 +80,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, (AuthResponse? 
 
         var tokenSubject = new TokenSubject(user.Id, user.UserName, user.Email, role);
         var accessToken = _jwtTokenService.CreateToken(tokenSubject);
-        var refreshTokenValue = _jwtTokenService.CreateRefreshToken();
+        var refreshTokenValue = _jwtTokenService.CreateRefreshToken(tokenSubject);
 
         var refreshToken = new Domain.Entities.RefreshToken
         {

@@ -5,7 +5,7 @@ namespace Locker.Backend.Application.Interfaces;
 public interface IJwtTokenService
 {
     string CreateToken(TokenSubject subject);
-    string CreateRefreshToken();
+    string CreateRefreshToken(TokenSubject subject);
     DateTime GetAccessTokenExpiry();
     DateTime GetRefreshTokenExpiry();
 }

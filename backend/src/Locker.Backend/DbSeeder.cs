@@ -12,7 +12,7 @@ public static class DbSeeder
     public static async Task SeedAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
-        var userRepo = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        var userManager = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<User>>();
         var lockerRepo = scope.ServiceProvider.GetRequiredService<ILockerRepository>();
         var packageRepo = scope.ServiceProvider.GetRequiredService<IPackageRepository>();
         var orderRepo = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
@@ -24,10 +24,10 @@ public static class DbSeeder
 
         try
         {
-            await SeedUsersAsync(userRepo, passwordHasher);
+            await SeedUsersAsync(userManager, passwordHasher);
             await SeedPackagesAsync(packageRepo);
             await SeedLockersAsync(lockerRepo, packageRepo);
-            await SeedOrdersAndPaymentsAsync(userRepo, lockerRepo, packageRepo, orderRepo, paymentRepo);
+            await SeedOrdersAndPaymentsAsync(userManager, lockerRepo, packageRepo, orderRepo, paymentRepo);
             await SeedBookingsAsync(bookingRepo, lockerRepo, packageRepo);
 
             Console.WriteLine("\n========== DATABASE SEEDING COMPLETE ==========\n");
@@ -41,69 +41,69 @@ public static class DbSeeder
 
     #region Users Seeding
 
-    private static async Task SeedUsersAsync(IUserRepository userRepo, IPasswordHasher passwordHasher)
+    private static async Task SeedUsersAsync(Microsoft.AspNetCore.Identity.UserManager<User> userManager, IPasswordHasher passwordHasher)
     {
         Console.WriteLine("📝 Seeding Users...");
         var users = new[]
         {
             new User
             {
-                Username = "admin",
+                UserName = "admin",
                 Email = "admin@locker.com",
                 FullName = "Administrator",
                 PhoneNumber = "+84901234567",
                 PasswordHash = passwordHasher.Hash("Admin@123"),
-                Role = "Admin",
+                
                 IsActive = true,
-                IsEmailVerified = true,
+                EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-30)
             },
             new User
             {
-                Username = "john_doe",
+                UserName = "john_doe",
                 Email = "john.doe@example.com",
                 FullName = "John Doe",
                 PhoneNumber = "+84912345678",
                 PasswordHash = passwordHasher.Hash("John@1234"),
-                Role = "User",
+                
                 IsActive = true,
-                IsEmailVerified = true,
+                EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-20)
             },
             new User
             {
-                Username = "jane_smith",
+                UserName = "jane_smith",
                 Email = "jane.smith@example.com",
                 FullName = "Jane Smith",
                 PhoneNumber = "+84923456789",
                 PasswordHash = passwordHasher.Hash("Jane@1234"),
-                Role = "User",
+                
                 IsActive = true,
-                IsEmailVerified = true,
+                EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-15)
             },
             new User
             {
-                Username = "mike_wilson",
+                UserName = "mike_wilson",
                 Email = "mike.wilson@example.com",
                 FullName = "Mike Wilson",
                 PhoneNumber = "+84934567890",
                 PasswordHash = passwordHasher.Hash("Mike@1234"),
-                Role = "User",
+                
                 IsActive = true,
-                IsEmailVerified = true,
+                EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-10)
             },
             new User
             {
-                Username = "alice_brown",
+                UserName = "alice_brown",
                 Email = "alice.brown@example.com",
                 FullName = "Alice Brown",
                 PhoneNumber = "+84945678901",
                 PasswordHash = passwordHasher.Hash("Alice@1234"),
-                Role = "User",
+                
                 IsActive = true,
-                IsEmailVerified = true,
+                EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-5)
             }
         };
@@ -113,10 +113,10 @@ public static class DbSeeder
 
         foreach (var user in users)
         {
-            var existingUser = await userRepo.GetByUsernameAsync(user.Username, _cts);
+            var existingUser = await userManager.FindByNameAsync(user.UserName);
             if (existingUser == null)
             {
-                await userRepo.CreateAsync(user, _cts);
+                await userManager.CreateAsync(user, "Admin@123");
                 createdCount++;
                 continue;
             }
@@ -124,16 +124,13 @@ public static class DbSeeder
             existingUser.Email = user.Email;
             existingUser.FullName = user.FullName;
             existingUser.PhoneNumber = user.PhoneNumber;
-            existingUser.PasswordHash = user.PasswordHash;
-            existingUser.Role = user.Role;
             existingUser.IsActive = user.IsActive;
-            existingUser.IsEmailVerified = user.IsEmailVerified;
+            existingUser.EmailConfirmed = user.EmailConfirmed;
             existingUser.CreatedAt = user.CreatedAt;
-            existingUser.FailedLoginAttempts = 0;
             existingUser.LockoutEnd = null;
             existingUser.EmailVerificationToken = null;
 
-            await userRepo.UpdateAsync(existingUser, _cts);
+            await userManager.UpdateAsync(existingUser);
             updatedCount++;
         }
 
@@ -285,7 +282,7 @@ public static class DbSeeder
     #region Orders and Payments Seeding
 
     private static async Task SeedOrdersAndPaymentsAsync(
-        IUserRepository userRepo,
+        Microsoft.AspNetCore.Identity.UserManager<User> userManager,
         ILockerRepository lockerRepo,
         IPackageRepository packageRepo,
         IOrderRepository orderRepo,
@@ -300,7 +297,7 @@ public static class DbSeeder
             return;
         }
 
-        var users = await userRepo.GetAllAsync(_cts);
+        var users = userManager.Users.ToList();
         var lockers = await lockerRepo.GetAllAsync(_cts);
         var packages = await packageRepo.GetAllAsync(_cts);
 
@@ -584,7 +581,7 @@ public static class DbSeeder
         {
             new Booking
             {
-                UserId = "sample_user_1",
+                UserId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                 LockerId = lockers[0].Id,
                 SlotIndex = 2,
                 PackageId = packages[0].Id,
@@ -596,7 +593,7 @@ public static class DbSeeder
             },
             new Booking
             {
-                UserId = "sample_user_2",
+                UserId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                 LockerId = lockers[1].Id,
                 SlotIndex = 4,
                 PackageId = packages[1].Id,

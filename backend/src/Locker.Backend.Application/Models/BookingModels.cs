@@ -4,15 +4,15 @@ namespace Locker.Backend.Application.Models;
 
 public class BookingDto
 {
-    public string Id { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
-    public string LockerId { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public Guid LockerId { get; set; }
     public int SlotIndex { get; set; }
-    public string PackageId { get; set; } = string.Empty;
+    public Guid PackageId { get; set; }
     public string MobileNumber { get; set; } = string.Empty;
     public BookingStatus Status { get; set; }
     public decimal TotalAmount { get; set; }
-    public string? PaymentId { get; set; }
+    public Guid? PaymentId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
@@ -20,9 +20,9 @@ public class BookingDto
 
 public class CreateBookingRequest
 {
-    public string LockerId { get; set; } = string.Empty;
+    public Guid LockerId { get; set; }
     public int SlotIndex { get; set; }
-    public string PackageId { get; set; } = string.Empty;
+    public Guid PackageId { get; set; }
     public string MobileNumber { get; set; } = string.Empty;
 }
 

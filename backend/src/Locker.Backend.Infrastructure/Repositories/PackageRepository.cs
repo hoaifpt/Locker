@@ -18,7 +18,7 @@ public class PackageRepository : GenericRepository<Package>, IPackageRepository
         return await cursor.ToListAsync(cancellationToken);
     }
 
-    public override async Task<Package?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public override async Task<Package?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(p => p.Id == id && !p.IsDeleted, cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
@@ -30,7 +30,7 @@ public class PackageRepository : GenericRepository<Package>, IPackageRepository
         return await cursor.ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         var package = await GetByIdAsync(id, cancellationToken);
         if (package == null) return false;

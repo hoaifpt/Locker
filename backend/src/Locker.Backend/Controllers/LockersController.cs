@@ -27,7 +27,7 @@ public class LockersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var item = await _lockerService.GetByIdAsync(id, cancellationToken);
         if (item == null)
@@ -64,7 +64,7 @@ public class LockersController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(string id, [FromBody] UpdateLockerRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLockerRequest request, CancellationToken cancellationToken)
     {
         var updated = await _lockerService.UpdateAsync(id, request, cancellationToken);
         if (!updated)
@@ -77,7 +77,7 @@ public class LockersController : ControllerBase
 
     [HttpPut("{id}/soft-delete")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> SoftDelete(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> SoftDelete(Guid id, CancellationToken cancellationToken)
     {
         var deleted = await _lockerService.SoftDeleteAsync(id, cancellationToken);
         if (!deleted)
@@ -89,9 +89,10 @@ public class LockersController : ControllerBase
     }
 
     [HttpPost("{id}/open")]
-    public async Task<IActionResult> Open(string id, [FromBody] OpenLockerRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Open(Guid id, [FromBody] OpenLockerRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        var userId = Guid.TryParse(idStr, out var parsedId) ? parsedId : (Guid?)null;
         var isPrivileged = User.IsInRole("Admin") || User.IsInRole("Shipper");
 
         var result = await _lockerService.OpenSlotAsync(
@@ -137,7 +138,7 @@ public class LockersController : ControllerBase
 
     [HttpPatch("{id}/settings")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateSettings(string id, [FromBody] UpdateLockerSettingsRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateSettings(Guid id, [FromBody] UpdateLockerSettingsRequest request, CancellationToken cancellationToken)
     {
         var updated = await _lockerService.UpdateSettingsAsync(id, request, cancellationToken);
         if (!updated) return NotFound();
@@ -148,7 +149,7 @@ public class LockersController : ControllerBase
     /// <summary>Called by firmware/ESP32 to report slot status change.</summary>
     [HttpPost("{id}/slots/{slotIndex}/status")]
     [Authorize(Roles = "Admin,Shipper")]
-    public async Task<IActionResult> UpdateSlotStatus(string id, int slotIndex, [FromBody] UpdateSlotStatusRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateSlotStatus(Guid id, int slotIndex, [FromBody] UpdateSlotStatusRequest request, CancellationToken cancellationToken)
     {
         var updated = await _lockerService.UpdateSlotStatusAsync(id, slotIndex, request.Status, cancellationToken);
         if (!updated) return NotFound();
@@ -158,7 +159,7 @@ public class LockersController : ControllerBase
     /// <summary>Called by firmware/ESP32 to report slot open events.</summary>
     [HttpPost("{id}/slots/{slotIndex}/open-event")]
     [Authorize(Roles = "Admin,Shipper")]
-    public async Task<IActionResult> RecordOpenEvent(string id, int slotIndex, [FromBody] LockerOpenEventRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> RecordOpenEvent(Guid id, int slotIndex, [FromBody] LockerOpenEventRequest request, CancellationToken cancellationToken)
     {
         var updated = await _lockerService.RecordOpenEventAsync(id, slotIndex, request, cancellationToken);
         if (!updated) return NotFound();

@@ -43,7 +43,7 @@ public class OrderService
     /// <summary>
     /// Lấy đơn hàng theo ID
     /// </summary>
-    public async Task<OrderDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public async Task<OrderDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var order = await _orderRepository.GetByIdAsync(id, cancellationToken);
         return order == null ? null : _orderMapper.Map(order);
@@ -52,7 +52,7 @@ public class OrderService
     /// <summary>
     /// Lấy danh sách đơn hàng của người dùng
     /// </summary>
-    public async Task<List<OrderSummaryDto>> GetMyOrdersAsync(string userId, OrderStatus? status, CancellationToken cancellationToken)
+    public async Task<List<OrderSummaryDto>> GetMyOrdersAsync(Guid userId, OrderStatus? status, CancellationToken cancellationToken)
     {
         List<Order> orders;
 
@@ -81,7 +81,7 @@ public class OrderService
 
     #region Payment Link
 
-    public async Task<bool> LinkPaymentAsync(string orderId, string paymentId, CancellationToken cancellationToken)
+    public async Task<bool> LinkPaymentAsync(Guid orderId, Guid paymentId, CancellationToken cancellationToken)
     {
         var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
         if (order == null) return false;
@@ -109,7 +109,7 @@ public class OrderService
     /// Kiểm tra tất cả điều kiện, tính giá, và tạo Order mới
     /// </summary>
     public async Task<OrderConfirmationDto?> CreateAsync(
-        string userId,
+        Guid userId,
         CreateOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -213,8 +213,8 @@ public class OrderService
     /// Bước 2: Xác nhận giữ chỗ (sau khi thanh toán thành công)
     /// </summary>
     public async Task<OrderDto?> ConfirmAsync(
-        string orderId,
-        string userId,
+        Guid orderId,
+        Guid userId,
         ConfirmOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -226,10 +226,10 @@ public class OrderService
             return null;
 
         // Kiểm tra payment đã complete
-        if (string.IsNullOrEmpty(order.PaymentId))
+        if (!order.PaymentId.HasValue)
             return null;
 
-        var payment = await _paymentRepository.GetByIdAsync(order.PaymentId, cancellationToken);
+        var payment = await _paymentRepository.GetByIdAsync(order.PaymentId.Value, cancellationToken);
         if (payment == null || payment.Status != PaymentStatus.Completed)
             return null;
 
@@ -261,8 +261,8 @@ public class OrderService
     /// Bước 3: Đặt mã PIN để mở khoang (sau khi thanh toán)
     /// </summary>
     public async Task<bool> SetPinAsync(
-        string orderId,
-        string userId,
+        Guid orderId,
+        Guid userId,
         SetOrderPinRequest request,
         CancellationToken cancellationToken)
     {
@@ -289,8 +289,8 @@ public class OrderService
     /// Bước 4: Kích hoạt đơn hàng (người dùng đến lấy hàng)
     /// </summary>
     public async Task<OrderDto?> ActivateAsync(
-        string orderId,
-        string userId,
+        Guid orderId,
+        Guid userId,
         CancellationToken cancellationToken)
     {
         var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
@@ -339,8 +339,8 @@ public class OrderService
     /// Bước 5: Hoàn thành đơn hàng (người dùng đã lấy hàng)
     /// </summary>
     public async Task<OrderDto?> CompleteAsync(
-        string orderId,
-        string userId,
+        Guid orderId,
+        Guid userId,
         CompleteOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -383,8 +383,8 @@ public class OrderService
     /// Hủy đơn hàng - áp dụng chính sách hoàn tiền
     /// </summary>
     public async Task<OrderDto?> CancelAsync(
-        string orderId,
-        string userId,
+        Guid orderId,
+        Guid userId,
         CancelOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -433,8 +433,8 @@ public class OrderService
     /// Gia hạn thêm thời gian cho đơn hàng (có tính phí bổ sung)
     /// </summary>
     public async Task<OrderDto?> ExtendAsync(
-        string orderId,
-        string userId,
+        Guid orderId,
+        Guid userId,
         ExtendOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -470,7 +470,7 @@ public class OrderService
     /// Kiểm tra các khoang trống có sẵn tại một vị trí và thời gian
     /// </summary>
     public async Task<List<AvailableSlotDto>> GetAvailableSlotsByLockerAsync(
-        string lockerId,
+        Guid lockerId,
         DateTime fromTime,
         DateTime toTime,
         CancellationToken cancellationToken)

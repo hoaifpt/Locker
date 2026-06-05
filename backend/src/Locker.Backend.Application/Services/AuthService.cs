@@ -1,16 +1,20 @@
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Locker.Backend.Application.Services;
 
 public class AuthService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly UserManager<User> _userManager;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
-    private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IOtpRepository _otpRepository;
     private readonly IEmailService _emailService;
@@ -21,9 +25,8 @@ public class AuthService
     private static readonly TimeSpan OtpExpiry = TimeSpan.FromMinutes(5);
 
     public AuthService(
-        IUserRepository userRepository,
+        UserManager<User> userManager,
         IRefreshTokenRepository refreshTokenRepository,
-        IPasswordHasher passwordHasher,
         IJwtTokenService jwtTokenService,
         IOtpRepository otpRepository,
         IEmailService emailService,
@@ -31,9 +34,8 @@ public class AuthService
         IOptions<AppSettings> appSettings,
         ILogger<AuthService> logger)
     {
-        _userRepository = userRepository;
+        _userManager = userManager;
         _refreshTokenRepository = refreshTokenRepository;
-        _passwordHasher = passwordHasher;
         _jwtTokenService = jwtTokenService;
         _otpRepository = otpRepository;
         _emailService = emailService;
@@ -44,64 +46,45 @@ public class AuthService
 
     public async Task<(AuthResponse? Response, string? Error)> LoginAsync(AuthRequest request, CancellationToken cancellationToken)
     {
-        // Try to find user by email, phone number, or username
         User? user = null;
+        var identifier = request.Identifier.Trim();
 
-        // Check if identifier is email format
-        if (request.Identifier.Contains("@"))
+        if (identifier.Contains("@"))
         {
-            user = await _userRepository.GetByEmailAsync(request.Identifier.Trim(), cancellationToken);
+            user = await _userManager.FindByEmailAsync(identifier);
         }
         else
         {
-            // Try as phone number
-            user = await _userRepository.GetByPhoneNumberAsync(request.Identifier.Trim(), cancellationToken);
-
-            // Fallback to username so seeded accounts can log in from the mobile UI
-            user ??= await _userRepository.GetByUsernameAsync(request.Identifier.Trim(), cancellationToken);
+            user = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == identifier);
+            user ??= await _userManager.FindByNameAsync(identifier);
         }
 
         if (user == null)
             return (null, "Email/số điện thoại hoặc mật khẩu không đúng.");
 
-        if (!user.IsEmailVerified)
+        if (!await _userManager.IsEmailConfirmedAsync(user))
             return (null, "Tài khoản chưa được xác thực email. Vui lòng kiểm tra hộp thư của bạn.");
 
         if (!user.IsActive)
             return (null, "Tài khoản đã bị vô hiệu hóa.");
 
-        // Check lockout
-        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+        if (await _userManager.IsLockedOutAsync(user))
         {
-            var remaining = (int)Math.Ceiling((user.LockoutEnd.Value - DateTime.UtcNow).TotalMinutes);
+            var remaining = (int)Math.Ceiling(((user.LockoutEnd ?? DateTimeOffset.UtcNow) - DateTimeOffset.UtcNow).TotalMinutes);
             return (null, $"Tài khoản tạm thời bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau {remaining} phút.");
         }
 
-        if (string.IsNullOrEmpty(user.PasswordHash) || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            const int MaxFailedAttempts = 5;
-            const int LockoutMinutes = 15;
-
-            user.FailedLoginAttempts++;
-            if (user.FailedLoginAttempts >= MaxFailedAttempts)
+            await _userManager.AccessFailedAsync(user);
+            if (await _userManager.IsLockedOutAsync(user))
             {
-                user.LockoutEnd = DateTime.UtcNow.AddMinutes(LockoutMinutes);
-                user.FailedLoginAttempts = 0;
-                await _userRepository.UpdateAsync(user, cancellationToken);
-                return (null, $"Tài khoản bị khóa {LockoutMinutes} phút do đăng nhập sai {MaxFailedAttempts} lần liên tiếp.");
+                return (null, "Tài khoản bị khóa do đăng nhập sai nhiều lần liên tiếp.");
             }
-
-            await _userRepository.UpdateAsync(user, cancellationToken);
             return (null, "Email/số điện thoại hoặc mật khẩu không đúng.");
         }
 
-        // Đăng nhập thành công — reset lockout
-        if (user.FailedLoginAttempts > 0 || user.LockoutEnd.HasValue)
-        {
-            user.FailedLoginAttempts = 0;
-            user.LockoutEnd = null;
-            await _userRepository.UpdateAsync(user, cancellationToken);
-        }
+        await _userManager.ResetAccessFailedCountAsync(user);
 
         var response = await GenerateAuthResponseAsync(user, cancellationToken);
         return (response, null);
@@ -109,17 +92,17 @@ public class AuthService
 
     public async Task<(bool Success, string? Error)> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
-        var existing = await _userRepository.GetByUsernameAsync(request.Username, cancellationToken);
+        var existing = await _userManager.FindByNameAsync(request.Username);
         if (existing != null)
             return (false, "Tên người dùng đã tồn tại.");
 
-        var existingEmail = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
+        var existingEmail = await _userManager.FindByEmailAsync(request.Email);
         if (existingEmail != null)
             return (false, "Email đã được sử dụng.");
 
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
         {
-            var existingPhone = await _userRepository.GetByPhoneNumberAsync(request.PhoneNumber, cancellationToken);
+            var existingPhone = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == request.PhoneNumber);
             if (existingPhone != null)
                 return (false, "Số điện thoại đã được sử dụng.");
         }
@@ -128,52 +111,49 @@ public class AuthService
 
         var user = new User
         {
-            Username = request.Username,
+            UserName = request.Username,
             Email = request.Email,
             FullName = request.FullName,
             PhoneNumber = request.PhoneNumber,
-            PasswordHash = _passwordHasher.Hash(request.Password),
-            Role = "User",
-            IsActive = false,          // inactive until email verified
-            IsEmailVerified = false,
+            IsActive = false,
             EmailVerificationToken = verificationToken
         };
 
-        await _userRepository.CreateAsync(user, cancellationToken);
+        var result = await _userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
+        {
+            return (false, string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
 
-        // Send verification email — non-blocking: don't fail registration if email fails
+        await _userManager.AddToRoleAsync(user, "User");
+
         try
         {
             var verificationLink = $"{_baseUrl}/api/auth/verify-email?token={verificationToken}";
-            await _emailService.SendVerificationEmailAsync(user.Email, user.FullName ?? user.Username, verificationLink, cancellationToken);
+            await _emailService.SendVerificationEmailAsync(user.Email, user.FullName ?? user.UserName, verificationLink, cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to send verification email to {Email}. User was created; they can use resend-verification.", user.Email);
+            _logger.LogWarning(ex, "Failed to send verification email to {Email}.", user.Email);
         }
 
         return (true, null);
     }
 
-    /// <summary>
-    /// Resend verification email to a registered but unverified account.
-    /// </summary>
     public async Task<(bool Success, string? Error)> ResendVerificationEmailAsync(ResendVerificationRequest request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email.Trim(), cancellationToken);
+        var user = await _userManager.FindByEmailAsync(request.Email.Trim());
 
-        // Don't reveal if email exists — anti-enumeration
-        if (user == null || user.IsEmailVerified)
+        if (user == null || await _userManager.IsEmailConfirmedAsync(user))
             return (true, null);
 
-        // Rotate token per resend
         user.EmailVerificationToken = Guid.NewGuid().ToString("N");
-        await _userRepository.UpdateAsync(user, cancellationToken);
+        await _userManager.UpdateAsync(user);
 
         try
         {
             var verificationLink = $"{_baseUrl}/api/auth/verify-email?token={user.EmailVerificationToken}";
-            await _emailService.SendVerificationEmailAsync(user.Email, user.FullName ?? user.Username, verificationLink, cancellationToken);
+            await _emailService.SendVerificationEmailAsync(user.Email, user.FullName ?? user.UserName, verificationLink, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -184,22 +164,19 @@ public class AuthService
         return (true, null);
     }
 
-    /// <summary>
-    /// Activates the account when the user clicks the verification link in their email.
-    /// </summary>
     public async Task<(bool Success, string? Error)> VerifyEmailAsync(string token, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(token))
             return (false, "Token không hợp lệ.");
 
-        var user = await _userRepository.GetByVerificationTokenAsync(token, cancellationToken);
+        var user = _userManager.Users.FirstOrDefault(u => u.EmailVerificationToken == token);
         if (user == null)
             return (false, "Liên kết xác thực không hợp lệ hoặc đã được sử dụng.");
 
-        user.IsEmailVerified = true;
+        user.EmailConfirmed = true;
         user.IsActive = true;
-        user.EmailVerificationToken = null;   // one-time use
-        await _userRepository.UpdateAsync(user, cancellationToken);
+        user.EmailVerificationToken = null;
+        await _userManager.UpdateAsync(user);
 
         return (true, null);
     }
@@ -210,7 +187,7 @@ public class AuthService
         if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt < DateTime.UtcNow)
             return null;
 
-        var user = await _userRepository.GetByIdAsync(storedToken.UserId, cancellationToken);
+        var user = await _userManager.FindByIdAsync(storedToken.UserId.ToString());
         if (user == null || !user.IsActive)
             return null;
 
@@ -228,17 +205,9 @@ public class AuthService
         return true;
     }
 
-    /// <summary>
-    /// Revokes ALL active refresh tokens for the given user (logout all devices).
-    /// </summary>
-    public Task LogoutAllAsync(string userId, CancellationToken cancellationToken)
+    public Task LogoutAllAsync(Guid userId, CancellationToken cancellationToken)
         => _refreshTokenRepository.RevokeAllByUserIdAsync(userId, cancellationToken);
 
-    /// <summary>
-    /// Determines if the identifier is an email or phone, validates it's real,
-    /// finds the user, generates OTP, and dispatches it.
-    /// Returns (false, errorMessage) on validation failure; (true, null) on success or account not found (anti-enumeration).
-    /// </summary>
     public async Task<(bool Success, string? Error)> SendForgotPasswordOtpAsync(ForgotPasswordRequest request, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim();
@@ -247,13 +216,11 @@ public class AuthService
         if (!valid)
             return (false, error);
 
-        // Look up user (silently succeed if not found – anti-enumeration)
-        var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
+        var user = await _userManager.FindByEmailAsync(email);
 
         if (user == null || !user.IsActive)
-            return (true, null); // anti-enumeration: don't reveal non-existence
+            return (true, null);
 
-        // Generate a 6-digit OTP using a cryptographically secure RNG
         var bytes = new byte[4];
         System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
         var code = (Math.Abs(BitConverter.ToInt32(bytes)) % 900_000 + 100_000).ToString();
@@ -272,10 +239,6 @@ public class AuthService
         return (true, null);
     }
 
-    /// <summary>
-    /// Validates the OTP and resets the password if valid.
-    /// Returns (false, errorMessage) on failure.
-    /// </summary>
     public async Task<(bool Success, string? Error)> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim();
@@ -284,7 +247,7 @@ public class AuthService
         if (!valid)
             return (false, error);
 
-        var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
+        var user = await _userManager.FindByEmailAsync(email);
 
         if (user == null || !user.IsActive)
             return (false, "Tài khoản không tồn tại.");
@@ -293,19 +256,23 @@ public class AuthService
         if (otp == null || otp.Code != request.Otp)
             return (false, "Mã OTP không hợp lệ hoặc đã hết hạn.");
 
-        // Mark OTP as used
         await _otpRepository.MarkUsedAsync(otp.Id, cancellationToken);
 
-        // Update password
-        user.PasswordHash = _passwordHasher.Hash(request.NewPassword);
-        await _userRepository.UpdateAsync(user, cancellationToken);
+        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, resetToken, request.NewPassword);
+        
+        if (!result.Succeeded)
+            return (false, "Không thể thay đổi mật khẩu.");
 
         return (true, null);
     }
 
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)
     {
-        var accessToken = _jwtTokenService.CreateToken(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "User";
+
+        var accessToken = _jwtTokenService.CreateToken(user, role);
         var refreshTokenValue = _jwtTokenService.CreateRefreshToken();
 
         var refreshToken = new RefreshToken
@@ -319,12 +286,13 @@ public class AuthService
 
         await _refreshTokenRepository.CreateAsync(refreshToken, cancellationToken);
 
+
         return new AuthResponse
         {
             Token = accessToken,
             RefreshToken = refreshTokenValue,
-            Username = user.Username,
-            Role = user.Role,
+            Username = user.UserName,
+            Role = role,
             ExpiresAt = _jwtTokenService.GetAccessTokenExpiry()
         };
     }

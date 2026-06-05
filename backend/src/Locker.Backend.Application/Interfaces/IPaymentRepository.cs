@@ -4,6 +4,6 @@ namespace Locker.Backend.Application.Interfaces;
 
 public interface IPaymentRepository : IGenericRepository<Payment>
 {
-    Task<Payment?> GetByBookingIdAsync(string bookingId, CancellationToken cancellationToken);
-    Task<List<Payment>> GetByUserIdAsync(string userId, CancellationToken cancellationToken);
+    Task<Payment?> GetByBookingIdAsync(Guid bookingId, CancellationToken cancellationToken);
+    Task<List<Payment>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken);
 }

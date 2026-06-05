@@ -19,25 +19,25 @@ public class PaymentService
         _paymentMapper = paymentMapper;
     }
 
-    public async Task<PaymentDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public async Task<PaymentDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var payment = await _paymentRepository.GetByIdAsync(id, cancellationToken);
         return payment == null ? null : _paymentMapper.Map(payment);
     }
 
-    public async Task<PaymentDto?> GetByBookingIdAsync(string bookingId, CancellationToken cancellationToken)
+    public async Task<PaymentDto?> GetByBookingIdAsync(Guid bookingId, CancellationToken cancellationToken)
     {
         var payment = await _paymentRepository.GetByBookingIdAsync(bookingId, cancellationToken);
         return payment == null ? null : _paymentMapper.Map(payment);
     }
 
-    public async Task<List<PaymentDto>> GetMyPaymentsAsync(string userId, CancellationToken cancellationToken)
+    public async Task<List<PaymentDto>> GetMyPaymentsAsync(Guid userId, CancellationToken cancellationToken)
     {
         var payments = await _paymentRepository.GetByUserIdAsync(userId, cancellationToken);
         return payments.Select(_paymentMapper.Map).ToList();
     }
 
-    public async Task<PaymentDto?> CreateAsync(string userId, CreatePaymentRequest request, CancellationToken cancellationToken)
+    public async Task<PaymentDto?> CreateAsync(Guid userId, CreatePaymentRequest request, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
         if (booking == null || booking.UserId != userId) return null;
@@ -62,7 +62,7 @@ public class PaymentService
         return _paymentMapper.Map(payment);
     }
 
-    public async Task<bool> CompleteAsync(string paymentId, string userId, CompletePaymentRequest request, CancellationToken cancellationToken)
+    public async Task<bool> CompleteAsync(Guid paymentId, Guid userId, CompletePaymentRequest request, CancellationToken cancellationToken)
     {
         var payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken);
         if (payment == null || payment.UserId != userId) return false;

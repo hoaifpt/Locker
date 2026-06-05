@@ -2,7 +2,7 @@ namespace Locker.Backend.Domain.Entities;
 
 public class DeviceToken : BaseEntity
 {
-    public string UserId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
     public string Token { get; set; } = string.Empty;
     public string Platform { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

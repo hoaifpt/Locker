@@ -23,7 +23,7 @@ public class OrdersController : ControllerBase
     /// Lấy chi tiết đơn hàng theo ID
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var order = await _orderService.GetByIdAsync(id, cancellationToken);
         if (order == null)
@@ -71,7 +71,7 @@ public class OrdersController : ControllerBase
     /// </summary>
     [HttpPatch("{id}/confirm")]
     public async Task<IActionResult> Confirm(
-        string id,
+        Guid id,
         [FromBody] ConfirmOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -91,7 +91,7 @@ public class OrdersController : ControllerBase
     /// </summary>
     [HttpPost("{id}/set-pin")]
     public async Task<IActionResult> SetPin(
-        string id,
+        Guid id,
         [FromBody] SetOrderPinRequest request,
         CancellationToken cancellationToken)
     {
@@ -111,7 +111,7 @@ public class OrdersController : ControllerBase
     /// </summary>
     [HttpPatch("{id}/activate")]
     public async Task<IActionResult> Activate(
-        string id,
+        Guid id,
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
@@ -130,7 +130,7 @@ public class OrdersController : ControllerBase
     /// </summary>
     [HttpPatch("{id}/complete")]
     public async Task<IActionResult> Complete(
-        string id,
+        Guid id,
         [FromBody] CompleteOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -150,7 +150,7 @@ public class OrdersController : ControllerBase
     /// </summary>
     [HttpPatch("{id}/cancel")]
     public async Task<IActionResult> Cancel(
-        string id,
+        Guid id,
         [FromBody] CancelOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -170,7 +170,7 @@ public class OrdersController : ControllerBase
     /// </summary>
     [HttpPost("{id}/extend")]
     public async Task<IActionResult> Extend(
-        string id,
+        Guid id,
         [FromBody] ExtendOrderRequest request,
         CancellationToken cancellationToken)
     {
@@ -191,12 +191,12 @@ public class OrdersController : ControllerBase
     [HttpGet("availability/slots")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAvailableSlots(
-        [FromQuery] string lockerId,
+        [FromQuery] Guid lockerId,
         [FromQuery] DateTime fromTime,
         [FromQuery] DateTime toTime,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(lockerId))
+        if (lockerId == Guid.Empty)
             return BadRequest(new { message = "lockerId is required" });
 
         if (fromTime >= toTime)
@@ -217,7 +217,7 @@ public class OrdersController : ControllerBase
     [HttpPost("{id}/payment")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> LinkPayment(
-        string id,
+        Guid id,
         [FromBody] LinkPaymentRequest request,
         CancellationToken cancellationToken)
     {
@@ -226,11 +226,14 @@ public class OrdersController : ControllerBase
         return NoContent();
     }
 
-    private string? GetUserId()
-        => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+    private Guid GetUserId()
+    {
+        var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        return Guid.TryParse(idStr, out var id) ? id : Guid.Empty;
+    }
 }
 
 public class LinkPaymentRequest
 {
-    public string PaymentId { get; set; } = string.Empty;
+    public Guid PaymentId { get; set; }
 }

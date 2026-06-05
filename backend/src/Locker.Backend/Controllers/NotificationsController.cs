@@ -29,7 +29,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPost("{id}/mark-as-read")]
-    public async Task<IActionResult> MarkAsRead(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> MarkAsRead(Guid id, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
         if (userId == null) return Unauthorized();
@@ -59,6 +59,9 @@ public class NotificationsController : ControllerBase
         return NoContent();
     }
 
-    private string? GetUserId()
-        => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+    private Guid GetUserId()
+    {
+        var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        return Guid.TryParse(idStr, out var id) ? id : Guid.Empty;
+    }
 }

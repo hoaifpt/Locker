@@ -7,11 +7,11 @@ namespace Locker.Backend.Application.Models;
 /// </summary>
 public class OrderDto
 {
-    public string Id { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
-    public string LockerId { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public Guid LockerId { get; set; }
     public int SlotIndex { get; set; }
-    public string PackageId { get; set; } = string.Empty;
+    public Guid PackageId { get; set; }
 
     public OrderStatus Status { get; set; }
 
@@ -28,7 +28,7 @@ public class OrderDto
     public decimal TotalAmount { get; set; }
 
     // Payment
-    public string? PaymentId { get; set; }
+    public Guid? PaymentId { get; set; }
 
     // Mobile
     public string MobileNumber { get; set; } = string.Empty;
@@ -51,8 +51,8 @@ public class OrderDto
 /// </summary>
 public class OrderSummaryDto
 {
-    public string Id { get; set; } = string.Empty;
-    public string LockerId { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public Guid LockerId { get; set; }
     public int SlotIndex { get; set; }
     public OrderStatus Status { get; set; }
     public decimal TotalAmount { get; set; }
@@ -66,9 +66,9 @@ public class OrderSummaryDto
 /// </summary>
 public class CreateOrderRequest
 {
-    public string LockerId { get; set; } = string.Empty;
+    public Guid LockerId { get; set; }
     public int SlotIndex { get; set; }
-    public string PackageId { get; set; } = string.Empty;
+    public Guid PackageId { get; set; }
     public string MobileNumber { get; set; } = string.Empty;
     public DateTime CheckInTime { get; set; }
     public int DurationHours { get; set; }
@@ -129,7 +129,7 @@ public class SetOrderPinRequest
 /// </summary>
 public class AvailableSlotDto
 {
-    public string LockerId { get; set; } = string.Empty;
+    public Guid LockerId { get; set; }
     public string LockerName { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public int SlotIndex { get; set; }
@@ -142,7 +142,7 @@ public class AvailableSlotDto
 /// </summary>
 public class OrderConfirmationDto
 {
-    public string OrderId { get; set; } = string.Empty;
+    public Guid OrderId { get; set; }
     public OrderStatus Status { get; set; }
     public decimal TotalAmount { get; set; }
     public DateTime CheckInTime { get; set; }

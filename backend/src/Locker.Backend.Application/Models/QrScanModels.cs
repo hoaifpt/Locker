@@ -7,9 +7,9 @@ public class QrScanRequest
 
 public class QrScanResultDto
 {
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; }
     public string QrCode { get; set; } = string.Empty;
-    public string? LockerId { get; set; }
+    public Guid? LockerId { get; set; }
     public string? LockerCode { get; set; }
     public DateTime ScannedAt { get; set; }
     public bool IsValid { get; set; }

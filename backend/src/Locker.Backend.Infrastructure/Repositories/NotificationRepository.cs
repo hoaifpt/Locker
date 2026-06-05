@@ -12,13 +12,13 @@ public class NotificationRepository : GenericRepository<Notification>, INotifica
     {
     }
 
-    public async Task<List<Notification>> GetByUserIdAsync(string userId, CancellationToken cancellationToken)
+    public async Task<List<Notification>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(n => n.UserId == userId, cancellationToken: cancellationToken);
         return await cursor.ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> MarkAsReadAsync(string notificationId, string userId, CancellationToken cancellationToken)
+    public async Task<bool> MarkAsReadAsync(Guid notificationId, Guid userId, CancellationToken cancellationToken)
     {
         var update = Builders<Notification>.Update.Set(n => n.IsRead, true);
         var result = await _collection.UpdateOneAsync(
@@ -28,7 +28,7 @@ public class NotificationRepository : GenericRepository<Notification>, INotifica
         return result.ModifiedCount > 0;
     }
 
-    public async Task<int> MarkAllAsReadAsync(string userId, CancellationToken cancellationToken)
+    public async Task<int> MarkAllAsReadAsync(Guid userId, CancellationToken cancellationToken)
     {
         var update = Builders<Notification>.Update.Set(n => n.IsRead, true);
         var result = await _collection.UpdateManyAsync(

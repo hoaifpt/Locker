@@ -1,6 +1,7 @@
 using Locker.Backend.Domain.Entities;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
@@ -18,11 +19,14 @@ public class MongoContext
         };
         ConventionRegistry.Register("CamelCaseIgnoreExtra", pack, _ => true);
 
+        #pragma warning disable CS0618
+        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        #pragma warning restore CS0618
+
         BsonClassMap.RegisterClassMap<BaseEntity>(cm =>
         {
             cm.AutoMap();
-            cm.MapIdProperty(x => x.Id)
-              .SetSerializer(new FlexibleStringIdSerializer());
+            cm.MapIdProperty(x => x.Id);
         });
     }
 

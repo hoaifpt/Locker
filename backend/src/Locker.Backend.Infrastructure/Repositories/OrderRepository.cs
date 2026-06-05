@@ -13,7 +13,7 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
     {
     }
 
-    public async Task<List<Order>> GetByUserIdAsync(string userId, CancellationToken cancellationToken)
+    public async Task<List<Order>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(
             o => o.UserId == userId,
@@ -22,7 +22,7 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
     }
 
     public async Task<List<Order>> GetByUserIdAndStatusAsync(
-        string userId,
+        Guid userId,
         OrderStatus status,
         CancellationToken cancellationToken)
     {
@@ -41,7 +41,7 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
     }
 
     public async Task<Order?> GetActiveBySlotAsync(
-        string lockerId,
+        Guid lockerId,
         int slotIndex,
         CancellationToken cancellationToken)
     {
@@ -56,7 +56,7 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
     }
 
     public async Task<List<Order>> GetConflictingOrdersAsync(
-        string lockerId,
+        Guid lockerId,
         int slotIndex,
         DateTime checkInTime,
         DateTime checkOutTime,
@@ -75,7 +75,7 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
     }
 
     public async Task<List<Order>> GetByLockerIdAsync(
-        string lockerId,
+        Guid lockerId,
         CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(

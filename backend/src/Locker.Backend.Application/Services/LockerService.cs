@@ -39,7 +39,7 @@ public class LockerService
         return available.Select(_lockerMapper.Map).ToList();
     }
 
-    public async Task<LockerDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public async Task<LockerDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(id, cancellationToken);
         return locker == null ? null : _lockerMapper.Map(locker);
@@ -62,7 +62,7 @@ public class LockerService
         return _lockerMapper.Map(locker);
     }
 
-    public async Task<bool> UpdateAsync(string id, UpdateLockerRequest request, CancellationToken cancellationToken)
+    public async Task<bool> UpdateAsync(Guid id, UpdateLockerRequest request, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(id, cancellationToken);
         if (locker == null) return false;
@@ -75,12 +75,12 @@ public class LockerService
         return true;
     }
 
-    public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _lockerRepository.SoftDeleteAsync(id, cancellationToken);
     }
 
-    public async Task<bool> UpdateSlotStatusAsync(string lockerId, int slotIndex, LockerSlotStatus status, CancellationToken cancellationToken)
+    public async Task<bool> UpdateSlotStatusAsync(Guid lockerId, int slotIndex, LockerSlotStatus status, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(lockerId, cancellationToken);
         if (locker == null) return false;
@@ -123,7 +123,7 @@ public class LockerService
         var normalizedQrCode = qrCode.Trim().ToLowerInvariant();
 
         var locker = lockers.FirstOrDefault(l =>
-            l.Id.Equals(normalizedQrCode, StringComparison.OrdinalIgnoreCase) ||
+            l.Id.ToString().Equals(normalizedQrCode, StringComparison.OrdinalIgnoreCase) ||
             l.Name.Equals(normalizedQrCode, StringComparison.OrdinalIgnoreCase));
 
         if (locker == null)
@@ -133,7 +133,7 @@ public class LockerService
 
         return new QrScanResultDto
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = Guid.NewGuid(),
             QrCode = qrCode,
             LockerId = locker.Id,
             LockerCode = locker.Name,
@@ -147,7 +147,7 @@ public class LockerService
         return Task.FromResult(new List<QrScanResultDto>());
     }
 
-    public async Task<bool> UpdateSettingsAsync(string lockerId, UpdateLockerSettingsRequest request, CancellationToken cancellationToken)
+    public async Task<bool> UpdateSettingsAsync(Guid lockerId, UpdateLockerSettingsRequest request, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(lockerId, cancellationToken);
         if (locker == null) return false;
@@ -163,9 +163,9 @@ public class LockerService
     }
 
     public async Task<OpenLockerResult> OpenSlotAsync(
-        string lockerId,
+        Guid lockerId,
         int slotIndex,
-        string? userId,
+        Guid? userId,
         bool isPrivileged,
         CancellationToken cancellationToken)
     {
@@ -177,7 +177,7 @@ public class LockerService
 
         if (!isPrivileged)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return OpenLockerResult.Forbidden;
+            if (userId == null || userId == Guid.Empty) return OpenLockerResult.Forbidden;
 
             var booking = await _bookingRepository.GetActiveBySlotAsync(lockerId, slotIndex, cancellationToken);
             var order = await _orderRepository.GetActiveBySlotAsync(lockerId, slotIndex, cancellationToken);
@@ -193,7 +193,7 @@ public class LockerService
         return OpenLockerResult.Success;
     }
 
-    public async Task<bool> RecordOpenEventAsync(string lockerId, int slotIndex, LockerOpenEventRequest request, CancellationToken cancellationToken)
+    public async Task<bool> RecordOpenEventAsync(Guid lockerId, int slotIndex, LockerOpenEventRequest request, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(lockerId, cancellationToken);
         if (locker == null) return false;

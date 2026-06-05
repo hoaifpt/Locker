@@ -20,7 +20,7 @@ public class BookingsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var item = await _bookingService.GetByIdAsync(id, cancellationToken);
         if (item == null) return NotFound();
@@ -49,7 +49,7 @@ public class BookingsController : ControllerBase
     }
 
     [HttpPost("{id}/set-pin")]
-    public async Task<IActionResult> SetPin(string id, [FromBody] SetPinRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> SetPin(Guid id, [FromBody] SetPinRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
         if (userId == null) return Unauthorized();
@@ -60,7 +60,7 @@ public class BookingsController : ControllerBase
     }
 
     [HttpPost("{id}/verify-pin")]
-    public async Task<IActionResult> VerifyPin(string id, [FromBody] VerifyPinRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> VerifyPin(Guid id, [FromBody] VerifyPinRequest request, CancellationToken cancellationToken)
     {
         var valid = await _bookingService.VerifyPinAsync(id, request, cancellationToken);
         if (!valid) return BadRequest(new { message = "Incorrect PIN" });
@@ -68,7 +68,7 @@ public class BookingsController : ControllerBase
     }
 
     [HttpPost("{id}/complete")]
-    public async Task<IActionResult> Complete(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Complete(Guid id, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
         if (userId == null) return Unauthorized();
@@ -79,7 +79,7 @@ public class BookingsController : ControllerBase
     }
 
     [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> Cancel(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
         if (userId == null) return Unauthorized();
@@ -89,6 +89,9 @@ public class BookingsController : ControllerBase
         return NoContent();
     }
 
-    private string? GetUserId()
-        => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+    private Guid GetUserId()
+    {
+        var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        return Guid.TryParse(idStr, out var id) ? id : Guid.Empty;
+    }
 }

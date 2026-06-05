@@ -31,7 +31,7 @@ public class BookingService
         _bookingMapper = bookingMapper;
     }
 
-    public async Task<BookingDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public async Task<BookingDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(id, cancellationToken);
         return booking == null ? null : _bookingMapper.Map(booking);
@@ -43,7 +43,7 @@ public class BookingService
         return bookings.Select(_bookingMapper.Map).ToList();
     }
 
-    public async Task<List<BookingDto>> GetMyBookingsAsync(string userId, BookingStatus? status, CancellationToken cancellationToken)
+    public async Task<List<BookingDto>> GetMyBookingsAsync(Guid userId, BookingStatus? status, CancellationToken cancellationToken)
     {
         var bookings = await _bookingRepository.GetByUserIdAsync(userId, cancellationToken);
         if (status.HasValue)
@@ -51,7 +51,7 @@ public class BookingService
         return bookings.Select(_bookingMapper.Map).ToList();
     }
 
-    public async Task<BookingDto?> CreateAsync(string userId, CreateBookingRequest request, CancellationToken cancellationToken)
+    public async Task<BookingDto?> CreateAsync(Guid userId, CreateBookingRequest request, CancellationToken cancellationToken)
     {
         var locker = await _lockerRepository.GetByIdAsync(request.LockerId, cancellationToken);
         if (locker == null) return null;
@@ -82,7 +82,7 @@ public class BookingService
         return _bookingMapper.Map(booking);
     }
 
-    public async Task<bool> SetPinAsync(string bookingId, string userId, SetPinRequest request, CancellationToken cancellationToken)
+    public async Task<bool> SetPinAsync(Guid bookingId, Guid userId, SetPinRequest request, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
         if (booking == null || booking.UserId != userId) return false;
@@ -111,7 +111,7 @@ public class BookingService
         return true;
     }
 
-    public async Task<bool> VerifyPinAsync(string bookingId, VerifyPinRequest request, CancellationToken cancellationToken)
+    public async Task<bool> VerifyPinAsync(Guid bookingId, VerifyPinRequest request, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
         if (booking == null || booking.Status != BookingStatus.Active) return false;
@@ -121,7 +121,7 @@ public class BookingService
         return _passwordHasher.Verify(request.Pin, booking.PinHash);
     }
 
-    public async Task<bool> CompleteAsync(string bookingId, string userId, CancellationToken cancellationToken)
+    public async Task<bool> CompleteAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
         if (booking == null || booking.UserId != userId) return false;
@@ -145,7 +145,7 @@ public class BookingService
         return true;
     }
 
-    public async Task<bool> CancelAsync(string bookingId, string userId, CancellationToken cancellationToken)
+    public async Task<bool> CancelAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
         if (booking == null || booking.UserId != userId) return false;

@@ -4,10 +4,10 @@ namespace Locker.Backend.Domain.Entities;
 
 public class Order : BaseEntity
 {
-    public string UserId { get; set; } = string.Empty;
-    public string LockerId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
+    public Guid LockerId { get; set; }
     public int SlotIndex { get; set; }
-    public string PackageId { get; set; } = string.Empty;
+    public Guid PackageId { get; set; }
 
     public OrderStatus Status { get; set; } = OrderStatus.Initiated;
 
@@ -24,7 +24,7 @@ public class Order : BaseEntity
     public decimal TotalAmount { get; set; }
 
     // Payment
-    public string? PaymentId { get; set; }
+    public Guid? PaymentId { get; set; }
 
     // Access
     public string PinHash { get; set; } = string.Empty;

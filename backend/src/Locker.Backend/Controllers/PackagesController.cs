@@ -26,7 +26,7 @@ public class PackagesController : ControllerBase
 
     [HttpGet("{id}")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetById(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var item = await _packageService.GetByIdAsync(id, cancellationToken);
         if (item == null) return NotFound();
@@ -43,7 +43,7 @@ public class PackagesController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(string id, [FromBody] UpdatePackageRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePackageRequest request, CancellationToken cancellationToken)
     {
         var success = await _packageService.UpdateAsync(id, request, cancellationToken);
         if (!success) return NotFound();
@@ -52,7 +52,7 @@ public class PackagesController : ControllerBase
 
     [HttpPut("{id}/soft-delete")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> SoftDelete(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> SoftDelete(Guid id, CancellationToken cancellationToken)
     {
         var success = await _packageService.SoftDeleteAsync(id, cancellationToken);
         if (!success) return NotFound();

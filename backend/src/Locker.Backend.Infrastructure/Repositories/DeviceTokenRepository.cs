@@ -12,7 +12,7 @@ public class DeviceTokenRepository : GenericRepository<DeviceToken>, IDeviceToke
     {
     }
 
-    public async Task<DeviceToken?> GetByUserAndTokenAsync(string userId, string token, CancellationToken cancellationToken)
+    public async Task<DeviceToken?> GetByUserAndTokenAsync(Guid userId, string token, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(
             t => t.UserId == userId && t.Token == token,

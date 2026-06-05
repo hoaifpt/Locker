@@ -4,5 +4,5 @@ namespace Locker.Backend.Application.Interfaces;
 
 public interface ILockerRepository : IGenericRepository<LockerEntity>
 {
-    Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken);
+    Task<bool> SoftDeleteAsync(Guid id, CancellationToken cancellationToken);
 }

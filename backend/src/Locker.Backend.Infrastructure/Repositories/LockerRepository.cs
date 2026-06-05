@@ -17,13 +17,13 @@ public class LockerRepository : GenericRepository<LockerEntity>, ILockerReposito
         return await _collection.Find(l => !l.IsDeleted).ToListAsync(cancellationToken);
     }
 
-    public override async Task<LockerEntity?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public override async Task<LockerEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(l => l.Id == id && !l.IsDeleted, cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         var locker = await GetByIdAsync(id, cancellationToken);
         if (locker == null) return false;

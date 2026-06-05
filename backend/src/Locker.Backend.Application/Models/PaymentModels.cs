@@ -4,9 +4,9 @@ namespace Locker.Backend.Application.Models;
 
 public class PaymentDto
 {
-    public string Id { get; set; } = string.Empty;
-    public string BookingId { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public Guid BookingId { get; set; }
+    public Guid UserId { get; set; }
     public decimal Amount { get; set; }
     public PaymentStatus Status { get; set; }
     public string Method { get; set; } = string.Empty;
@@ -17,7 +17,7 @@ public class PaymentDto
 
 public class CreatePaymentRequest
 {
-    public string BookingId { get; set; } = string.Empty;
+    public Guid BookingId { get; set; }
     public string Method { get; set; } = string.Empty;
 }
 
@@ -28,7 +28,7 @@ public class CompletePaymentRequest
 
 public class PaymentWebhookRequest
 {
-    public string PaymentId { get; set; } = string.Empty;
+    public Guid PaymentId { get; set; }
     public string TransactionId { get; set; } = string.Empty;
     public bool IsSuccess { get; set; }
 }

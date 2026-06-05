@@ -15,7 +15,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         _collection = collection;
     }
 
-    public virtual async Task<T?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public virtual async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(e => e.Id == id, cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
@@ -49,7 +49,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         return _collection.ReplaceOneAsync(e => e.Id == entity.Id, entity, cancellationToken: cancellationToken);
     }
 
-    public Task DeleteAsync(string id, CancellationToken cancellationToken)
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         return _collection.DeleteOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
     }

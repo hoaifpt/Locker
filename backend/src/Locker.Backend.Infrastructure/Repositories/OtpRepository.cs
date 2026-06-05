@@ -12,7 +12,7 @@ public class OtpRepository : GenericRepository<OtpCode>, IOtpRepository
     {
     }
 
-    public async Task<OtpCode?> GetLatestValidAsync(string userId, string target, CancellationToken cancellationToken)
+    public async Task<OtpCode?> GetLatestValidAsync(Guid userId, string target, CancellationToken cancellationToken)
     {
         var filter = Builders<OtpCode>.Filter.And(
             Builders<OtpCode>.Filter.Eq(o => o.UserId, userId),
@@ -25,7 +25,7 @@ public class OtpRepository : GenericRepository<OtpCode>, IOtpRepository
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task MarkUsedAsync(string id, CancellationToken cancellationToken)
+    public async Task MarkUsedAsync(Guid id, CancellationToken cancellationToken)
     {
         var update = Builders<OtpCode>.Update.Set(o => o.IsUsed, true);
         await _collection.UpdateOneAsync(o => o.Id == id, update, cancellationToken: cancellationToken);

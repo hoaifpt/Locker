@@ -24,7 +24,7 @@ public class RefreshTokenRepository : GenericRepository<RefreshToken>, IRefreshT
         return _collection.UpdateOneAsync(rt => rt.Token == token, update, cancellationToken: cancellationToken);
     }
 
-    public Task RevokeAllByUserIdAsync(string userId, CancellationToken cancellationToken)
+    public Task RevokeAllByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         var update = Builders<RefreshToken>.Update.Set(rt => rt.IsRevoked, true);
         return _collection.UpdateManyAsync(rt => rt.UserId == userId && !rt.IsRevoked, update, cancellationToken: cancellationToken);

@@ -13,7 +13,7 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
     {
     }
 
-    public async Task<List<Booking>> GetByUserIdAsync(string userId, CancellationToken cancellationToken)
+    public async Task<List<Booking>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(b => b.UserId == userId, cancellationToken: cancellationToken);
         return await cursor.ToListAsync(cancellationToken);
@@ -25,7 +25,7 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
         return await cursor.ToListAsync(cancellationToken);
     }
 
-    public async Task<Booking?> GetActiveBySlotAsync(string lockerId, int slotIndex, CancellationToken cancellationToken)
+    public async Task<Booking?> GetActiveBySlotAsync(Guid lockerId, int slotIndex, CancellationToken cancellationToken)
     {
         var cursor = await _collection.FindAsync(
             b => b.LockerId == lockerId && b.SlotIndex == slotIndex &&

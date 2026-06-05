@@ -5,14 +5,14 @@ namespace Locker.Backend.Application.Mapping;
 
 public class UserMapper : IMapper<User, UserDto>
 {
-    public UserDto Map(User source) => new()
+    public UserDto Map(User user) => new()
     {
-        Id = source.Id,
-        Username = source.Username,
-        Email = source.Email,
-        FullName = source.FullName,
-        Role = source.Role,
-        IsActive = source.IsActive,
-        CreatedAt = source.CreatedAt
+        Id = user.Id,
+        Username = user.UserName,
+        Email = user.Email,
+        FullName = user.FullName,
+        Role = "User",
+        IsActive = user.IsActive,
+        CreatedAt = user.CreatedAt
     };
 }

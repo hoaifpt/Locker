@@ -21,7 +21,7 @@ public class PackageService
         return packages.Select(_packageMapper.Map).ToList();
     }
 
-    public async Task<PackageDto?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public async Task<PackageDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var package = await _packageRepository.GetByIdAsync(id, cancellationToken);
         return package == null ? null : _packageMapper.Map(package);
@@ -34,7 +34,7 @@ public class PackageService
         return _packageMapper.Map(package);
     }
 
-    public async Task<bool> UpdateAsync(string id, UpdatePackageRequest request, CancellationToken cancellationToken)
+    public async Task<bool> UpdateAsync(Guid id, UpdatePackageRequest request, CancellationToken cancellationToken)
     {
         var package = await _packageRepository.GetByIdAsync(id, cancellationToken);
         if (package == null) return false;
@@ -44,7 +44,7 @@ public class PackageService
         return true;
     }
 
-    public async Task<bool> SoftDeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task<bool> SoftDeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _packageRepository.SoftDeleteAsync(id, cancellationToken);
     }

@@ -17,7 +17,7 @@ public class NotificationService
         _deviceTokenRepository = deviceTokenRepository;
     }
 
-    public async Task<List<NotificationDto>> GetMyAsync(string userId, CancellationToken cancellationToken)
+    public async Task<List<NotificationDto>> GetMyAsync(Guid userId, CancellationToken cancellationToken)
     {
         var notifications = await _notificationRepository.GetByUserIdAsync(userId, cancellationToken);
         return notifications
@@ -33,17 +33,17 @@ public class NotificationService
             .ToList();
     }
 
-    public Task<bool> MarkAsReadAsync(string notificationId, string userId, CancellationToken cancellationToken)
+    public Task<bool> MarkAsReadAsync(Guid notificationId, Guid userId, CancellationToken cancellationToken)
     {
         return _notificationRepository.MarkAsReadAsync(notificationId, userId, cancellationToken);
     }
 
-    public Task<int> MarkAllAsReadAsync(string userId, CancellationToken cancellationToken)
+    public Task<int> MarkAllAsReadAsync(Guid userId, CancellationToken cancellationToken)
     {
         return _notificationRepository.MarkAllAsReadAsync(userId, cancellationToken);
     }
 
-    public async Task RegisterDeviceAsync(string userId, RegisterDeviceRequest request, CancellationToken cancellationToken)
+    public async Task RegisterDeviceAsync(Guid userId, RegisterDeviceRequest request, CancellationToken cancellationToken)
     {
         var token = new DeviceToken
         {

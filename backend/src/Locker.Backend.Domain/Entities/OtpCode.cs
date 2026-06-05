@@ -2,7 +2,7 @@ namespace Locker.Backend.Domain.Entities;
 
 public class OtpCode : BaseEntity
 {
-    public string UserId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
     /// <summary>Email or Phone used as the OTP target</summary>
     public string Target { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;

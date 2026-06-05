@@ -4,7 +4,7 @@ namespace Locker.Backend.Application.Models;
 
 public class LockerMapSlotDto
 {
-    public string LockerId { get; set; } = string.Empty;
+    public Guid LockerId { get; set; }
     public int SlotIndex { get; set; }
     public string Size { get; set; } = "M";
     public LockerSlotStatus Status { get; set; }

@@ -19,7 +19,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var item = await _paymentService.GetByIdAsync(id, cancellationToken);
         if (item == null) return NotFound();
@@ -27,7 +27,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpGet("booking/{bookingId}")]
-    public async Task<IActionResult> GetByBookingId(string bookingId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByBookingId(Guid bookingId, CancellationToken cancellationToken)
     {
         var item = await _paymentService.GetByBookingIdAsync(bookingId, cancellationToken);
         if (item == null) return NotFound();
@@ -56,7 +56,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost("{id}/complete")]
-    public async Task<IActionResult> Complete(string id, [FromBody] CompletePaymentRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Complete(Guid id, [FromBody] CompletePaymentRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
         if (userId == null) return Unauthorized();
@@ -79,6 +79,9 @@ public class PaymentsController : ControllerBase
         };
     }
 
-    private string? GetUserId()
-        => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+    private Guid GetUserId()
+    {
+        var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        return Guid.TryParse(idStr, out var id) ? id : Guid.Empty;
+    }
 }

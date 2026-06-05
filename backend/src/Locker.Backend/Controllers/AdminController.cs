@@ -27,7 +27,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPut("users/{id}/role")]
-    public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateUserRoleRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateUserRole(Guid id, [FromBody] UpdateUserRoleRequest request, CancellationToken cancellationToken)
     {
         var success = await _adminService.UpdateUserRoleAsync(id, request.Role, cancellationToken);
         if (!success) return NotFound();
@@ -35,7 +35,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPut("users/{id}/deactivate")]
-    public async Task<IActionResult> DeactivateUser(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeactivateUser(Guid id, CancellationToken cancellationToken)
     {
         var success = await _adminService.DeactivateUserAsync(id, cancellationToken);
         if (!success) return NotFound();
@@ -43,7 +43,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPut("users/{id}/activate")]
-    public async Task<IActionResult> ActivateUser(string id, CancellationToken cancellationToken)
+    public async Task<IActionResult> ActivateUser(Guid id, CancellationToken cancellationToken)
     {
         var success = await _adminService.ActivateUserAsync(id, cancellationToken);
         if (!success) return NotFound();

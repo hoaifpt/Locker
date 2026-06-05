@@ -1,58 +1,66 @@
-using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Models;
+using Locker.Backend.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Locker.Backend.Application.Services;
 
 public class UserService
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IPasswordHasher _passwordHasher;
+    private readonly UserManager<User> _userManager;
     private readonly UserMapper _userMapper;
 
-    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, UserMapper userMapper)
+    public UserService(UserManager<User> userManager, UserMapper userMapper)
     {
-        _userRepository = userRepository;
-        _passwordHasher = passwordHasher;
+        _userManager = userManager;
         _userMapper = userMapper;
     }
 
-    public async Task<UserDto?> GetCurrentUserAsync(string userId, CancellationToken cancellationToken)
+    public async Task<UserDto?> GetCurrentUserAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
-        return user == null ? null : _userMapper.Map(user);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null) return null;
+
+        var dto = _userMapper.Map(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        dto.Role = roles.FirstOrDefault() ?? "User";
+        
+        return dto;
     }
 
-    public async Task<UserDto?> UpdateProfileAsync(string userId, UpdateProfileRequest request, CancellationToken cancellationToken)
+    public async Task<UserDto?> UpdateProfileAsync(Guid userId, UpdateProfileRequest request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
             return null;
 
         if (request.Email != null)
-            user.Email = request.Email;
+        {
+            await _userManager.SetEmailAsync(user, request.Email);
+        }
 
         if (request.FullName != null)
             user.FullName = request.FullName;
 
-        await _userRepository.UpdateAsync(user, cancellationToken);
-        return _userMapper.Map(user);
+        await _userManager.UpdateAsync(user);
+        
+        var dto = _userMapper.Map(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        dto.Role = roles.FirstOrDefault() ?? "User";
+        
+        return dto;
     }
 
-    public async Task<bool> ChangePasswordAsync(string userId, ChangePasswordRequest request, CancellationToken cancellationToken)
+    public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
             return false;
 
-        if (string.IsNullOrEmpty(user.PasswordHash))
-            return false;
-
-        if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
-            return false;
-
-        user.PasswordHash = _passwordHasher.Hash(request.NewPassword);
-        await _userRepository.UpdateAsync(user, cancellationToken);
-        return true;
+        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        return result.Succeeded;
     }
 }

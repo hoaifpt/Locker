@@ -60,7 +60,9 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    private string? GetUserId()
-        => User.FindFirstValue(ClaimTypes.NameIdentifier)
-           ?? User.FindFirstValue("sub");
+    private Guid GetUserId()
+    {
+        var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        return Guid.TryParse(idStr, out var id) ? id : Guid.Empty;
+    }
 }

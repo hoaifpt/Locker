@@ -1,6 +1,5 @@
 using FluentValidation;
 using Locker.Backend.Application.Mapping;
-using Locker.Backend.Application.Services;
 using Locker.Backend.Application.Validators;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,16 +21,14 @@ public static class DependencyInjection
         // Validators
         services.AddValidatorsFromAssemblyContaining<AuthRequestValidator>();
 
+        // MediatR & Pipeline Behaviors
+        services.AddMediatR(cfg => 
+        {
+            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            cfg.AddOpenBehavior(typeof(Behaviors.ValidationBehavior<,>));
+        });
+
         // Services
-        services.AddScoped<LockerService>();
-        services.AddScoped<AuthService>();
-        services.AddScoped<UserService>();
-        services.AddScoped<PackageService>();
-        services.AddScoped<BookingService>();
-        services.AddScoped<PaymentService>();
-        services.AddScoped<AdminService>();
-        services.AddScoped<OrderService>();
-        services.AddScoped<NotificationService>();
         return services;
     }
 }

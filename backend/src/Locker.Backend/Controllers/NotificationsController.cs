@@ -1,6 +1,13 @@
+using System;
 using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
+using Locker.Backend.Application.Features.Notifications.Commands.MarkAllNotificationsAsRead;
+using Locker.Backend.Application.Features.Notifications.Commands.MarkNotificationAsRead;
+using Locker.Backend.Application.Features.Notifications.Commands.RegisterDevice;
+using Locker.Backend.Application.Features.Notifications.Queries.GetMyNotifications;
 using Locker.Backend.Application.Models;
-using Locker.Backend.Application.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +18,11 @@ namespace Locker.Backend.Controllers;
 [Authorize]
 public class NotificationsController : ControllerBase
 {
-    private readonly NotificationService _notificationService;
+    private readonly ISender _sender;
 
-    public NotificationsController(NotificationService notificationService)
+    public NotificationsController(ISender sender)
     {
-        _notificationService = notificationService;
+        _sender = sender;
     }
 
     [HttpGet("my")]
@@ -24,7 +31,7 @@ public class NotificationsController : ControllerBase
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        var items = await _notificationService.GetMyAsync(userId, cancellationToken);
+        var items = await _sender.Send(new GetMyNotificationsQuery(userId), cancellationToken);
         return Ok(items);
     }
 
@@ -34,7 +41,7 @@ public class NotificationsController : ControllerBase
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        var updated = await _notificationService.MarkAsReadAsync(id, userId, cancellationToken);
+        var updated = await _sender.Send(new MarkNotificationAsReadCommand(id, userId), cancellationToken);
         if (!updated) return NotFound();
         return NoContent();
     }
@@ -45,7 +52,7 @@ public class NotificationsController : ControllerBase
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        await _notificationService.MarkAllAsReadAsync(userId, cancellationToken);
+        await _sender.Send(new MarkAllNotificationsAsReadCommand(userId), cancellationToken);
         return NoContent();
     }
 
@@ -55,7 +62,7 @@ public class NotificationsController : ControllerBase
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        await _notificationService.RegisterDeviceAsync(userId, request, cancellationToken);
+        await _sender.Send(new RegisterDeviceCommand(userId, request.DeviceToken, request.Platform), cancellationToken);
         return NoContent();
     }
 

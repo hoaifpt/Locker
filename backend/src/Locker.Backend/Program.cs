@@ -50,6 +50,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
+// MediatR Pipeline Behavior for validation
+builder.Services.AddValidatorsFromAssemblyContaining<Locker.Backend.Application.Validators.AuthRequestValidator>();
 
 // Rate limiting
 builder.Services.AddRateLimiter(options =>
@@ -136,6 +138,8 @@ app.UseSwaggerUI(options =>
 });
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
+
+app.UseMiddleware<Locker.Backend.Middlewares.ExceptionHandlingMiddleware>();
 
 app.UseCors("AllowAll");
 

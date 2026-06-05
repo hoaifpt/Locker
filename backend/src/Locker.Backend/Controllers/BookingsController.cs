@@ -1,7 +1,17 @@
+using System;
 using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
+using Locker.Backend.Application.Features.Bookings.Commands.CancelBooking;
+using Locker.Backend.Application.Features.Bookings.Commands.CompleteBooking;
+using Locker.Backend.Application.Features.Bookings.Commands.CreateBooking;
+using Locker.Backend.Application.Features.Bookings.Commands.SetPin;
+using Locker.Backend.Application.Features.Bookings.Commands.VerifyPin;
+using Locker.Backend.Application.Features.Bookings.Queries.GetBookingById;
+using Locker.Backend.Application.Features.Bookings.Queries.GetMyBookings;
 using Locker.Backend.Application.Models;
-using Locker.Backend.Application.Services;
 using Locker.Backend.Domain.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,17 +22,17 @@ namespace Locker.Backend.Controllers;
 [Authorize]
 public class BookingsController : ControllerBase
 {
-    private readonly BookingService _bookingService;
+    private readonly ISender _sender;
 
-    public BookingsController(BookingService bookingService)
+    public BookingsController(ISender sender)
     {
-        _bookingService = bookingService;
+        _sender = sender;
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var item = await _bookingService.GetByIdAsync(id, cancellationToken);
+        var item = await _sender.Send(new GetBookingByIdQuery(id), cancellationToken);
         if (item == null) return NotFound();
         return Ok(item);
     }
@@ -32,7 +42,7 @@ public class BookingsController : ControllerBase
     {
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
-        var items = await _bookingService.GetMyBookingsAsync(userId, status, cancellationToken);
+        var items = await _sender.Send(new GetMyBookingsQuery(userId, status), cancellationToken);
         return Ok(items);
     }
 
@@ -42,7 +52,7 @@ public class BookingsController : ControllerBase
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        var item = await _bookingService.CreateAsync(userId, request, cancellationToken);
+        var item = await _sender.Send(new CreateBookingCommand(userId, request.LockerId, request.SlotIndex, request.PackageId, request.MobileNumber), cancellationToken);
         if (item == null) return BadRequest(new { message = "Locker slot not available or package not found" });
 
         return CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
@@ -54,7 +64,7 @@ public class BookingsController : ControllerBase
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        var success = await _bookingService.SetPinAsync(id, userId, request, cancellationToken);
+        var success = await _sender.Send(new SetPinCommand(id, userId, request.Pin), cancellationToken);
         if (!success) return BadRequest(new { message = "Cannot set PIN for this booking" });
         return NoContent();
     }
@@ -62,7 +72,7 @@ public class BookingsController : ControllerBase
     [HttpPost("{id}/verify-pin")]
     public async Task<IActionResult> VerifyPin(Guid id, [FromBody] VerifyPinRequest request, CancellationToken cancellationToken)
     {
-        var valid = await _bookingService.VerifyPinAsync(id, request, cancellationToken);
+        var valid = await _sender.Send(new VerifyPinCommand(id, request.Pin), cancellationToken);
         if (!valid) return BadRequest(new { message = "Incorrect PIN" });
         return Ok(new { message = "PIN verified" });
     }
@@ -73,7 +83,7 @@ public class BookingsController : ControllerBase
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        var success = await _bookingService.CompleteAsync(id, userId, cancellationToken);
+        var success = await _sender.Send(new CompleteBookingCommand(id, userId), cancellationToken);
         if (!success) return BadRequest(new { message = "Cannot complete this booking" });
         return NoContent();
     }
@@ -84,7 +94,7 @@ public class BookingsController : ControllerBase
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        var success = await _bookingService.CancelAsync(id, userId, cancellationToken);
+        var success = await _sender.Send(new CancelBookingCommand(id, userId), cancellationToken);
         if (!success) return BadRequest(new { message = "Cannot cancel this booking" });
         return NoContent();
     }

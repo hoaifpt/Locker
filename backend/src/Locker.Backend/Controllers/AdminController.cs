@@ -1,5 +1,11 @@
-using Locker.Backend.Application.Services;
+using Locker.Backend.Application.Features.Admin.Commands.ActivateUser;
+using Locker.Backend.Application.Features.Admin.Commands.DeactivateUser;
+using Locker.Backend.Application.Features.Admin.Commands.UpdateUserRole;
+using Locker.Backend.Application.Features.Admin.Queries.GetAllBookings;
+using Locker.Backend.Application.Features.Admin.Queries.GetAllPayments;
+using Locker.Backend.Application.Features.Admin.Queries.GetAllUsers;
 using Locker.Backend.Domain.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +16,11 @@ namespace Locker.Backend.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminController : ControllerBase
 {
-    private readonly AdminService _adminService;
+    private readonly ISender _sender;
 
-    public AdminController(AdminService adminService)
+    public AdminController(ISender sender)
     {
-        _adminService = adminService;
+        _sender = sender;
     }
 
     // ── Users ──────────────────────────────────────────────
@@ -22,14 +28,14 @@ public class AdminController : ControllerBase
     [HttpGet("users")]
     public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
     {
-        var users = await _adminService.GetAllUsersAsync(cancellationToken);
+        var users = await _sender.Send(new GetAllUsersQuery(), cancellationToken);
         return Ok(users);
     }
 
     [HttpPut("users/{id}/role")]
     public async Task<IActionResult> UpdateUserRole(Guid id, [FromBody] UpdateUserRoleRequest request, CancellationToken cancellationToken)
     {
-        var success = await _adminService.UpdateUserRoleAsync(id, request.Role, cancellationToken);
+        var success = await _sender.Send(new UpdateUserRoleCommand(id, request.Role), cancellationToken);
         if (!success) return NotFound();
         return NoContent();
     }
@@ -37,7 +43,7 @@ public class AdminController : ControllerBase
     [HttpPut("users/{id}/deactivate")]
     public async Task<IActionResult> DeactivateUser(Guid id, CancellationToken cancellationToken)
     {
-        var success = await _adminService.DeactivateUserAsync(id, cancellationToken);
+        var success = await _sender.Send(new DeactivateUserCommand(id), cancellationToken);
         if (!success) return NotFound();
         return NoContent();
     }
@@ -45,7 +51,7 @@ public class AdminController : ControllerBase
     [HttpPut("users/{id}/activate")]
     public async Task<IActionResult> ActivateUser(Guid id, CancellationToken cancellationToken)
     {
-        var success = await _adminService.ActivateUserAsync(id, cancellationToken);
+        var success = await _sender.Send(new ActivateUserCommand(id), cancellationToken);
         if (!success) return NotFound();
         return NoContent();
     }
@@ -55,7 +61,7 @@ public class AdminController : ControllerBase
     [HttpGet("bookings")]
     public async Task<IActionResult> GetAllBookings([FromQuery] BookingStatus? status, CancellationToken cancellationToken)
     {
-        var bookings = await _adminService.GetAllBookingsAsync(status, cancellationToken);
+        var bookings = await _sender.Send(new GetAllBookingsQuery(status), cancellationToken);
         return Ok(bookings);
     }
 
@@ -64,7 +70,7 @@ public class AdminController : ControllerBase
     [HttpGet("payments")]
     public async Task<IActionResult> GetAllPayments(CancellationToken cancellationToken)
     {
-        var payments = await _adminService.GetAllPaymentsAsync(cancellationToken);
+        var payments = await _sender.Send(new GetAllPaymentsQuery(), cancellationToken);
         return Ok(payments);
     }
 }

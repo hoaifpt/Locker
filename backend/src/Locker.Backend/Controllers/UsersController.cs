@@ -1,6 +1,9 @@
 using System.Security.Claims;
 using Locker.Backend.Application.Models;
-using Locker.Backend.Application.Services;
+using Locker.Backend.Application.Features.Users.Commands.ChangePassword;
+using Locker.Backend.Application.Features.Users.Commands.UpdateProfile;
+using Locker.Backend.Application.Features.Users.Queries.GetProfile;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +14,11 @@ namespace Locker.Backend.Controllers;
 [Authorize]
 public class UsersController : ControllerBase
 {
-    private readonly UserService _userService;
+    private readonly ISender _sender;
 
-    public UsersController(UserService userService)
+    public UsersController(ISender sender)
     {
-        _userService = userService;
+        _sender = sender;
     }
 
     [HttpGet("me")]
@@ -25,7 +28,7 @@ public class UsersController : ControllerBase
         if (userId == Guid.Empty)
             return Unauthorized();
 
-        var user = await _userService.GetCurrentUserAsync(userId, cancellationToken);
+        var user = await _sender.Send(new GetProfileQuery(userId), cancellationToken);
         if (user == null)
             return NotFound();
 
@@ -39,7 +42,7 @@ public class UsersController : ControllerBase
         if (userId == Guid.Empty)
             return Unauthorized();
 
-        var user = await _userService.UpdateProfileAsync(userId, request, cancellationToken);
+        var user = await _sender.Send(new UpdateProfileCommand(userId, request.Email, request.FullName), cancellationToken);
         if (user == null)
             return NotFound();
 
@@ -53,7 +56,7 @@ public class UsersController : ControllerBase
         if (userId == Guid.Empty)
             return Unauthorized();
 
-        var success = await _userService.ChangePasswordAsync(userId, request, cancellationToken);
+        var success = await _sender.Send(new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword), cancellationToken);
         if (!success)
             return BadRequest(new { message = "Current password is incorrect" });
 

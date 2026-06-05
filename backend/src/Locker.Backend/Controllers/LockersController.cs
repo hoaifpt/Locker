@@ -1,7 +1,22 @@
+using System;
 using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
+using Locker.Backend.Application.Features.Lockers.Commands.CreateLocker;
+using Locker.Backend.Application.Features.Lockers.Commands.DeleteLocker;
+using Locker.Backend.Application.Features.Lockers.Commands.OpenLockerSlot;
+using Locker.Backend.Application.Features.Lockers.Commands.RecordOpenEvent;
+using Locker.Backend.Application.Features.Lockers.Commands.UpdateLocker;
+using Locker.Backend.Application.Features.Lockers.Commands.UpdateLockerSettings;
+using Locker.Backend.Application.Features.Lockers.Commands.UpdateSlotStatus;
+using Locker.Backend.Application.Features.Lockers.Queries.GetAllLockers;
+using Locker.Backend.Application.Features.Lockers.Queries.GetAvailableLockers;
+using Locker.Backend.Application.Features.Lockers.Queries.GetLockerById;
+using Locker.Backend.Application.Features.Lockers.Queries.GetLockerMap;
+using Locker.Backend.Application.Features.Lockers.Queries.GetScanHistory;
+using Locker.Backend.Application.Features.Lockers.Queries.ValidateQrCode;
 using Locker.Backend.Application.Models;
-using Locker.Backend.Application.Services;
-using Locker.Backend.Domain.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,24 +27,24 @@ namespace Locker.Backend.Controllers;
 [Authorize]
 public class LockersController : ControllerBase
 {
-    private readonly LockerService _lockerService;
+    private readonly ISender _sender;
 
-    public LockersController(LockerService lockerService)
+    public LockersController(ISender sender)
     {
-        _lockerService = lockerService;
+        _sender = sender;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var items = await _lockerService.GetAllAsync(cancellationToken);
+        var items = await _sender.Send(new GetAllLockersQuery(), cancellationToken);
         return Ok(items);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var item = await _lockerService.GetByIdAsync(id, cancellationToken);
+        var item = await _sender.Send(new GetLockerByIdQuery(id), cancellationToken);
         if (item == null)
         {
             return NotFound();
@@ -42,7 +57,7 @@ public class LockersController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetAvailable(CancellationToken cancellationToken)
     {
-        var items = await _lockerService.GetAvailableAsync(cancellationToken);
+        var items = await _sender.Send(new GetAvailableLockersQuery(), cancellationToken);
         return Ok(items);
     }
 
@@ -50,7 +65,7 @@ public class LockersController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetMap(CancellationToken cancellationToken)
     {
-        var items = await _lockerService.GetMapAsync(cancellationToken);
+        var items = await _sender.Send(new GetLockerMapQuery(), cancellationToken);
         return Ok(items);
     }
 
@@ -58,7 +73,8 @@ public class LockersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateLockerRequest request, CancellationToken cancellationToken)
     {
-        var item = await _lockerService.CreateAsync(request, cancellationToken);
+        var command = new CreateLockerCommand(request.Name, request.Location, request.Latitude, request.Longitude, request.Slots);
+        var item = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
     }
 
@@ -66,7 +82,8 @@ public class LockersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLockerRequest request, CancellationToken cancellationToken)
     {
-        var updated = await _lockerService.UpdateAsync(id, request, cancellationToken);
+        var command = new UpdateLockerCommand(id, request.Name, request.Location, request.Latitude, request.Longitude);
+        var updated = await _sender.Send(command, cancellationToken);
         if (!updated)
         {
             return NotFound();
@@ -79,7 +96,7 @@ public class LockersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> SoftDelete(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await _lockerService.SoftDeleteAsync(id, cancellationToken);
+        var deleted = await _sender.Send(new DeleteLockerCommand(id), cancellationToken);
         if (!deleted)
         {
             return NotFound();
@@ -95,12 +112,11 @@ public class LockersController : ControllerBase
         var userId = Guid.TryParse(idStr, out var parsedId) ? parsedId : (Guid?)null;
         var isPrivileged = User.IsInRole("Admin") || User.IsInRole("Shipper");
 
-        var result = await _lockerService.OpenSlotAsync(
+        var result = await _sender.Send(new OpenLockerSlotCommand(
             id,
             request.SlotIndex,
             userId,
-            isPrivileged,
-            cancellationToken);
+            isPrivileged), cancellationToken);
 
         return result switch
         {
@@ -119,7 +135,7 @@ public class LockersController : ControllerBase
             return BadRequest(new { message = "Mã QR không được để trống." });
         }
 
-        var result = await _lockerService.ValidateQrCodeAsync(request.QrCode, cancellationToken);
+        var result = await _sender.Send(new ValidateQrCodeQuery(request.QrCode), cancellationToken);
         if (result == null)
         {
             return BadRequest(new { message = "Mã QR không hợp lệ hoặc không tìm thấy tủ." });
@@ -132,7 +148,7 @@ public class LockersController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetScanHistory(CancellationToken cancellationToken)
     {
-        var history = await _lockerService.GetScanHistoryAsync(cancellationToken);
+        var history = await _sender.Send(new GetScanHistoryQuery(), cancellationToken);
         return Ok(history);
     }
 
@@ -140,9 +156,10 @@ public class LockersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateSettings(Guid id, [FromBody] UpdateLockerSettingsRequest request, CancellationToken cancellationToken)
     {
-        var updated = await _lockerService.UpdateSettingsAsync(id, request, cancellationToken);
+        var command = new UpdateLockerSettingsCommand(id, request.IsAutoLockEnabled, request.IsIntrusionAlertEnabled);
+        var updated = await _sender.Send(command, cancellationToken);
         if (!updated) return NotFound();
-        var locker = await _lockerService.GetByIdAsync(id, cancellationToken);
+        var locker = await _sender.Send(new GetLockerByIdQuery(id), cancellationToken);
         return Ok(locker);
     }
 
@@ -151,7 +168,7 @@ public class LockersController : ControllerBase
     [Authorize(Roles = "Admin,Shipper")]
     public async Task<IActionResult> UpdateSlotStatus(Guid id, int slotIndex, [FromBody] UpdateSlotStatusRequest request, CancellationToken cancellationToken)
     {
-        var updated = await _lockerService.UpdateSlotStatusAsync(id, slotIndex, request.Status, cancellationToken);
+        var updated = await _sender.Send(new UpdateSlotStatusCommand(id, slotIndex, request.Status), cancellationToken);
         if (!updated) return NotFound();
         return NoContent();
     }
@@ -161,7 +178,7 @@ public class LockersController : ControllerBase
     [Authorize(Roles = "Admin,Shipper")]
     public async Task<IActionResult> RecordOpenEvent(Guid id, int slotIndex, [FromBody] LockerOpenEventRequest request, CancellationToken cancellationToken)
     {
-        var updated = await _lockerService.RecordOpenEventAsync(id, slotIndex, request, cancellationToken);
+        var updated = await _sender.Send(new RecordOpenEventCommand(id, slotIndex, request.SensorState), cancellationToken);
         if (!updated) return NotFound();
         return NoContent();
     }

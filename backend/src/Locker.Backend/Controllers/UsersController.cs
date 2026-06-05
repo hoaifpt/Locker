@@ -22,7 +22,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var user = await _userService.GetCurrentUserAsync(userId, cancellationToken);
@@ -36,7 +36,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var user = await _userService.UpdateProfileAsync(userId, request, cancellationToken);
@@ -50,7 +50,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var success = await _userService.ChangePasswordAsync(userId, request, cancellationToken);

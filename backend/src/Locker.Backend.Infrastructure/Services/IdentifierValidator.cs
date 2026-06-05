@@ -1,4 +1,4 @@
-using DnsClient;
+﻿using DnsClient;
 using Locker.Backend.Application.Interfaces;
 using PhoneNumbers;
 using System.Text.RegularExpressions;
@@ -16,10 +16,10 @@ public class IdentifierValidator : IIdentifierValidator
     public async Task<(bool IsValid, string? Error)> ValidateEmailAsync(string email, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(email))
-            return (false, "Email không được để trống.");
+            return (false, "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
 
         if (!_emailRegex.IsMatch(email))
-            return (false, "Định dạng email không hợp lệ.");
+            return (false, "Äá»‹nh dáº¡ng email khÃ´ng há»£p lá»‡.");
 
         // Extract domain
         var domain = email.Split('@')[1];
@@ -35,7 +35,7 @@ public class IdentifierValidator : IIdentifierValidator
                 // Fallback: check A record (some small providers use A instead of MX)
                 var aResult = await lookup.QueryAsync(domain, QueryType.A, cancellationToken: cancellationToken);
                 if (aResult.HasError || !aResult.Answers.ARecords().Any())
-                    return (false, $"Domain '{domain}' không tồn tại hoặc không thể nhận email.");
+                    return (false, $"Domain '{domain}' khÃ´ng tá»“n táº¡i hoáº·c khÃ´ng thá»ƒ nháº­n email.");
             }
         }
         catch (OperationCanceledException)
@@ -46,7 +46,7 @@ public class IdentifierValidator : IIdentifierValidator
         {
             // If DNS lookup fails due to network (e.g., offline env), fall through
             // Uncomment the return below to be strict in production:
-            // return (false, $"Không thể xác minh domain '{domain}'. Vui lòng thử lại.");
+            // return (false, $"KhÃ´ng thá»ƒ xÃ¡c minh domain '{domain}'. Vui lÃ²ng thá»­ láº¡i.");
         }
 
         return (true, null);
@@ -55,7 +55,7 @@ public class IdentifierValidator : IIdentifierValidator
     public (bool IsValid, string? Error) ValidatePhoneNumber(string phoneNumber)
     {
         if (string.IsNullOrWhiteSpace(phoneNumber))
-            return (false, "Số điện thoại không được để trống.");
+            return (false, "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
 
         try
         {
@@ -71,13 +71,13 @@ public class IdentifierValidator : IIdentifierValidator
                 // Try with common regions; default to VN for local numbers starting with 0
                 var region = phoneNumber.StartsWith("0") ? "VN" : null;
                 if (region == null)
-                    return (false, "Số điện thoại phải bắt đầu bằng '+' (định dạng quốc tế) hoặc '0' (số nội địa Việt Nam).");
+                    return (false, "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i báº¯t Ä‘áº§u báº±ng '+' (Ä‘á»‹nh dáº¡ng quá»‘c táº¿) hoáº·c '0' (sá»‘ ná»™i Ä‘á»‹a Viá»‡t Nam).");
 
                 parsed = _phoneUtil.Parse(phoneNumber, region);
             }
 
             if (!_phoneUtil.IsValidNumber(parsed))
-                return (false, "Số điện thoại không hợp lệ.");
+                return (false, "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡.");
 
             var numberType = _phoneUtil.GetNumberType(parsed);
 
@@ -87,11 +87,11 @@ public class IdentifierValidator : IIdentifierValidator
                 || numberType == PhoneNumberType.FIXED_LINE;
 
             if (!isRealNumber)
-                return (false, "Số điện thoại phải là số di động hoặc cố định hợp lệ.");
+                return (false, "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i lÃ  sá»‘ di Ä‘á»™ng hoáº·c cá»‘ Ä‘á»‹nh há»£p lá»‡.");
         }
         catch (NumberParseException ex)
         {
-            return (false, $"Số điện thoại không hợp lệ: {ex.Message}");
+            return (false, $"Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡: {ex.Message}");
         }
 
         return (true, null);

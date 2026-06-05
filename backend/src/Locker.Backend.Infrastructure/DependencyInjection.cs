@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IIdentifierValidator, IdentifierValidator>();
+        services.AddScoped<IIdentityService, IdentityService>();
 
         var mongoConnectionString = configuration.GetSection("Mongo:ConnectionString").Value ?? "mongodb://localhost:27017/LockerDb";
         var mongoDbIdentityConfig = new MongoDbIdentityConfiguration

@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Locker.Backend.Application.Interfaces;
-using Locker.Backend.Domain.Entities;
+using Locker.Backend.Application.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,16 +18,16 @@ public class JwtTokenService : IJwtTokenService
         _settings = settings.Value;
     }
 
-    public string CreateToken(User user, string role)
+    public string CreateToken(TokenSubject subject)
     {
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Role, role),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email)
+            new Claim(JwtRegisteredClaimNames.Sub, subject.UserId.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, subject.UserId.ToString()),
+            new Claim(JwtRegisteredClaimNames.UniqueName, subject.Username ?? string.Empty),
+            new Claim(ClaimTypes.Name, subject.Username ?? string.Empty),
+            new Claim(ClaimTypes.Role, subject.Role),
+            new Claim(JwtRegisteredClaimNames.Email, subject.Email ?? string.Empty)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));

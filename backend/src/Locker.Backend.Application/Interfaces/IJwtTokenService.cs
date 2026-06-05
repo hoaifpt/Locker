@@ -1,10 +1,10 @@
-using Locker.Backend.Domain.Entities;
+using Locker.Backend.Application.Models;
 
 namespace Locker.Backend.Application.Interfaces;
 
 public interface IJwtTokenService
 {
-    string CreateToken(User user, string role);
+    string CreateToken(TokenSubject subject);
     string CreateRefreshToken();
     DateTime GetAccessTokenExpiry();
     DateTime GetRefreshTokenExpiry();

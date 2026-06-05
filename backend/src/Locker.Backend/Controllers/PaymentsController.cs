@@ -38,7 +38,7 @@ public class PaymentsController : ControllerBase
     public async Task<IActionResult> GetMy(CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
         var items = await _paymentService.GetMyPaymentsAsync(userId, cancellationToken);
         return Ok(items);
     }
@@ -47,7 +47,7 @@ public class PaymentsController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreatePaymentRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         var item = await _paymentService.CreateAsync(userId, request, cancellationToken);
         if (item == null) return BadRequest(new { message = "Booking not found or not owned by you" });
@@ -59,7 +59,7 @@ public class PaymentsController : ControllerBase
     public async Task<IActionResult> Complete(Guid id, [FromBody] CompletePaymentRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         var success = await _paymentService.CompleteAsync(id, userId, request, cancellationToken);
         if (!success) return BadRequest(new { message = "Cannot complete this payment" });

@@ -40,7 +40,7 @@ public class OrdersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var orders = await _orderService.GetMyOrdersAsync(userId, status, cancellationToken);
@@ -56,7 +56,7 @@ public class OrdersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var confirmation = await _orderService.CreateAsync(userId, request, cancellationToken);
@@ -76,7 +76,7 @@ public class OrdersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var order = await _orderService.ConfirmAsync(id, userId, request, cancellationToken);
@@ -96,7 +96,7 @@ public class OrdersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var success = await _orderService.SetPinAsync(id, userId, request, cancellationToken);
@@ -115,7 +115,7 @@ public class OrdersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var order = await _orderService.ActivateAsync(id, userId, cancellationToken);
@@ -135,7 +135,7 @@ public class OrdersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var order = await _orderService.CompleteAsync(id, userId, request, cancellationToken);
@@ -155,7 +155,7 @@ public class OrdersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var order = await _orderService.CancelAsync(id, userId, request, cancellationToken);
@@ -175,7 +175,7 @@ public class OrdersController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null)
+        if (userId == Guid.Empty)
             return Unauthorized();
 
         var order = await _orderService.ExtendAsync(id, userId, request, cancellationToken);

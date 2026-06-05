@@ -1,7 +1,7 @@
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -13,7 +13,7 @@ namespace Locker.Backend.Application.Services;
 
 public class AuthService
 {
-    private readonly UserManager<User> _userManager;
+    private readonly IIdentityService _identityService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IOtpRepository _otpRepository;
@@ -25,7 +25,7 @@ public class AuthService
     private static readonly TimeSpan OtpExpiry = TimeSpan.FromMinutes(5);
 
     public AuthService(
-        UserManager<User> userManager,
+        IIdentityService identityService,
         IRefreshTokenRepository refreshTokenRepository,
         IJwtTokenService jwtTokenService,
         IOtpRepository otpRepository,
@@ -34,7 +34,7 @@ public class AuthService
         IOptions<AppSettings> appSettings,
         ILogger<AuthService> logger)
     {
-        _userManager = userManager;
+        _identityService = identityService;
         _refreshTokenRepository = refreshTokenRepository;
         _jwtTokenService = jwtTokenService;
         _otpRepository = otpRepository;
@@ -51,40 +51,40 @@ public class AuthService
 
         if (identifier.Contains("@"))
         {
-            user = await _userManager.FindByEmailAsync(identifier);
+            user = await _identityService.FindByEmailAsync(identifier);
         }
         else
         {
-            user = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == identifier);
-            user ??= await _userManager.FindByNameAsync(identifier);
+            user = (await _identityService.FindByPhoneNumberAsync(identifier));
+            user ??= await _identityService.FindByNameAsync(identifier);
         }
 
         if (user == null)
             return (null, "Email/số điện thoại hoặc mật khẩu không đúng.");
 
-        if (!await _userManager.IsEmailConfirmedAsync(user))
+        if (!await _identityService.IsEmailConfirmedAsync(user))
             return (null, "Tài khoản chưa được xác thực email. Vui lòng kiểm tra hộp thư của bạn.");
 
         if (!user.IsActive)
             return (null, "Tài khoản đã bị vô hiệu hóa.");
 
-        if (await _userManager.IsLockedOutAsync(user))
+        if (await _identityService.IsLockedOutAsync(user))
         {
             var remaining = (int)Math.Ceiling(((user.LockoutEnd ?? DateTimeOffset.UtcNow) - DateTimeOffset.UtcNow).TotalMinutes);
             return (null, $"Tài khoản tạm thời bị khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau {remaining} phút.");
         }
 
-        if (!await _userManager.CheckPasswordAsync(user, request.Password))
+        if (!await _identityService.CheckPasswordAsync(user, request.Password))
         {
-            await _userManager.AccessFailedAsync(user);
-            if (await _userManager.IsLockedOutAsync(user))
+            await _identityService.AccessFailedAsync(user);
+            if (await _identityService.IsLockedOutAsync(user))
             {
                 return (null, "Tài khoản bị khóa do đăng nhập sai nhiều lần liên tiếp.");
             }
             return (null, "Email/số điện thoại hoặc mật khẩu không đúng.");
         }
 
-        await _userManager.ResetAccessFailedCountAsync(user);
+        await _identityService.ResetAccessFailedCountAsync(user);
 
         var response = await GenerateAuthResponseAsync(user, cancellationToken);
         return (response, null);
@@ -92,17 +92,17 @@ public class AuthService
 
     public async Task<(bool Success, string? Error)> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
-        var existing = await _userManager.FindByNameAsync(request.Username);
+        var existing = await _identityService.FindByNameAsync(request.Username);
         if (existing != null)
             return (false, "Tên người dùng đã tồn tại.");
 
-        var existingEmail = await _userManager.FindByEmailAsync(request.Email);
+        var existingEmail = await _identityService.FindByEmailAsync(request.Email);
         if (existingEmail != null)
             return (false, "Email đã được sử dụng.");
 
         if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
         {
-            var existingPhone = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == request.PhoneNumber);
+            var existingPhone = (await _identityService.FindByPhoneNumberAsync(request.PhoneNumber));
             if (existingPhone != null)
                 return (false, "Số điện thoại đã được sử dụng.");
         }
@@ -119,13 +119,13 @@ public class AuthService
             EmailVerificationToken = verificationToken
         };
 
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
+        var result = await _identityService.CreateUserAsync(user, request.Password);
+        if (!result.Success)
         {
-            return (false, string.Join(", ", result.Errors.Select(e => e.Description)));
+            return (false, string.Join(", ", result.Errors));
         }
 
-        await _userManager.AddToRoleAsync(user, "User");
+        await _identityService.AddToRoleAsync(user, "User");
 
         try
         {
@@ -142,13 +142,13 @@ public class AuthService
 
     public async Task<(bool Success, string? Error)> ResendVerificationEmailAsync(ResendVerificationRequest request, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email.Trim());
+        var user = await _identityService.FindByEmailAsync(request.Email.Trim());
 
-        if (user == null || await _userManager.IsEmailConfirmedAsync(user))
+        if (user == null || await _identityService.IsEmailConfirmedAsync(user))
             return (true, null);
 
         user.EmailVerificationToken = Guid.NewGuid().ToString("N");
-        await _userManager.UpdateAsync(user);
+        await _identityService.UpdateUserAsync(user);
 
         try
         {
@@ -169,14 +169,14 @@ public class AuthService
         if (string.IsNullOrWhiteSpace(token))
             return (false, "Token không hợp lệ.");
 
-        var user = _userManager.Users.FirstOrDefault(u => u.EmailVerificationToken == token);
+        var user = (await _identityService.FindByEmailVerificationTokenAsync(token));
         if (user == null)
             return (false, "Liên kết xác thực không hợp lệ hoặc đã được sử dụng.");
 
         user.EmailConfirmed = true;
         user.IsActive = true;
         user.EmailVerificationToken = null;
-        await _userManager.UpdateAsync(user);
+        await _identityService.UpdateUserAsync(user);
 
         return (true, null);
     }
@@ -187,7 +187,7 @@ public class AuthService
         if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt < DateTime.UtcNow)
             return null;
 
-        var user = await _userManager.FindByIdAsync(storedToken.UserId.ToString());
+        var user = await _identityService.FindByIdAsync(storedToken.UserId.ToString());
         if (user == null || !user.IsActive)
             return null;
 
@@ -216,7 +216,7 @@ public class AuthService
         if (!valid)
             return (false, error);
 
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _identityService.FindByEmailAsync(email);
 
         if (user == null || !user.IsActive)
             return (true, null);
@@ -247,7 +247,7 @@ public class AuthService
         if (!valid)
             return (false, error);
 
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _identityService.FindByEmailAsync(email);
 
         if (user == null || !user.IsActive)
             return (false, "Tài khoản không tồn tại.");
@@ -258,10 +258,10 @@ public class AuthService
 
         await _otpRepository.MarkUsedAsync(otp.Id, cancellationToken);
 
-        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var result = await _userManager.ResetPasswordAsync(user, resetToken, request.NewPassword);
+        var resetToken = await _identityService.GeneratePasswordResetTokenAsync(user);
+        var result = await _identityService.ResetPasswordAsync(user, resetToken, request.NewPassword);
         
-        if (!result.Succeeded)
+        if (!result.Success)
             return (false, "Không thể thay đổi mật khẩu.");
 
         return (true, null);
@@ -269,10 +269,11 @@ public class AuthService
 
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)
     {
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _identityService.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "User";
 
-        var accessToken = _jwtTokenService.CreateToken(user, role);
+        var tokenSubject = new TokenSubject(user.Id, user.UserName, user.Email, role);
+        var accessToken = _jwtTokenService.CreateToken(tokenSubject);
         var refreshTokenValue = _jwtTokenService.CreateRefreshToken();
 
         var refreshToken = new RefreshToken

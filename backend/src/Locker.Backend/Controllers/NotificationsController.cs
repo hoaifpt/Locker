@@ -22,7 +22,7 @@ public class NotificationsController : ControllerBase
     public async Task<IActionResult> GetMy(CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         var items = await _notificationService.GetMyAsync(userId, cancellationToken);
         return Ok(items);
@@ -32,7 +32,7 @@ public class NotificationsController : ControllerBase
     public async Task<IActionResult> MarkAsRead(Guid id, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         var updated = await _notificationService.MarkAsReadAsync(id, userId, cancellationToken);
         if (!updated) return NotFound();
@@ -43,7 +43,7 @@ public class NotificationsController : ControllerBase
     public async Task<IActionResult> MarkAllAsRead(CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         await _notificationService.MarkAllAsReadAsync(userId, cancellationToken);
         return NoContent();
@@ -53,7 +53,7 @@ public class NotificationsController : ControllerBase
     public async Task<IActionResult> RegisterDevice([FromBody] RegisterDeviceRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         await _notificationService.RegisterDeviceAsync(userId, request, cancellationToken);
         return NoContent();

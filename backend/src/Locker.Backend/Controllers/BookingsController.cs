@@ -31,7 +31,7 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> GetMy([FromQuery] BookingStatus? status, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
         var items = await _bookingService.GetMyBookingsAsync(userId, status, cancellationToken);
         return Ok(items);
     }
@@ -40,7 +40,7 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateBookingRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         var item = await _bookingService.CreateAsync(userId, request, cancellationToken);
         if (item == null) return BadRequest(new { message = "Locker slot not available or package not found" });
@@ -52,7 +52,7 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> SetPin(Guid id, [FromBody] SetPinRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         var success = await _bookingService.SetPinAsync(id, userId, request, cancellationToken);
         if (!success) return BadRequest(new { message = "Cannot set PIN for this booking" });
@@ -71,7 +71,7 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> Complete(Guid id, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         var success = await _bookingService.CompleteAsync(id, userId, cancellationToken);
         if (!success) return BadRequest(new { message = "Cannot complete this booking" });
@@ -82,7 +82,7 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId == null) return Unauthorized();
+        if (userId == Guid.Empty) return Unauthorized();
 
         var success = await _bookingService.CancelAsync(id, userId, cancellationToken);
         if (!success) return BadRequest(new { message = "Cannot cancel this booking" });

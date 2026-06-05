@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Locker.Backend.Application.Models;
 
 namespace Locker.Backend.Application.Validators;
@@ -8,8 +8,8 @@ public class AuthRequestValidator : AbstractValidator<AuthRequest>
     public AuthRequestValidator()
     {
         RuleFor(x => x.Identifier)
-            .NotEmpty().WithMessage("Email hoặc số điện thoại được yêu cầu.")
-            .MaximumLength(255).WithMessage("Identifier quá dài.");
+            .NotEmpty().WithMessage("Email hoáº·c sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Æ°á»£c yÃªu cáº§u.")
+            .MaximumLength(255).WithMessage("Identifier quÃ¡ dÃ i.");
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required.")
@@ -44,7 +44,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
             .When(x => x.FullName != null);
 
         RuleFor(x => x.PhoneNumber)
-            .Matches(@"^(\+?[0-9]{7,15})$").WithMessage("Số điện thoại không hợp lệ (ví dụ: +84901234567 hoặc 0901234567).")
+            .Matches(@"^(\+?[0-9]{7,15})$").WithMessage("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡ (vÃ­ dá»¥: +84901234567 hoáº·c 0901234567).")
             .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
     }
 }
@@ -86,9 +86,9 @@ public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRe
     public ForgotPasswordRequestValidator()
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email không được để trống.")
-            .EmailAddress().WithMessage("Email không hợp lệ.")
-            .MaximumLength(200).WithMessage("Email quá dài.");
+            .NotEmpty().WithMessage("Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")
+            .EmailAddress().WithMessage("Email khÃ´ng há»£p lá»‡.")
+            .MaximumLength(200).WithMessage("Email quÃ¡ dÃ i.");
     }
 }
 
@@ -97,20 +97,20 @@ public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequ
     public ResetPasswordRequestValidator()
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email hoặc số điện thoại không được để trống.");
+            .NotEmpty().WithMessage("Email hoáº·c sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
 
         RuleFor(x => x.Otp)
-            .NotEmpty().WithMessage("Mã OTP không được để trống.")
-            .Length(6).WithMessage("Mã OTP phải gồm 6 chữ số.")
-            .Matches("^[0-9]+$").WithMessage("Mã OTP chỉ chứa chữ số.");
+            .NotEmpty().WithMessage("MÃ£ OTP khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")
+            .Length(6).WithMessage("MÃ£ OTP pháº£i gá»“m 6 chá»¯ sá»‘.")
+            .Matches("^[0-9]+$").WithMessage("MÃ£ OTP chá»‰ chá»©a chá»¯ sá»‘.");
 
         RuleFor(x => x.NewPassword)
-            .NotEmpty().WithMessage("Mật khẩu mới không được để trống.")
-            .MinimumLength(8).WithMessage("Mật khẩu phải có ít nhất 8 ký tự.")
-            .Matches("[A-Z]").WithMessage("Mật khẩu phải chứa ít nhất một chữ hoa.")
-            .Matches("[a-z]").WithMessage("Mật khẩu phải chứa ít nhất một chữ thường.")
-            .Matches("[0-9]").WithMessage("Mật khẩu phải chứa ít nhất một chữ số.")
-            .Matches("[^a-zA-Z0-9]").WithMessage("Mật khẩu phải chứa ít nhất một ký tự đặc biệt.");
+            .NotEmpty().WithMessage("Máº­t kháº©u má»›i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")
+            .MinimumLength(8).WithMessage("Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 8 kÃ½ tá»±.")
+            .Matches("[A-Z]").WithMessage("Máº­t kháº©u pháº£i chá»©a Ã­t nháº¥t má»™t chá»¯ hoa.")
+            .Matches("[a-z]").WithMessage("Máº­t kháº©u pháº£i chá»©a Ã­t nháº¥t má»™t chá»¯ thÆ°á»ng.")
+            .Matches("[0-9]").WithMessage("Máº­t kháº©u pháº£i chá»©a Ã­t nháº¥t má»™t chá»¯ sá»‘.")
+            .Matches("[^a-zA-Z0-9]").WithMessage("Máº­t kháº©u pháº£i chá»©a Ã­t nháº¥t má»™t kÃ½ tá»± Ä‘áº·c biá»‡t.");
     }
 }
 
@@ -195,24 +195,24 @@ public class CreateOrderRequestValidator : AbstractValidator<CreateOrderRequest>
     public CreateOrderRequestValidator()
     {
         RuleFor(x => x.LockerId)
-            .NotEmpty().WithMessage("Mã tủ khóa không được để trống.");
+            .NotEmpty().WithMessage("MÃ£ tá»§ khÃ³a khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
 
         RuleFor(x => x.SlotIndex)
-            .GreaterThanOrEqualTo(0).WithMessage("Vị trí khoang phải >= 0.");
+            .GreaterThanOrEqualTo(0).WithMessage("Vá»‹ trÃ­ khoang pháº£i >= 0.");
 
         RuleFor(x => x.PackageId)
-            .NotEmpty().WithMessage("Mã gói không được để trống.");
+            .NotEmpty().WithMessage("MÃ£ gÃ³i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
 
         RuleFor(x => x.MobileNumber)
-            .NotEmpty().WithMessage("Số điện thoại không được để trống.")
-            .Matches(@"^\+?[0-9]{7,15}$").WithMessage("Định dạng số điện thoại không hợp lệ.");
+            .NotEmpty().WithMessage("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")
+            .Matches(@"^\+?[0-9]{7,15}$").WithMessage("Äá»‹nh dáº¡ng sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡.");
 
         RuleFor(x => x.CheckInTime)
-            .Must(d => d > DateTime.UtcNow).WithMessage("Giờ nhận phải trong tương lai.");
+            .Must(d => d > DateTime.UtcNow).WithMessage("Giá» nháº­n pháº£i trong tÆ°Æ¡ng lai.");
 
         RuleFor(x => x.DurationHours)
-            .GreaterThanOrEqualTo(1).WithMessage("Thời gian tối thiểu là 1 giờ.")
-            .LessThanOrEqualTo(7 * 24).WithMessage("Thời gian tối đa là 7 ngày.");
+            .GreaterThanOrEqualTo(1).WithMessage("Thá»i gian tá»‘i thiá»ƒu lÃ  1 giá».")
+            .LessThanOrEqualTo(7 * 24).WithMessage("Thá»i gian tá»‘i Ä‘a lÃ  7 ngÃ y.");
     }
 }
 
@@ -229,9 +229,9 @@ public class SetOrderPinRequestValidator : AbstractValidator<SetOrderPinRequest>
     public SetOrderPinRequestValidator()
     {
         RuleFor(x => x.Pin)
-            .NotEmpty().WithMessage("Mã PIN không được để trống.")
-            .Length(4, 8).WithMessage("Mã PIN phải từ 4 đến 8 chữ số.")
-            .Matches("^[0-9]+$").WithMessage("Mã PIN chỉ chứa các chữ số.");
+            .NotEmpty().WithMessage("MÃ£ PIN khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")
+            .Length(4, 8).WithMessage("MÃ£ PIN pháº£i tá»« 4 Ä‘áº¿n 8 chá»¯ sá»‘.")
+            .Matches("^[0-9]+$").WithMessage("MÃ£ PIN chá»‰ chá»©a cÃ¡c chá»¯ sá»‘.");
     }
 }
 
@@ -248,7 +248,7 @@ public class CancelOrderRequestValidator : AbstractValidator<CancelOrderRequest>
     public CancelOrderRequestValidator()
     {
         RuleFor(x => x.CancellationReason)
-            .MaximumLength(500).WithMessage("Lý do hủy không được vượt quá 500 ký tự.")
+            .MaximumLength(500).WithMessage("LÃ½ do há»§y khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ 500 kÃ½ tá»±.")
             .When(x => !string.IsNullOrEmpty(x.CancellationReason));
     }
 }
@@ -258,8 +258,8 @@ public class ExtendOrderRequestValidator : AbstractValidator<ExtendOrderRequest>
     public ExtendOrderRequestValidator()
     {
         RuleFor(x => x.AdditionalHours)
-            .GreaterThanOrEqualTo(1).WithMessage("Phải gia hạn ít nhất 1 giờ.")
-            .LessThanOrEqualTo(7 * 24).WithMessage("Không thể gia hạn quá 7 ngày.");
+            .GreaterThanOrEqualTo(1).WithMessage("Pháº£i gia háº¡n Ã­t nháº¥t 1 giá».")
+            .LessThanOrEqualTo(7 * 24).WithMessage("KhÃ´ng thá»ƒ gia háº¡n quÃ¡ 7 ngÃ y.");
     }
 }
 

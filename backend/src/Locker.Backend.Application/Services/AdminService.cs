@@ -1,9 +1,10 @@
 using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
-using Microsoft.AspNetCore.Identity;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Locker.Backend.Application.Services;
 
 public class AdminService
 {
-    private readonly UserManager<User> _userManager;
+    private readonly IIdentityService _identityService;
     private readonly IBookingRepository _bookingRepository;
     private readonly IPaymentRepository _paymentRepository;
     private readonly UserMapper _userMapper;
@@ -22,14 +23,14 @@ public class AdminService
     private readonly PaymentMapper _paymentMapper;
 
     public AdminService(
-        UserManager<User> userManager,
+        IIdentityService identityService,
         IBookingRepository bookingRepository,
         IPaymentRepository paymentRepository,
         UserMapper userMapper,
         BookingMapper bookingMapper,
         PaymentMapper paymentMapper)
     {
-        _userManager = userManager;
+        _identityService = identityService;
         _bookingRepository = bookingRepository;
         _paymentRepository = paymentRepository;
         _userMapper = userMapper;
@@ -40,12 +41,12 @@ public class AdminService
     public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken)
     {
         // Identity with MongoDB might require explicit fetching or conversion
-        var users = _userManager.Users.ToList();
+        var users = _identityService.GetAllUsersAsync().GetAwaiter().GetResult();
         var dtos = new List<UserDto>();
         foreach (var user in users)
         {
             var dto = _userMapper.Map(user);
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await _identityService.GetRolesAsync(user);
             dto.Role = roles.FirstOrDefault() ?? "User";
             dtos.Add(dto);
         }
@@ -54,32 +55,32 @@ public class AdminService
 
     public async Task<bool> UpdateUserRoleAsync(Guid userId, string role, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await _identityService.FindByIdAsync(userId.ToString());
         if (user == null) return false;
 
-        var currentRoles = await _userManager.GetRolesAsync(user);
-        await _userManager.RemoveFromRolesAsync(user, currentRoles);
-        await _userManager.AddToRoleAsync(user, role);
+        var currentRoles = await _identityService.GetRolesAsync(user);
+        await _identityService.RemoveFromRolesAsync(user, currentRoles);
+        await _identityService.AddToRoleAsync(user, role);
         return true;
     }
 
     public async Task<bool> DeactivateUserAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await _identityService.FindByIdAsync(userId.ToString());
         if (user == null) return false;
 
         user.IsActive = false;
-        await _userManager.UpdateAsync(user);
+        await _identityService.UpdateUserAsync(user);
         return true;
     }
 
     public async Task<bool> ActivateUserAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await _identityService.FindByIdAsync(userId.ToString());
         if (user == null) return false;
 
         user.IsActive = true;
-        await _userManager.UpdateAsync(user);
+        await _identityService.UpdateUserAsync(user);
         return true;
     }
 

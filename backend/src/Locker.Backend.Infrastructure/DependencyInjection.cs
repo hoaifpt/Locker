@@ -32,6 +32,13 @@ public static class DependencyInjection
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
+        services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+        services.AddScoped<IRestaurantRepository, RestaurantRepository>();
+        services.AddScoped<IMenuItemRepository, MenuItemRepository>();
+        services.AddScoped<IFoodOrderRepository, FoodOrderRepository>();
+        services.AddScoped<IDeliveryRequestRepository, DeliveryRequestRepository>();
+        services.AddScoped<ISendReceiveOrderRepository, SendReceiveOrderRepository>();
+        services.AddScoped<ILockerEventRepository, LockerEventRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IEmailService, EmailService>();

@@ -6,4 +6,5 @@ public interface IDeviceTokenRepository : IGenericRepository<DeviceToken>
 {
     Task<DeviceToken?> GetByUserAndTokenAsync(Guid userId, string token, CancellationToken cancellationToken);
     Task UpsertAsync(DeviceToken token, CancellationToken cancellationToken);
+    Task<List<DeviceToken>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
 }

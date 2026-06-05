@@ -160,6 +160,5 @@ app.UseAuthorization();
 
 app.MapControllers().RequireRateLimiting("api");
 
-await DbSeeder.SeedAsync(app.Services);
 
 app.Run();

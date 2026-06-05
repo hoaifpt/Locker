@@ -2,6 +2,10 @@ using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Infrastructure.Mongo;
 using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Locker.Backend.Infrastructure.Repositories;
 
@@ -33,5 +37,10 @@ public class DeviceTokenRepository : GenericRepository<DeviceToken>, IDeviceToke
             update,
             new UpdateOptions { IsUpsert = true },
             cancellationToken);
+    }
+
+    public async Task<List<DeviceToken>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _collection.Find(x => x.UserId == userId).ToListAsync(cancellationToken);
     }
 }

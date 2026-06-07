@@ -1,3 +1,4 @@
+// Assuming the project file targets net8.0
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -6,6 +7,7 @@ using FluentValidation.AspNetCore;
 using Locker.Backend;
 using Locker.Backend.Application;
 using Locker.Backend.Infrastructure;
+using Locker.Backend.Infrastructure.Persistence;
 using Locker.Backend.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -136,7 +138,7 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Locker API v1");
         options.RoutePrefix = string.Empty;
-        
+
         // Inject Custom Cyberpunk Swagger Theme
         options.InjectStylesheet("/swagger-ui/cyberpunk.css");
         options.DocumentTitle = "Locker API - Cyberpunk";
@@ -164,6 +166,6 @@ app.UseAuthorization();
 
 app.MapControllers().RequireRateLimiting("api");
 
-await app.Services.UseDatabaseSeeder();
+await app.UseDatabaseSeeder();
 
 app.Run();

@@ -1,9 +1,12 @@
 ---
 name: Flutter API Integration Plan
-overview: Tich hop day du tat ca API Backend vao Flutter app - thay the mock data, bo sung field mapping, them cac luong chua co, va huong dan step-by-step.
+overview: Tich hop day du cac API Backend vao Flutter app, thay the mock data, bo sung field mapping, cap nhat contract auth register auto-login, va huong dan step-by-step cho frontend.
 todos:
   - id: add-endpoints
     content: Cap nhat api_endpoints.dart - them endpoint con thieu
+    status: pending
+  - id: auth-register-response
+    content: Cap nhat sign_up/auth flow - register tra ve AuthResponse va auto-login
     status: pending
   - id: new-entities
     content: Tao moi entity files (delivery_request, restaurant, menu_item, food_order)
@@ -12,10 +15,10 @@ todos:
     content: Cap nhat wallet entities - fix field names
     status: pending
   - id: fix-sr-entity
-    content: Cap nhat send_receive entity - backend model
+    content: Cap nhat send_receive entity - backend DTO moi
     status: pending
   - id: new-models
-    content: Tao moi model files (delivery, restaurant, menu, food_order)
+    content: Tao moi model files (delivery, restaurant, menu, food_order, send_receive)
     status: pending
   - id: fix-wallet-models
     content: Cap nhat wallet model files - fix fromJson
@@ -24,7 +27,7 @@ todos:
     content: Viet lai wallet_repository.dart - real API
     status: pending
   - id: food-repo
-    content: Viet lai food_order_repository.dart - real API
+    content: Viet lai food_order_repository.dart - real API + restaurants/menu
     status: pending
   - id: delivery-repo
     content: Viet lai delivery_repository.dart - real API
@@ -46,18 +49,41 @@ isProject: false
 
 # Plan: Day Du Tich Hop Flutter API - Backend Locker
 
+Plan nay da duoc cap nhat de match backend moi nhat, bao gom:
+- `POST /auth/register` gio tra ve `AuthResponse` de auto-login ngay.
+- Send/Receive da co them `GET /send-receive/orders/{id}`, `PATCH /confirm`, `PATCH /complete`.
+- Restaurants da co controller va co the dung ngay voi `GET /restaurants`, `GET /restaurants/{id}`, `GET /restaurants/{id}/menu`.
+
 ## 1. Cap Nhat `api_endpoints.dart`
 
-Them cac endpoint con thieu vao [mobile/lib/core/constants/api_endpoints.dart](mobile/lib/core/constants/api_endpoints.dart):
+File tham chieu: [mobile/lib/core/constants/api_endpoints.dart](mobile/lib/core/constants/api_endpoints.dart)
+
+### 1a. Endpoint da co san, khong can them lai
+
+Cac endpoint sau da ton tai trong `api_endpoints.dart`, frontend chi can su dung lai:
 
 ```dart
-// Wallet (them)
-static String walletTopUp() => '$apiBase/wallet/top-up';
-static String walletTransfer() => '$apiBase/wallet/transfer';
+static const String notificationsGetMy = '$apiBase/notifications/my';
+static String notificationsMarkAsRead(String id) => '$apiBase/notifications/$id/mark-as-read';
+static const String notificationsMarkAllAsRead = '$apiBase/notifications/mark-all-as-read';
+static const String packagesGetAll = '$apiBase/packages';
+static String packagesGetById(String id) => '$apiBase/packages/$id';
+static String ordersActivate(String id) => '$apiBase/orders/$id/activate';
+static String ordersSetPin(String id) => '$apiBase/orders/$id/set-pin';
+static String ordersGetById(String id) => '$apiBase/orders/$id';
+```
+
+### 1b. Endpoint can them vao file constants
+
+```dart
+// Wallet
 static const String walletBalance = '$apiBase/wallet/balance';
 static const String walletTransactions = '$apiBase/wallet/transactions';
+static const String walletOverview = '$apiBase/wallet/overview';
+static const String walletTopUp = '$apiBase/wallet/top-up';
+static const String walletTransfer = '$apiBase/wallet/transfer';
 
-// Restaurant & Food Order (them)
+// Restaurant & Food Order
 static const String restaurants = '$apiBase/restaurants';
 static String restaurantById(String id) => '$apiBase/restaurants/$id';
 static String restaurantMenu(String id) => '$apiBase/restaurants/$id/menu';
@@ -65,72 +91,104 @@ static const String foodOrdersCreate = '$apiBase/food-orders';
 static const String foodOrdersMy = '$apiBase/food-orders/my';
 static String foodOrderById(String id) => '$apiBase/food-orders/$id';
 
-// Delivery (them)
+// Delivery
 static const String deliveryPackageSizes = '$apiBase/delivery/package-sizes';
 static const String deliveryRequestsCreate = '$apiBase/delivery/requests';
 static const String deliveryRequestsMy = '$apiBase/delivery/requests/my';
 static String deliveryTrack(String code) => '$apiBase/delivery/requests/track/$code';
 
-// Send/Receive (them)
+// Send/Receive
 static const String sendReceiveCreate = '$apiBase/send-receive/orders';
 static const String sendReceiveMy = '$apiBase/send-receive/orders/my';
 static String sendReceiveById(String id) => '$apiBase/send-receive/orders/$id';
 static String sendReceiveConfirm(String id) => '$apiBase/send-receive/orders/$id/confirm';
 static String sendReceiveComplete(String id) => '$apiBase/send-receive/orders/$id/complete';
 
-// Packages (them)
-static const String packagesGetAll = '$apiBase/packages';
-static String packageById(String id) => '$apiBase/packages/$id';
-
-// Orders additional (them)
+// Orders additional
 static const String ordersReserve = '$apiBase/orders/reserve';
 static const String ordersAvailabilitySlots = '$apiBase/orders/availability/slots';
-static String orderSetPin(String id) => '$apiBase/orders/$id/set-pin';
-static String orderActivate(String id) => '$apiBase/orders/$id/activate';
 static String orderPayment(String id) => '$apiBase/orders/$id/payment';
-static String orderById(String id) => '$apiBase/orders/$id';
 
-// Admin (them)
-static String adminUsersUpdateRole(String id) => '$apiBase/admin/users/$id/role';
-static String adminUsersDeactivate(String id) => '$apiBase/admin/users/$id/deactivate';
-static String adminUsersActivate(String id) => '$apiBase/admin/users/$id/activate';
-
-// Device Tokens (them)
-static const String deviceTokensMy = '$apiBase/device-tokens';
-static String deviceTokenDelete(String id) => '$apiBase/device-tokens/$id';
-
-// Notifications (them)
+// Notifications
 static String notificationsRegisterDevice() => '$apiBase/notifications/register-device';
 ```
 
-## 2. Tao Moi/Doi Entity Files
+## 2. Cap Nhat Luong Auth Register Theo Backend Moi
 
-### 2a. Tao `wallet/domain/entities/wallet_overview.dart` (doi tu `int` sang `double`)
+### 2a. Contract moi cua `POST /auth/register`
+
+Backend khong con tra `{ message: '...' }` nua.
+
+Contract moi:
+
+```json
+{
+  "token": "jwt-access-token",
+  "refreshToken": "jwt-refresh-token",
+  "username": "user123",
+  "role": "User",
+  "expiresAt": "2026-06-08T07:00:00Z"
+}
+```
+
+### 2b. Frontend files can sua
+
+- `mobile/lib/features/sign_up/data/sign_up_repository.dart`
+- `mobile/lib/features/sign_up/presentation/controllers/sign_up_cubit.dart`
+- `mobile/lib/features/auth/domain/repositories/i_auth_repository.dart`
+- `mobile/lib/features/auth/data/auth_repository.dart`
+
+### 2c. Ke hoach cap nhat
+
+1. `sign_up_repository.dart`
+   - doi tu hardcode `token: ''` sang parse response that tu backend
+   - co the map truc tiep vao `SignUpResponseModel` neu model da chua token/refresh token
+
+2. `auth_repository.dart`
+   - bo sung method nhu `autoLoginWithToken(String accessToken, String refreshToken)`
+   - method nay luu token vao `SharedPreferences` va goi `ApiClient.setToken()`
+
+3. `sign_up_cubit.dart`
+   - sau khi register thanh cong, luu token ngay va emit state dang nhap thanh cong
+   - neu can profile chi tiet, goi them `/users/me`
+
+### 2d. Luong frontend moi sau khi sua
+
+```text
+1. POST /auth/register { username, email, password, fullName?, phoneNumber? }
+2. -> 200 AuthResponse { token, refreshToken, username, role, expiresAt }
+3. Flutter luu token vao local storage
+4. ApiClient gan Bearer token
+5. Co the goi GET /users/me de lay profile day du
+6. Dieu huong vao home/profile flow
+```
+
+## 3. Tao Moi/Doi Entity Files
+
+### 3a. Tao `wallet/domain/entities/wallet_overview.dart`
 
 ```dart
 class WalletOverview {
   final double balance;
-  final int recentTransactionsCount;  // thay doi tu monthlyChange/points
+  final int recentTransactionsCount;
   final List<WalletTransaction> transactions;
-  // xoa: monthlyChange, points
 }
 ```
 
-### 2b. Tao `wallet/domain/entities/wallet_transaction.dart` (do field mapping)
+### 3b. Tao `wallet/domain/entities/wallet_transaction.dart`
 
 ```dart
 class WalletTransaction {
   final String id;
   final double amount;
-  final String type;        // TopUp, Transfer, Payment, Refund
-  final String status;      // Pending, Completed, Failed
+  final String type;
+  final String status;
   final String? description;
   final DateTime createdAt;
-  // xoa: title, subtitle, timeLabel, isIncome (backend khong co)
 }
 ```
 
-### 2c. Tao `delivery/domain/entities/delivery_request.dart` (backend model)
+### 3c. Tao `delivery/domain/entities/delivery_request.dart`
 
 ```dart
 class DeliveryRequest {
@@ -146,7 +204,7 @@ class DeliveryRequest {
 }
 ```
 
-### 2d. Tao `food_order/domain/entities/restaurant.dart` (backend model)
+### 3d. Tao `food_order/domain/entities/restaurant.dart`
 
 ```dart
 class Restaurant {
@@ -189,7 +247,9 @@ class FoodOrderItem {
 }
 ```
 
-### 2e. Tao `send_receive/domain/entities/send_receive_order.dart` (backend model)
+### 3e. Tao/Sua `send_receive/domain/entities/send_receive_order.dart`
+
+Backend DTO moi khong con theo shape mock cu.
 
 ```dart
 class SendReceiveOrder {
@@ -204,9 +264,13 @@ class SendReceiveOrder {
 }
 ```
 
-## 3. Cap Nhat Model Files
+Luu y:
+- xoa phu thuoc vao `lockerCode`, `location`, `size`, `duration`, `estimatedFee` neu entity cu dang dung cac field do
+- neu UI van can text hien thi, bo sung adapter/view-model rieng o presentation layer
 
-### 3a. `wallet/data/models/wallet_overview_model.dart` - fix field mapping
+## 4. Cap Nhat Model Files
+
+### 4a. `wallet/data/models/wallet_overview_model.dart`
 
 ```dart
 factory WalletOverviewModel.fromJson(Map<String, dynamic> json) {
@@ -220,7 +284,7 @@ factory WalletOverviewModel.fromJson(Map<String, dynamic> json) {
 }
 ```
 
-### 3b. `wallet/data/models/wallet_transaction_model.dart` - fix field mapping
+### 4b. `wallet/data/models/wallet_transaction_model.dart`
 
 ```dart
 factory WalletTransactionModel.fromJson(Map<String, dynamic> json) {
@@ -235,7 +299,9 @@ factory WalletTransactionModel.fromJson(Map<String, dynamic> json) {
 }
 ```
 
-### 3c. `food_order/data/models/restaurant_pin_model.dart` - them fromJson
+### 4c. `food_order/data/models/restaurant_pin_model.dart`
+
+Them `fromJson` de map tu backend restaurant response vao UI pin model:
 
 ```dart
 factory RestaurantPinModel.fromJson(Map<String, dynamic> json) {
@@ -243,21 +309,44 @@ factory RestaurantPinModel.fromJson(Map<String, dynamic> json) {
     id: json['id'] as String,
     name: json['name'] as String,
     rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-    distanceKm: 0.0,  // backend khong co - gia lap
+    distanceKm: 0.0,
     offsetX: 0.5,
     offsetY: 0.5,
-    isOpen: true,     // backend khong co - gia lap
-    tags: [],          // backend khong co
+    isOpen: true,
+    tags: [],
     imageUrl: json['imageUrl'] as String? ?? '',
   );
 }
 ```
 
-### 3d. Tao moi model files: `restaurant_model.dart`, `menu_item_model.dart`, `food_order_model.dart`, `delivery_request_model.dart`, `send_receive_order_model.dart`
+### 4d. Tao moi model files
 
-## 4. Viet Lai Repository Files (thay mock bang API calls)
+- `restaurant_model.dart`
+- `menu_item_model.dart`
+- `food_order_model.dart`
+- `delivery_request_model.dart`
+- `send_receive_order_model.dart`
 
-### 4a. `wallet/data/wallet_repository.dart` - rewrite
+### 4e. `send_receive_order_model.dart` can map theo DTO backend moi
+
+```dart
+factory SendReceiveOrderModel.fromJson(Map<String, dynamic> json) {
+  return SendReceiveOrderModel(
+    id: json['id'] as String? ?? '',
+    senderId: json['senderId'] as String? ?? '',
+    receiverPhone: json['receiverPhone'] as String? ?? '',
+    lockerId: json['lockerId'] as String? ?? '',
+    slotIndex: json['slotIndex'] as int? ?? 0,
+    status: json['status']?.toString() ?? '',
+    notes: json['notes'] as String?,
+    createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+  );
+}
+```
+
+## 5. Viet Lai Repository Files
+
+### 5a. `wallet/data/wallet_repository.dart`
 
 ```dart
 class WalletRepository implements IWalletRepository {
@@ -302,7 +391,9 @@ class WalletRepository implements IWalletRepository {
 }
 ```
 
-### 4b. `food_order/data/food_order_repository.dart` - rewrite
+### 5b. `food_order/data/food_order_repository.dart`
+
+Restaurants backend da san sang, uu tien rewrite phan nay o frontend.
 
 ```dart
 class FoodOrderRepository implements IFoodOrderRepository {
@@ -314,6 +405,11 @@ class FoodOrderRepository implements IFoodOrderRepository {
     return (res.data as List)
         .map((e) => RestaurantModel.fromJson(e))
         .toList();
+  }
+
+  Future<Restaurant> getRestaurantById(String id) async {
+    final res = await _client.get('/restaurants/$id');
+    return RestaurantModel.fromJson(res.data);
   }
 
   @override
@@ -346,7 +442,7 @@ class FoodOrderRepository implements IFoodOrderRepository {
 }
 ```
 
-### 4c. `delivery/data/delivery_repository.dart` - rewrite
+### 5c. `delivery/data/delivery_repository.dart`
 
 ```dart
 class DeliveryRepository implements IDeliveryRepository {
@@ -355,7 +451,6 @@ class DeliveryRepository implements IDeliveryRepository {
   @override
   Future<List<DeliveryPackageSize>> getPackageSizes() async {
     final res = await _client.get('/delivery/package-sizes');
-    // Backend tra ve string[] ["Small","Medium","Large"]
     final sizes = (res.data as List).cast<String>();
     return sizes.map((s) => DeliveryPackageSizeModel(
       id: s.toLowerCase(),
@@ -394,13 +489,14 @@ class DeliveryRepository implements IDeliveryRepository {
 }
 ```
 
-### 4d. `send_receive/data/send_receive_repository.dart` - rewrite
+### 5d. `send_receive/data/send_receive_repository.dart`
+
+Repository hien tai dang mock. Can rewrite theo contract backend moi.
 
 ```dart
 class SendReceiveRepository implements ISendReceiveRepository {
   final _client = ApiClient().client;
 
-  // Locker sizes lay tu /packages endpoint thay vi mock
   @override
   Future<List<LockerSize>> getAvailableLockerSizes() async {
     final res = await _client.get('/packages');
@@ -409,9 +505,11 @@ class SendReceiveRepository implements ISendReceiveRepository {
         .toList();
   }
 
-  // Storage durations la static data (backend khong co)
   @override
-  Future<List<StorageDuration>> getStorageDurations() async { /* keep mock */ }
+  Future<List<StorageDuration>> getStorageDurations() async {
+    // Backend chua co endpoint cho storage durations
+    // Tam giu static data o client
+  }
 
   @override
   Future<SendReceiveOrder> createSendReceiveOrder({
@@ -440,6 +538,12 @@ class SendReceiveRepository implements ISendReceiveRepository {
   }
 
   @override
+  Future<SendReceiveOrder> getOrderById(String id) async {
+    final res = await _client.get('/send-receive/orders/$id');
+    return SendReceiveOrderModel.fromJson(res.data);
+  }
+
+  @override
   Future<void> confirmOrder(String orderId) async {
     await _client.patch('/send-receive/orders/$orderId/confirm');
   }
@@ -451,9 +555,31 @@ class SendReceiveRepository implements ISendReceiveRepository {
 }
 ```
 
-## 5. Bo Sung Them Repository Methods
+### 5e. Ghi chu quan trong cho SendReceive UI
 
-### 5a. `orders/data/orders_repository.dart` - bo sung methods
+Flutter implementation hien tai dang co contract cu nhu `sizeId`, `durationId`, `lockerCode`, `estimatedFee`.
+
+Can doi frontend flow sang contract backend that su:
+
+```text
+POST /send-receive/orders
+Body: {
+  lockerId,
+  slotIndex,
+  receiverPhone,
+  pinCode?,
+  notes?
+}
+```
+
+Neu UI van can `size` va `duration`, can tach:
+- `size` lay tu `/packages`
+- `duration` tam thoi la static local data
+- khong map 2 field nay vao `SendReceiveOrderDto`
+
+## 6. Bo Sung Them Repository Methods
+
+### 6a. `orders/data/orders_repository.dart`
 
 ```dart
 Future<OrderDetail> reserveSlot(ReserveSlotRequest req) async;
@@ -466,53 +592,59 @@ Future<void> setOrderPin(String id, String pin) async;
 Future<Payment> createPayment(String orderId, String method) async;
 ```
 
-### 5b. `locker_detail/data/locker_detail_repository.dart` - bo sung
+### 6b. `locker_detail/data/locker_detail_repository.dart`
 
 ```dart
-// Them open locker voi slotIndex
 Future<void> openLocker(String lockerId, int slotIndex, {String? reason});
 ```
 
-### 5c. Tao `packages/data/packages_repository.dart`
+### 6c. Tao `packages/data/packages_repository.dart`
 
 ```dart
 Future<List<Package>> getAllPackages();
 Future<Package> getPackageById(String id);
 ```
 
-## 6. Luong Step-by-Step Chi Tiet
+### 6d. Repository interfaces can doi
+
+- `i_auth_repository.dart`: them auto-login helper method
+- `i_food_order_repository.dart`: them `getRestaurantById()` neu chua co
+- `i_send_receive_repository.dart`: them `getOrderById()`, `completeOrder()` neu chua co
+- `i_delivery_repository.dart`: ra soat lai ten method va request shape
+
+## 7. Luong Step-by-Step Chi Tiet
 
 ### Luong 1: Dang Nhap / Dang Ky
 
-```
-1. POST /auth/register {username, email, fullName?, password}
-   -> 200 { message: "..." }
-2. POST /auth/login {identifier, password}
+```text
+1. POST /auth/register { username, email, fullName?, password, phoneNumber? }
    -> 200 { token, refreshToken, username, role, expiresAt }
-   -> Flutter: luu token vao SharedPreferences, goi apiClient.setToken()
+2. Flutter luu token vao SharedPreferences, goi apiClient.setToken()
 3. GET /users/me
    -> 200 UserDto -> hien thi profile
 ```
 
 ### Luong 2: Gui Do (Send/Receive)
 
-```
+```text
 1. GET /packages -> lay danh sach kich thuoc + gia
 2. User chon locker -> GET /lockers/available
 3. User chon slot -> POST /send-receive/orders
    Body: { lockerId, slotIndex, receiverPhone, pinCode?, notes? }
-   -> 201 SendReceiveOrderDto
+   -> 200/201 SendReceiveOrderDto
 4. GET /send-receive/orders/my
    -> danh sach don gui
-5. PATCH /send-receive/orders/{id}/confirm (nguoi nhan xac nhan)
-   -> 200 {}
-6. PATCH /send-receive/orders/{id}/complete (hoan tat)
-   -> 200 {}
+5. GET /send-receive/orders/{id}
+   -> chi tiet don gui
+6. PATCH /send-receive/orders/{id}/confirm
+   -> 200 OK
+7. PATCH /send-receive/orders/{id}/complete
+   -> 200 OK
 ```
 
 ### Luong 3: Dat Locker / Order
 
-```
+```text
 1. GET /packages -> lay danh sach goi
 2. GET /lockers/available -> lay danh sach locker trong
 3. GET /orders/availability/slots?lockerId=&fromTime=&toTime=
@@ -521,50 +653,51 @@ Future<Package> getPackageById(String id);
    Body: { lockerId, slotIndex, packageId, mobileNumber, checkInTime, durationHours, notes? }
    -> 201 OrderConfirmationDto { orderId, status, totalAmount, checkInTime, checkOutTime, expirationTime }
 5. POST /payments
-   Body: { bookingId: orderId, method: "Wallet" | "MoMo" | "VNPay" }
+   Body: { bookingId: orderId, method: 'Wallet' | 'MoMo' | 'VNPay' }
    -> 201 PaymentDto
 6. PATCH /orders/{orderId}/confirm
    -> 200 OrderDto
 7. PATCH /orders/{orderId}/activate
    -> 200 OrderDto
-8. POST /orders/{orderId}/set-pin { pin: "123456" }
+8. POST /orders/{orderId}/set-pin { pin: '123456' }
    -> 204
-9. (Nguoi nhan) POST /orders/{orderId}/verify-pin { pin: "123456" }
-   -> { message: "..." }
+9. POST /orders/{orderId}/verify-pin { pin: '123456' }
+   -> { message: '...' }
 10. PATCH /orders/{orderId}/complete
     -> 200 OrderDto
 ```
 
 ### Luong 4: Giao Hang (Delivery)
 
-```
-1. GET /delivery/package-sizes -> ["Small","Medium","Large"]
+```text
+1. GET /delivery/package-sizes -> ['Small', 'Medium', 'Large']
 2. POST /delivery/requests
    Body: { senderName, receiverPhone, lockerId, slotIndex, packageSize }
    -> 201 DeliveryRequestDto { id, trackingCode, status }
 3. GET /delivery/requests/my
    -> danh sach yeu cau
 4. GET /delivery/requests/track/{trackingCode}
-   -> DeliveryRequestDto (xem trang thai)
+   -> DeliveryRequestDto
 ```
 
 ### Luong 5: Order Do An (Food Order)
 
-```
+```text
 1. GET /restaurants -> danh sach nha hang
 2. GET /restaurants/{id} -> chi tiet nha hang
 3. GET /restaurants/{id}/menu -> danh sach mon
 4. POST /food-orders
-   Body: { restaurantId, lockerId, slotIndex, items: [{menuItemId, name, quantity, unitPrice, notes?}], deliveryNotes? }
+   Body: { restaurantId, lockerId, slotIndex, items: [{ menuItemId, name, quantity, unitPrice, notes? }], deliveryNotes? }
    -> 201 FoodOrderDto
 5. GET /food-orders/my -> lich su don hang
+6. GET /food-orders/{id} -> chi tiet don hang
 ```
 
 ### Luong 6: Vi (Wallet)
 
-```
+```text
 1. GET /wallet/overview
-   -> { balance: decimal, recentTransactionsCount: int }
+   -> { balance: decimal, recentTransactionsCount: int, transactions?: [] }
 2. GET /wallet/transactions
    -> [{ id, amount, type, status, description, createdAt }]
 3. GET /wallet/balance
@@ -575,9 +708,9 @@ Future<Package> getPackageById(String id);
    Body: { receiverId, amount, note? }
 ```
 
-### Luong 7: Locker Map va Mo Tủ
+### Luong 7: Locker Map va Mo Tu
 
-```
+```text
 1. GET /lockers/map
    -> [{ lockerId, slotIndex, size, status, sensorState, hubLocation }]
 2. POST /lockers/{lockerId}/open
@@ -587,48 +720,61 @@ Future<Package> getPackageById(String id);
    -> LockerDto (chi tiet + slots)
 ```
 
-## 7. File Tree - Tat Ca Thay Doi
+## 8. File Tree - Tat Ca Thay Doi
 
-```
+```text
 mobile/lib/
-+ core/constants/api_endpoints.dart     [sua - them endpoint]
++ core/constants/api_endpoints.dart                           [sua - them endpoint con thieu]
++ features/auth/domain/repositories/i_auth_repository.dart    [sua - auto login helper]
++ features/auth/data/auth_repository.dart                     [sua - luu token tu register response]
++ features/sign_up/data/sign_up_repository.dart               [sua - parse AuthResponse]
++ features/sign_up/presentation/controllers/sign_up_cubit.dart [sua - auto-login flow]
 + features/wallet/
-  + domain/entities/wallet_overview.dart [sua - doi field]
-  + domain/entities/wallet_transaction.dart [sua - doi field]
-  + domain/entities/delivery_request.dart [tao moi]
-  + domain/entities/restaurant.dart [tao moi]
-  + domain/entities/menu_item.dart [tao moi]
-  + domain/entities/food_order.dart [tao moi]
-  + domain/entities/send_receive_order.dart [sua - backend model]
-  + domain/repositories/  [sua interface]
-  + data/models/wallet_overview_model.dart [sua]
-  + data/models/wallet_transaction_model.dart [sua]
-  + data/models/delivery_request_model.dart [tao moi]
-  + data/models/restaurant_model.dart [tao moi]
-  + data/models/menu_item_model.dart [tao moi]
-  + data/models/food_order_model.dart [tao moi]
-  + data/models/send_receive_order_model.dart [sua]
-  + data/wallet_repository.dart [sua - API]
-  + data/food_order_repository.dart [sua - API]
-  + data/delivery_repository.dart [sua - API]
-  + data/send_receive_repository.dart [sua - API]
-  + data/packages_repository.dart [tao moi]
-+ features/orders/data/orders_repository.dart [bo sung]
-+ features/locker_detail/data/locker_detail_repository.dart [bo sung]
+  + domain/entities/wallet_overview.dart                      [sua - doi field]
+  + domain/entities/wallet_transaction.dart                   [sua - doi field]
++ features/delivery/
+  + domain/entities/delivery_request.dart                     [tao moi]
+  + data/models/delivery_request_model.dart                   [tao moi]
+  + data/delivery_repository.dart                             [sua - API]
++ features/food_order/
+  + domain/entities/restaurant.dart                           [tao moi]
+  + domain/entities/menu_item.dart                            [tao moi neu tach file]
+  + domain/entities/food_order.dart                           [tao moi]
+  + data/models/restaurant_model.dart                         [tao moi]
+  + data/models/menu_item_model.dart                          [tao moi]
+  + data/models/food_order_model.dart                         [tao moi]
+  + data/models/restaurant_pin_model.dart                     [sua - them fromJson]
+  + data/food_order_repository.dart                           [sua - API]
++ features/menu/
+  + data/menu_repository.dart                                 [sua - GET /restaurants/{id}/menu neu can tach]
++ features/send_receive/
+  + domain/entities/send_receive_order.dart                   [sua - backend DTO moi]
+  + domain/repositories/i_send_receive_repository.dart        [sua interface]
+  + data/models/send_receive_order_model.dart                 [sua - fromJson backend]
+  + data/send_receive_repository.dart                         [sua - API]
++ features/packages/
+  + data/packages_repository.dart                             [tao moi]
++ features/orders/data/orders_repository.dart                 [bo sung]
++ features/locker_detail/data/locker_detail_repository.dart   [bo sung]
 ```
 
-## 8. Trinh Tu Thuc Hien (Execution Order)
+## 9. Trinh Tu Thuc Hien (Execution Order)
 
-1. **Cap nhat api_endpoints.dart** - them tat ca endpoint con thieu
-2. **Tao moi entity files** - delivery_request, restaurant, menu_item, food_order
-3. **Cap nhat wallet entities** - fix field names
-4. **Cap nhat send_receive entity** - backend model thay mock
-5. **Tao moi model files** - delivery_request_model, restaurant_model, menu_item_model, food_order_model
-6. **Cap nhat wallet model files** - fix fromJson
-7. **Viet lai wallet_repository.dart** - real API
-8. **Viet lai food_order_repository.dart** - real API
-9. **Viet lai delivery_repository.dart** - real API
-10. **Viet lai send_receive_repository.dart** - real API + real locker sizes
-11. **Tao packages_repository.dart**
-12. **Cap nhat orders_repository.dart** - bo sung methods
-13. **Tao/Doi repository interfaces** - i_wallet_repository, i_food_order_repository, i_delivery_repository, i_send_receive_repository
+1. Cap nhat `api_endpoints.dart`
+2. Cap nhat auth register response + auto-login flow
+3. Cap nhat send_receive entity/model/interface/repository theo DTO va endpoint moi
+4. Cap nhat restaurants + menu + food_order repositories/models
+5. Cap nhat delivery repositories/models
+6. Cap nhat wallet entities/models/repository
+7. Tao `packages_repository.dart`
+8. Cap nhat `orders_repository.dart` va `locker_detail_repository.dart`
+9. Ra soat presentation layer/cubit de bo sung flow `completeOrder`, `getOrderById`, va redirect sau register
+
+## 10. Ghi Chu Uu Tien Cho Frontend Team
+
+Uu tien cao nhat de frontend co the dung ngay voi backend moi:
+1. Auth register auto-login
+2. Send/Receive real API
+3. Restaurants + Menu + Food Order
+
+Cac phan delivery, wallet, orders roadmap co the tiep tuc sau neu can chia sprint.

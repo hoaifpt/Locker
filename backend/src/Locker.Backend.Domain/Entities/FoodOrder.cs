@@ -21,6 +21,7 @@ public class FoodOrder : BaseEntity
     public DateTime? DeliveredAt { get; set; }
     public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsDeleted { get; set; } = false;
 }
 
 public class FoodOrderItem

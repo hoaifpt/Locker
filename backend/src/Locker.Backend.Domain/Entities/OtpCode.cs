@@ -8,5 +8,9 @@ public class OtpCode : BaseEntity
     public string Code { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
     public bool IsUsed { get; set; } = false;
+    /// <summary>Number of failed attempts at submitting this OTP</summary>
+    public int FailedAttempts { get; set; } = 0;
+    /// <summary>If set, OTP is locked until this time (brute-force protection)</summary>
+    public DateTime? LockedUntil { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

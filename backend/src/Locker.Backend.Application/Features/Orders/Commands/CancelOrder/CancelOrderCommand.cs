@@ -3,6 +3,7 @@ using Locker.Backend.Application.Mapping;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -17,15 +18,18 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Ord
     private readonly IOrderRepository _orderRepository;
     private readonly ILockerRepository _lockerRepository;
     private readonly OrderMapper _orderMapper;
+    private readonly ILogger<CancelOrderCommandHandler> _logger;
 
     public CancelOrderCommandHandler(
         IOrderRepository orderRepository,
         ILockerRepository lockerRepository,
-        OrderMapper orderMapper)
+        OrderMapper orderMapper,
+        ILogger<CancelOrderCommandHandler> logger)
     {
         _orderRepository = orderRepository;
         _lockerRepository = lockerRepository;
         _orderMapper = orderMapper;
+        _logger = logger;
     }
 
     public async Task<OrderDto?> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
@@ -71,6 +75,10 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Ord
         }
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
+
+        _logger.LogInformation(
+            "[AUDIT] Order {OrderId} cancelled by User {UserId}. PreviousStatus={PreviousStatus}, Reason={Reason}",
+            order.Id, request.UserId, order.Status, reason);
 
         return _orderMapper.Map(order);
     }

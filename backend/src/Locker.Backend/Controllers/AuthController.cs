@@ -1,4 +1,4 @@
-using Locker.Backend.Application.Models;
+using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +15,8 @@ using Locker.Backend.Application.Features.Auth.Commands.Logout;
 using Locker.Backend.Application.Features.Auth.Commands.LogoutAll;
 using Locker.Backend.Application.Features.Auth.Commands.SendForgotPasswordOtp;
 using Locker.Backend.Application.Features.Auth.Commands.ResetPassword;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Locker.Backend.Controllers;
 
@@ -24,10 +26,12 @@ namespace Locker.Backend.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly IJwtTokenService _jwtTokenService;
 
-    public AuthController(ISender sender)
+    public AuthController(ISender sender, IJwtTokenService jwtTokenService)
     {
         _sender = sender;
+        _jwtTokenService = jwtTokenService;
     }
 
     [HttpPost("login")]
@@ -53,9 +57,6 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
-    /// <summary>
-    /// Verify email address via the token sent in the registration email.
-    /// </summary>
     [HttpGet("verify-email")]
     [AllowAnonymous]
     public async Task<IActionResult> VerifyEmail([FromQuery] string token, CancellationToken cancellationToken)
@@ -67,9 +68,6 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Email đã được xác thực thành công. Bạn có thể đăng nhập ngay bây giờ." });
     }
 
-    /// <summary>
-    /// Resend the verification email to the given address (useful when SMTP failed at registration time).
-    /// </summary>
     [HttpPost("resend-verification")]
     [AllowAnonymous]
     public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request, CancellationToken cancellationToken)
@@ -78,7 +76,6 @@ public class AuthController : ControllerBase
         if (!success)
             return BadRequest(new { message = error });
 
-        // Always 200 to avoid email enumeration
         return Ok(new { message = "Nếu email chưa được xác thực, chúng tôi đã gửi lại liên kết xác thực." });
     }
 
@@ -98,13 +95,21 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken cancellationToken)
     {
-        await _sender.Send(new LogoutCommand(request.RefreshToken), cancellationToken);
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        Guid.TryParse(userIdString, out var userId);
+
+        var bearer = Request.Headers.Authorization.ToString();
+        var accessToken = bearer.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? bearer[7..].Trim()
+            : null;
+
+        var accessTokenJti = string.IsNullOrWhiteSpace(accessToken) ? null : _jwtTokenService.GetTokenJti(accessToken);
+        var accessTokenExpiry = string.IsNullOrWhiteSpace(accessToken) ? null : _jwtTokenService.GetTokenExpiry(accessToken);
+
+        await _sender.Send(new LogoutCommand(request.RefreshToken, userId, accessTokenJti, accessTokenExpiry), cancellationToken);
         return NoContent();
     }
 
-    /// <summary>
-    /// Revoke all active refresh tokens for the current user (logout from all devices).
-    /// </summary>
     [HttpPost("logout-all")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -118,9 +123,6 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Send a 6-digit OTP to the user's email or phone number for password reset.
-    /// </summary>
     [HttpPost("forgot-password")]
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken cancellationToken)
@@ -129,13 +131,9 @@ public class AuthController : ControllerBase
         if (!success)
             return BadRequest(new { message = error });
 
-        // Always return 200 even if account not found (anti-enumeration)
         return Ok(new { message = "Nếu tài khoản tồn tại, mã OTP đã được gửi." });
     }
 
-    /// <summary>
-    /// Reset the password using the OTP received via email or SMS.
-    /// </summary>
     [HttpPost("reset-password")]
     [AllowAnonymous]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)

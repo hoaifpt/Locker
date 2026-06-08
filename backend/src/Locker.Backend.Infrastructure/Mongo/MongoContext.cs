@@ -1,5 +1,6 @@
 using Locker.Backend.Domain.Entities;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;

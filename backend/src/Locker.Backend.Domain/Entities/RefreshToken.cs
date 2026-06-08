@@ -7,4 +7,5 @@ public class RefreshToken : BaseEntity
     public DateTime ExpiresAt { get; set; }
     public bool IsRevoked { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string? RevokedAccessTokenJti { get; set; }
 }

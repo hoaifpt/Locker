@@ -1,19 +1,5 @@
 using System.Security.Claims;
 using System.Text;
-using System.Threading.RateLimiting;
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using Locker.Backend;
-using Locker.Backend.Application;
-using Locker.Backend.Infrastructure;
-using Locker.Backend.Infrastructure.Security;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-
-using System.Security.Claims;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using FluentValidation;
@@ -29,7 +15,6 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file if present (development)
 var envFile = Path.Combine(builder.Environment.ContentRootPath, ".env");
 if (File.Exists(envFile))
 {
@@ -38,11 +23,11 @@ if (File.Exists(envFile))
         var match = Regex.Match(line, @"^([^=]+)=(.*)$");
         if (match.Success)
         {
-            var key = match.Groups[1].Value.Trim();
+            var envKey = match.Groups[1].Value.Trim();
             var value = match.Groups[2].Value.Trim();
-            if (!string.IsNullOrEmpty(key) && !key.StartsWith("#"))
+            if (!string.IsNullOrEmpty(envKey) && !envKey.StartsWith("#"))
             {
-                Environment.SetEnvironmentVariable(key, value);
+                Environment.SetEnvironmentVariable(envKey, value);
             }
         }
     }
@@ -81,13 +66,10 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
-// MediatR Pipeline Behavior for validation
 builder.Services.AddValidatorsFromAssemblyContaining<Locker.Backend.Application.Validators.AuthRequestValidator>();
 
-// Rate limiting
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("auth", opt =>
@@ -107,7 +89,6 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
-// Add CORS
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? Array.Empty<string>();
@@ -168,7 +149,6 @@ var app = builder.Build();
 
 app.UseStaticFiles();
 
-// Swagger UI Configuration
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -176,18 +156,14 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Locker API v1");
         options.RoutePrefix = string.Empty;
-        
-        // Inject Custom Cyberpunk Swagger Theme
         options.InjectStylesheet("/swagger-ui/cyberpunk.css");
         options.DocumentTitle = "Locker API - Cyberpunk";
     });
 }
 
 app.UseMiddleware<Locker.Backend.Middlewares.ExceptionHandlingMiddleware>();
-
 app.UseCors("AllowAll");
 
-// Security headers
 app.Use(async (ctx, next) =>
 {
     ctx.Response.Headers.Append("X-Content-Type-Options", "nosniff");

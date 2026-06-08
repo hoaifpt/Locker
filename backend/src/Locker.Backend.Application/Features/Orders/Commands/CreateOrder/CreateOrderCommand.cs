@@ -102,7 +102,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             Discount = discount,
             TotalAmount = totalAmount,
             Notes = request.Notes,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            PaymentExpirationTime = DateTime.UtcNow.AddMinutes(PaymentExpirationMinutes)
         };
 
         slot.Status = LockerSlotStatus.Pending;
@@ -111,7 +112,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         await _orderRepository.CreateAsync(order, cancellationToken);
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
 
-        var expirationTime = DateTime.UtcNow.AddMinutes(PaymentExpirationMinutes);
+        var expirationTime = order.PaymentExpirationTime ?? DateTime.UtcNow.AddMinutes(PaymentExpirationMinutes);
 
         return new OrderConfirmationDto
         {

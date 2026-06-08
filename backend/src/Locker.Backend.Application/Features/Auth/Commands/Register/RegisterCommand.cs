@@ -65,7 +65,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, (AuthResp
             PhoneNumber = request.PhoneNumber,
             IsActive = true,
             EmailVerificationToken = verificationToken,
-            EmailConfirmed = true
+            EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24),
+            EmailConfirmed = false
         };
 
         var result = await _identityService.CreateUserAsync(user, request.Password);

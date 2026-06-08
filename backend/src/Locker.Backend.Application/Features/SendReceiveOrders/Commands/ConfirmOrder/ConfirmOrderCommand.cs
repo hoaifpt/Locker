@@ -21,7 +21,12 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, b
     public async Task<bool> Handle(ConfirmOrderCommand request, CancellationToken cancellationToken)
     {
         var order = await _repository.GetByIdAsync(request.OrderId, cancellationToken);
-        if (order == null || order.SenderId != request.UserId)
+        if (order == null)
+            return false;
+
+        var isSender = order.SenderId == request.UserId;
+        var isReceiver = order.ReceiverId.HasValue && order.ReceiverId.Value == request.UserId;
+        if (!isSender && !isReceiver)
             return false;
 
         if (order.Status != SendReceiveStatus.Initiated)

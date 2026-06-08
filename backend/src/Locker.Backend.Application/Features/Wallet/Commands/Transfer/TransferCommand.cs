@@ -23,9 +23,10 @@ public class TransferCommandHandler : IRequestHandler<TransferCommand, bool>
     {
         var balance = await _repository.GetBalanceAsync(request.SenderId, cancellationToken);
         if (balance < request.Amount)
-            return false; // Insufficient funds
+            return false;
 
-        var transaction = new WalletTransaction
+        var now = DateTime.UtcNow;
+        var senderTransaction = new WalletTransaction
         {
             UserId = request.SenderId,
             RelatedUserId = request.ReceiverId,
@@ -33,11 +34,24 @@ public class TransferCommandHandler : IRequestHandler<TransferCommand, bool>
             Type = TransactionType.Transfer,
             Status = TransactionStatus.Completed,
             Description = request.Note ?? "Wallet Transfer",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = now,
+            UpdatedAt = now
         };
 
-        await _repository.CreateAsync(transaction, cancellationToken);
+        var receiverTransaction = new WalletTransaction
+        {
+            UserId = request.ReceiverId,
+            RelatedUserId = request.SenderId,
+            Amount = request.Amount,
+            Type = TransactionType.Transfer,
+            Status = TransactionStatus.Completed,
+            Description = request.Note ?? "Wallet Transfer",
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        await _repository.CreateAsync(senderTransaction, cancellationToken);
+        await _repository.CreateAsync(receiverTransaction, cancellationToken);
         return true;
     }
 }

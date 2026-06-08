@@ -13,6 +13,8 @@ public class Booking : BaseEntity
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
     public decimal TotalAmount { get; set; }
     public Guid? PaymentId { get; set; }
+    public int PinAttempts { get; set; }
+    public DateTime? PinLockedUntil { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }

@@ -1,10 +1,10 @@
 using Locker.Backend.Application.Interfaces;
-using Locker.Backend.Domain.Entities;
+using Locker.Backend.Domain.Enums;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace Locker.Backend.Application.Features.Auth.Commands.SendForgotPasswordOtp;
 
@@ -38,7 +38,7 @@ public class SendForgotPasswordOtpCommandHandler : IRequestHandler<SendForgotPas
             return (true, null); // Don't leak user existence
         }
 
-        var otpCode = new Random().Next(100000, 999999).ToString();
+        var otpCode = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
         var otpCodeObj = new OtpCode
         {
             UserId = user.Id,

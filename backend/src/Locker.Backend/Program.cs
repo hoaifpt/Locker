@@ -12,7 +12,41 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+using System.Security.Claims;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.RateLimiting;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Locker.Backend;
+using Locker.Backend.Application;
+using Locker.Backend.Infrastructure;
+using Locker.Backend.Infrastructure.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Load environment variables from .env file if present (development)
+var envFile = Path.Combine(builder.Environment.ContentRootPath, ".env");
+if (File.Exists(envFile))
+{
+    foreach (var line in File.ReadAllLines(envFile))
+    {
+        var match = Regex.Match(line, @"^([^=]+)=(.*)$");
+        if (match.Success)
+        {
+            var key = match.Groups[1].Value.Trim();
+            var value = match.Groups[2].Value.Trim();
+            if (!string.IsNullOrEmpty(key) && !key.StartsWith("#"))
+            {
+                Environment.SetEnvironmentVariable(key, value);
+            }
+        }
+    }
+}
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -77,6 +111,12 @@ builder.Services.AddRateLimiter(options =>
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? Array.Empty<string>();
+
+if (allowedOrigins.Length == 0 && !builder.Environment.IsDevelopment())
+{
+    Console.WriteLine("WARNING: CORS AllowedOrigins is empty. In production, set explicit origins in appsettings.Production.json.");
+    Console.WriteLine("         Requests will be blocked by browser CORS policy.");
+}
 
 builder.Services.AddCors(options =>
 {

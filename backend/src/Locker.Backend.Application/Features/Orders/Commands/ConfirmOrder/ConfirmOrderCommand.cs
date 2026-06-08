@@ -40,6 +40,9 @@ public class ConfirmOrderCommandHandler : IRequestHandler<ConfirmOrderCommand, O
         if (order.Status != OrderStatus.Initiated)
             return null;
 
+        if (order.PaymentExpirationTime.HasValue && DateTime.UtcNow > order.PaymentExpirationTime.Value)
+            return null;
+
         if (!order.PaymentId.HasValue)
             return null;
 

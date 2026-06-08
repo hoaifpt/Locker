@@ -19,12 +19,15 @@ public class VerifyEmailCommandHandler : IRequestHandler<VerifyEmailCommand, (bo
     public async Task<(bool Success, string? Error)> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
     {
         var user = await _identityService.FindByEmailVerificationTokenAsync(request.Token);
-        if (user == null)
+        if (user == null ||
+            user.EmailVerificationTokenExpiry == null ||
+            user.EmailVerificationTokenExpiry < DateTime.UtcNow)
             return (false, "Mã xác thực không hợp lệ hoặc đã hết hạn.");
 
         user.IsActive = true;
         user.EmailConfirmed = true;
         user.EmailVerificationToken = null;
+        user.EmailVerificationTokenExpiry = null;
 
         await _identityService.UpdateUserAsync(user);
 

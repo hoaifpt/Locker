@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.Configure<EmailSettings>(configuration.GetSection("Email"));
         services.Configure<AppSettings>(configuration.GetSection("App"));
+        services.Configure<PaymentWebhookSettings>(configuration.GetSection("PaymentWebhook"));
 
         services.AddSingleton<MongoContext>();
         services.AddScoped<ILockerRepository, LockerRepository>();

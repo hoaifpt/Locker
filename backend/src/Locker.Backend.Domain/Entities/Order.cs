@@ -25,10 +25,13 @@ public class Order : BaseEntity
 
     // Payment
     public Guid? PaymentId { get; set; }
+    public DateTime? PaymentExpirationTime { get; set; }
 
     // Access
     public string PinHash { get; set; } = string.Empty;
     public string MobileNumber { get; set; } = string.Empty;
+    public int PinAttempts { get; set; }
+    public DateTime? PinLockedUntil { get; set; }
 
     // Metadata
     public string? CancellationReason { get; set; }

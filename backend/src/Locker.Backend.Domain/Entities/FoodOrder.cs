@@ -13,6 +13,7 @@ public class FoodOrder : BaseEntity
     
     public List<FoodOrderItem> Items { get; set; } = new();
     public decimal TotalAmount { get; set; }
+    public Guid? PaymentId { get; set; }
     
     public FoodOrderStatus Status { get; set; }
     

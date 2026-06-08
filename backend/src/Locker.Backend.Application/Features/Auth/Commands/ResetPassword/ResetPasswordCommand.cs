@@ -34,16 +34,13 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
         if (storedOtp == null || storedOtp.Code != request.Otp)
             return (false, "Mã OTP không hợp lệ hoặc đã hết hạn.");
 
-        await _otpRepository.MarkUsedAsync(storedOtp.Id, cancellationToken);
-
         var resetToken = await _identityService.GeneratePasswordResetTokenAsync(user);
         var result = await _identityService.ResetPasswordAsync(user, resetToken, request.NewPassword);
 
-        if (result.Success)
-        {
-            return (true, null);
-        }
+        if (!result.Success)
+            return (false, string.Join(", ", result.Errors));
 
-        return (false, string.Join(", ", result.Errors));
+        await _otpRepository.MarkUsedAsync(storedOtp.Id, cancellationToken);
+        return (true, null);
     }
 }

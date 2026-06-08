@@ -1,4 +1,5 @@
 using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Domain.Enums;
 using LockerEntity = Locker.Backend.Domain.Entities.Locker;
 using Locker.Backend.Infrastructure.Mongo;
 using MongoDB.Driver;
@@ -31,5 +32,20 @@ public class LockerRepository : GenericRepository<LockerEntity>, ILockerReposito
         locker.IsDeleted = true;
         await UpdateAsync(locker, cancellationToken);
         return true;
+    }
+
+    public async Task<bool> TryReserveSlotAsync(Guid lockerId, int slotIndex, Guid bookingId, CancellationToken cancellationToken)
+    {
+        var filter = Builders<LockerEntity>.Filter.And(
+            Builders<LockerEntity>.Filter.Eq(l => l.Id, lockerId),
+            Builders<LockerEntity>.Filter.Eq(l => l.IsDeleted, false),
+            Builders<LockerEntity>.Filter.ElemMatch(l => l.Slots, s => s.Index == slotIndex && s.Status == LockerSlotStatus.Available));
+
+        var update = Builders<LockerEntity>.Update
+            .Set("slots.$.status", LockerSlotStatus.Pending)
+            .Set("slots.$.bookingId", bookingId);
+
+        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return result.ModifiedCount > 0;
     }
 }

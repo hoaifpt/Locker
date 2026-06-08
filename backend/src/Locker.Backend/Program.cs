@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -6,6 +7,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Locker.Backend;
 using Locker.Backend.Application;
+using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Infrastructure;
 using Locker.Backend.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -140,6 +142,25 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key),
         RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.Name
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var jwt = context.SecurityToken as JwtSecurityToken;
+            var jti = jwt?.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+            if (string.IsNullOrWhiteSpace(jti))
+            {
+                context.Fail("Invalid token.");
+                return;
+            }
+
+            var repository = context.HttpContext.RequestServices.GetRequiredService<IRefreshTokenRepository>();
+            if (await repository.IsAccessTokenRevokedAsync(jti, context.HttpContext.RequestAborted))
+            {
+                context.Fail("Token has been revoked.");
+            }
+        }
     };
 });
 

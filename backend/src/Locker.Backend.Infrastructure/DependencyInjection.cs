@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IIdentifierValidator, IdentifierValidator>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddHostedService<OverdueOrderBackgroundService>();
 
         var mongoConnectionString = configuration.GetSection("Mongo:ConnectionString").Value ?? "mongodb://localhost:27017/LockerDb";
         var mongoDatabaseName = configuration.GetSection("Mongo:DatabaseName").Value ?? "LockerDb";
@@ -57,11 +58,11 @@ public static class DependencyInjection
             },
             IdentityOptionsAction = identityOptions =>
             {
-                identityOptions.Password.RequireDigit = false;
-                identityOptions.Password.RequiredLength = 6;
+                identityOptions.Password.RequireDigit = true;
+                identityOptions.Password.RequiredLength = 8;
                 identityOptions.Password.RequireNonAlphanumeric = false;
-                identityOptions.Password.RequireUppercase = false;
-                identityOptions.Password.RequireLowercase = false;
+                identityOptions.Password.RequireUppercase = true;
+                identityOptions.Password.RequireLowercase = true;
                 identityOptions.User.RequireUniqueEmail = true;
             }
         };

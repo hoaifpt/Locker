@@ -13,6 +13,7 @@ build/
 bin/
 obj/
 appsettings.json
+appsettings.Development.json
 
 # Flutter/Dart
 .dart_tool/
@@ -38,3 +39,6 @@ dependencies.lock
 =======
 mobile/google-chrome-stable_current_amd64.deb
 >>>>>>> 3ed3072013472df2feedbacadabcb05799b5c05d
+backend/src/Locker.Backend/appsettings.Development.json
+backend/src/Locker.Backend/appsettings.Development.json
+backend/src/Locker.Backend/appsettings.Development.json

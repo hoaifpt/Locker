@@ -1,9 +1,10 @@
 using Locker.Backend.Domain.Entities;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Mongo;
@@ -33,17 +34,49 @@ public class MongoContext
         }
     }
 
-    public MongoContext(IOptions<MongoSettings> settings)
+    public MongoContext(IOptions<MongoSettings> settings, ILogger<MongoContext> logger)
     {
-        var mongoClient = new MongoClient(settings.Value.ConnectionString);
-        Database = mongoClient.GetDatabase(settings.Value.DatabaseName);
         Settings = settings.Value;
 
-        EnsureIndexes();
+        var mongoUrlBuilder = new MongoUrlBuilder(Settings.ConnectionString)
+        {
+            ConnectTimeout = TimeSpan.FromSeconds(5),
+            ServerSelectionTimeout = TimeSpan.FromSeconds(5),
+            SocketTimeout = TimeSpan.FromSeconds(10)
+        };
+
+        var mongoClient = new MongoClient(mongoUrlBuilder.ToMongoUrl());
+        Database = mongoClient.GetDatabase(Settings.DatabaseName);
+
+        TryEnsureIndexes(logger);
     }
 
     public IMongoDatabase Database { get; }
     public MongoSettings Settings { get; }
+
+    private void TryEnsureIndexes(ILogger logger)
+    {
+        try
+        {
+            EnsureIndexes();
+        }
+        catch (TimeoutException ex)
+        {
+            logger.LogWarning(ex, "MongoDB index initialization timed out. Application will continue startup.");
+        }
+        catch (MongoConnectionException ex)
+        {
+            logger.LogWarning(ex, "MongoDB connection failed during index initialization. Application will continue startup.");
+        }
+        catch (MongoCommandException ex)
+        {
+            logger.LogWarning(ex, "MongoDB index initialization failed because existing data violates index constraints. Application will continue startup.");
+        }
+        catch (MongoConfigurationException ex)
+        {
+            logger.LogWarning(ex, "MongoDB configuration is invalid during index initialization. Application will continue startup.");
+        }
+    }
 
     private void EnsureIndexes()
     {

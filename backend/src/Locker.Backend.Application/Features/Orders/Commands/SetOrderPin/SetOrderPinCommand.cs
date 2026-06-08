@@ -30,6 +30,8 @@ public class SetOrderPinCommandHandler : IRequestHandler<SetOrderPinCommand, boo
             return false;
 
         order.PinHash = _passwordHasher.Hash(request.Pin);
+        order.PinAttempts = 0;
+        order.PinLockedUntil = null;
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
         return true;

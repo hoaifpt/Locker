@@ -11,6 +11,9 @@ public record VerifyPinCommand(Guid BookingId, string Pin) : IRequest<bool>;
 
 public class VerifyPinCommandHandler : IRequestHandler<VerifyPinCommand, bool>
 {
+    private const int MaxPinAttempts = 5;
+    private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
+
     private readonly IBookingRepository _bookingRepository;
     private readonly IPasswordHasher _passwordHasher;
 
@@ -26,7 +29,25 @@ public class VerifyPinCommandHandler : IRequestHandler<VerifyPinCommand, bool>
         if (booking == null || booking.Status != BookingStatus.Active) return false;
 
         if (string.IsNullOrEmpty(booking.PinHash)) return false;
+        if (booking.PinLockedUntil.HasValue && booking.PinLockedUntil.Value > DateTime.UtcNow) return false;
 
-        return _passwordHasher.Verify(request.Pin, booking.PinHash);
+        var isValid = _passwordHasher.Verify(request.Pin, booking.PinHash);
+        if (isValid)
+        {
+            booking.PinAttempts = 0;
+            booking.PinLockedUntil = null;
+            await _bookingRepository.UpdateAsync(booking, cancellationToken);
+            return true;
+        }
+
+        booking.PinAttempts++;
+        if (booking.PinAttempts >= MaxPinAttempts)
+        {
+            booking.PinAttempts = 0;
+            booking.PinLockedUntil = DateTime.UtcNow.Add(LockoutDuration);
+        }
+
+        await _bookingRepository.UpdateAsync(booking, cancellationToken);
+        return false;
     }
 }

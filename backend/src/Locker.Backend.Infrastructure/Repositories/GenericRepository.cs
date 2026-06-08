@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Domain.Entities;
-using Locker.Backend.Infrastructure.Mongo;
 using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Repositories;
@@ -46,11 +45,33 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     public Task UpdateAsync(T entity, CancellationToken cancellationToken)
     {
+        if (entity is Order order)
+        {
+            var currentVersion = order.Version;
+            order.Version++;
+
+            return ReplaceWithConcurrencyCheckAsync(
+                entity,
+                Builders<T>.Filter.And(
+                    Builders<T>.Filter.Eq(x => x.Id, entity.Id),
+                    Builders<T>.Filter.Eq("version", currentVersion)),
+                cancellationToken);
+        }
+
         return _collection.ReplaceOneAsync(e => e.Id == entity.Id, entity, cancellationToken: cancellationToken);
     }
 
     public Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         return _collection.DeleteOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
+    }
+
+    private async Task ReplaceWithConcurrencyCheckAsync(T entity, FilterDefinition<T> filter, CancellationToken cancellationToken)
+    {
+        var result = await _collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
+        if (result.ModifiedCount == 0)
+        {
+            throw new InvalidOperationException("Concurrency conflict detected while updating entity.");
+        }
     }
 }

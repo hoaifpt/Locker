@@ -9,10 +9,12 @@ using System.Threading.Tasks;
 
 namespace Locker.Backend.Application.Features.Admin.Queries.GetAllPayments;
 
-public record GetAllPaymentsQuery() : IRequest<List<PaymentDto>>;
+public record GetAllPaymentsQuery(int PageNumber = 1, int PageSize = 50) : IRequest<List<PaymentDto>>;
 
 public class GetAllPaymentsQueryHandler : IRequestHandler<GetAllPaymentsQuery, List<PaymentDto>>
 {
+    private const int MaxPageSize = 200;
+
     private readonly IPaymentRepository _paymentRepository;
     private readonly PaymentMapper _paymentMapper;
 
@@ -24,7 +26,15 @@ public class GetAllPaymentsQueryHandler : IRequestHandler<GetAllPaymentsQuery, L
 
     public async Task<List<PaymentDto>> Handle(GetAllPaymentsQuery request, CancellationToken cancellationToken)
     {
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+        var pageSize = request.PageSize < 1 ? 50 : request.PageSize > MaxPageSize ? MaxPageSize : request.PageSize;
+
         var payments = await _paymentRepository.GetAllAsync(cancellationToken);
-        return payments.Select(_paymentMapper.Map).ToList();
+        return payments
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(_paymentMapper.Map)
+            .ToList();
     }
 }

@@ -1,4 +1,4 @@
-﻿using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Infrastructure.Notifications;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -69,6 +69,17 @@ public class EmailService : IEmailService
         };
 
         await SendAsync(message, cancellationToken);
+    }
+
+    public async Task SendEmailAsync(string toEmail, string subject, string body)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromAddress));
+        message.To.Add(MailboxAddress.Parse(toEmail));
+        message.Subject = subject;
+        message.Body = new TextPart("html") { Text = body };
+
+        await SendAsync(message, CancellationToken.None);
     }
 
     private async Task SendAsync(MimeMessage message, CancellationToken cancellationToken)

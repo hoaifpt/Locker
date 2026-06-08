@@ -2,7 +2,6 @@ using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using MediatR;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,13 +20,14 @@ public class ValidateQrCodeQueryHandler : IRequestHandler<ValidateQrCodeQuery, Q
 
     public async Task<QrScanResultDto?> Handle(ValidateQrCodeQuery request, CancellationToken cancellationToken)
     {
-        var lockers = await _lockerRepository.GetAllAsync(cancellationToken);
-        var normalizedQrCode = request.QrCode.Trim().ToLowerInvariant();
+        var normalizedQrCode = request.QrCode.Trim();
 
-        var locker = lockers.FirstOrDefault(l =>
-            l.Id.ToString().Equals(normalizedQrCode, StringComparison.OrdinalIgnoreCase) ||
-            l.Name.Equals(normalizedQrCode, StringComparison.OrdinalIgnoreCase));
+        if (!Guid.TryParse(normalizedQrCode, out var lockerId))
+        {
+            return null;
+        }
 
+        var locker = await _lockerRepository.GetByIdAsync(lockerId, cancellationToken);
         if (locker == null)
         {
             return null;
@@ -44,3 +44,4 @@ public class ValidateQrCodeQueryHandler : IRequestHandler<ValidateQrCodeQuery, Q
         };
     }
 }
+

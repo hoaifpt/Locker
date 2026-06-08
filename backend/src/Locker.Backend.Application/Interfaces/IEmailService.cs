@@ -4,4 +4,5 @@ public interface IEmailService
 {
     Task SendOtpAsync(string toEmail, string otpCode, CancellationToken cancellationToken);
     Task SendVerificationEmailAsync(string toEmail, string fullName, string verificationLink, CancellationToken cancellationToken);
+    Task SendEmailAsync(string toEmail, string subject, string body);
 }

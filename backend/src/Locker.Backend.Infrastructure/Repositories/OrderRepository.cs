@@ -93,4 +93,14 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
             cancellationToken: cancellationToken);
         return await cursor.ToListAsync(cancellationToken);
     }
+
+    public async Task<List<Order>> GetOverdueActiveOrdersAsync(CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+        var cursor = await _collection.FindAsync(
+            o => o.Status == OrderStatus.Active &&
+                 o.CheckOutTime < now,
+            cancellationToken: cancellationToken);
+        return await cursor.ToListAsync(cancellationToken);
+    }
 }

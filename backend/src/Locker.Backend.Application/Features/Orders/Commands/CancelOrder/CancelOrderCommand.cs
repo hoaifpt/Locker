@@ -37,12 +37,26 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Ord
         if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
             return null;
 
+        var reason = request.CancellationReason;
+
         if (order.Status == OrderStatus.Active)
-            return null;
+        {
+            var startedAt = order.StartedAt ?? order.CheckInTime;
+            var actualHours = (int)Math.Ceiling((DateTime.UtcNow - startedAt).TotalHours);
+            if (actualHours < 1) actualHours = 1;
+
+            var usageCost = actualHours * order.BaseRate;
+            var taxes = usageCost * 0.1m;
+            var totalUsageCost = usageCost + taxes;
+            var refundAmount = order.TotalAmount - totalUsageCost;
+            if (refundAmount < 0) refundAmount = 0;
+
+            reason = $"{request.CancellationReason} | Sử dụng {actualHours}h, phí: {totalUsageCost:N0}đ, hoàn trả: {refundAmount:N0}đ";
+        }
 
         order.Status = OrderStatus.Cancelled;
         order.CancelledAt = DateTime.UtcNow;
-        order.CancellationReason = request.CancellationReason;
+        order.CancellationReason = reason;
 
         var locker = await _lockerRepository.GetByIdAsync(order.LockerId, cancellationToken);
         if (locker != null)
@@ -61,3 +75,4 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Ord
         return _orderMapper.Map(order);
     }
 }
+

@@ -97,8 +97,9 @@ var allowedOrigins = builder.Configuration
 
 if (allowedOrigins.Length == 0 && !builder.Environment.IsDevelopment())
 {
-    Console.WriteLine("WARNING: CORS AllowedOrigins is empty. In production, set explicit origins in appsettings.Production.json.");
-    Console.WriteLine("         Requests will be blocked by browser CORS policy.");
+    throw new InvalidOperationException(
+        "CORS AllowedOrigins must be configured in production. " +
+        "Set 'Cors:AllowedOrigins' in appsettings.Production.json or via environment variables.");
 }
 
 builder.Services.AddCors(options =>
@@ -106,7 +107,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            if (builder.Environment.IsDevelopment() || allowedOrigins.Length == 0)
+            if (builder.Environment.IsDevelopment())
             {
                 policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
             }

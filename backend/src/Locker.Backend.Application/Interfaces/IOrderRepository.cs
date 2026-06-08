@@ -12,4 +12,5 @@ public interface IOrderRepository : IGenericRepository<Order>
     Task<List<Order>> GetConflictingOrdersAsync(Guid lockerId, int slotIndex, DateTime checkInTime, DateTime checkOutTime, CancellationToken cancellationToken);
     Task<List<Order>> GetByLockerIdAsync(Guid lockerId, CancellationToken cancellationToken);
     Task<List<Order>> GetExpiredOrdersAsync(CancellationToken cancellationToken);
+    Task<List<Order>> GetOverdueActiveOrdersAsync(CancellationToken cancellationToken);
 }

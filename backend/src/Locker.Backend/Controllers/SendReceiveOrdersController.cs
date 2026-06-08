@@ -2,7 +2,10 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Locker.Backend.Application.Features.SendReceiveOrders.Commands.CompleteOrder;
+using Locker.Backend.Application.Features.SendReceiveOrders.Commands.ConfirmOrder;
 using Locker.Backend.Application.Features.SendReceiveOrders.Commands.CreateSendReceiveOrder;
+using Locker.Backend.Application.Features.SendReceiveOrders.Queries.GetById;
 using Locker.Backend.Application.Features.SendReceiveOrders.Queries.GetMySendReceiveOrders;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -45,17 +48,41 @@ public class SendReceiveOrdersController : ControllerBase
         return Ok(result);
     }
 
-    // Stub for GET {id}
     [HttpGet("{id}")]
-    public IActionResult GetById(Guid id) => Ok();
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
 
-    // Stub for PATCH {id}/confirm
+        var result = await _sender.Send(new GetByIdQuery(id, userId), cancellationToken);
+        if (result == null) return NotFound();
+
+        return Ok(result);
+    }
+
     [HttpPatch("{id}/confirm")]
-    public IActionResult Confirm(Guid id) => Ok();
+    public async Task<IActionResult> Confirm(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
 
-    // Stub for PATCH {id}/complete
+        var updated = await _sender.Send(new ConfirmOrderCommand(id, userId), cancellationToken);
+        if (!updated) return NotFound();
+
+        return Ok();
+    }
+
     [HttpPatch("{id}/complete")]
-    public IActionResult Complete(Guid id) => Ok();
+    public async Task<IActionResult> Complete(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var updated = await _sender.Send(new CompleteOrderCommand(id, userId), cancellationToken);
+        if (!updated) return NotFound();
+
+        return Ok();
+    }
 
     private Guid GetUserId()
     {

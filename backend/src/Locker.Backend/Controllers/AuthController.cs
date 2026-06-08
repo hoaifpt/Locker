@@ -46,11 +46,11 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
         var command = new RegisterCommand(request.Username, request.Email, request.Password, request.FullName, request.PhoneNumber);
-        var (success, error) = await _sender.Send(command, cancellationToken);
-        if (!success)
+        var (response, error) = await _sender.Send(command, cancellationToken);
+        if (response == null)
             return Conflict(new { message = error });
 
-        return Ok(new { message = "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản." });
+        return Ok(response);
     }
 
     /// <summary>

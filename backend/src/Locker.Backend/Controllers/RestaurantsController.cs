@@ -25,22 +25,23 @@ public class RestaurantsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var restaurants = await _sender.Send(new GetAllRestaurantsQuery(), cancellationToken);
-        return Ok(restaurants);
+        var result = await _sender.Send(new GetAllRestaurantsQuery(), cancellationToken);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var restaurant = await _sender.Send(new GetRestaurantByIdQuery(id), cancellationToken);
-        if (restaurant == null) return NotFound();
-        return Ok(restaurant);
+        var result = await _sender.Send(new GetRestaurantByIdQuery(id), cancellationToken);
+        if (result == null) return NotFound();
+
+        return Ok(result);
     }
 
     [HttpGet("{id}/menu")]
     public async Task<IActionResult> GetMenu(Guid id, CancellationToken cancellationToken)
     {
-        var menu = await _sender.Send(new GetRestaurantMenuQuery(id), cancellationToken);
-        return Ok(menu);
+        var result = await _sender.Send(new GetRestaurantMenuQuery(id), cancellationToken);
+        return Ok(result);
     }
 }

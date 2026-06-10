@@ -21,7 +21,7 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.Configure<EmailSettings>(configuration.GetSection("Email"));
         services.Configure<AppSettings>(configuration.GetSection("App"));
-        services.Configure<PaymentWebhookSettings>(configuration.GetSection("PaymentWebhook"));
+        services.Configure<VnPaySettings>(configuration.GetSection("VnPay"));
 
         services.AddSingleton<MongoContext>();
         services.AddScoped<ILockerRepository, LockerRepository>();
@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IIdentifierValidator, IdentifierValidator>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IVnPayService, VnPayService>();
         services.AddHostedService<OverdueOrderBackgroundService>();
 
         var mongoConnectionString = configuration.GetSection("Mongo:ConnectionString").Value ?? "mongodb://localhost:27017/LockerDb";

@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Locker.Backend.Application.Features.Wallet.Commands.TopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.Transfer;
+using Locker.Backend.Application.Features.Wallet.Commands.VnPayInitTopUp;
+using Locker.Backend.Application.Features.Wallet.Commands.VnPayProcessReturn;
 using Locker.Backend.Application.Features.Wallet.Queries.GetBalance;
 using Locker.Backend.Application.Features.Wallet.Queries.GetOverview;
 using Locker.Backend.Application.Features.Wallet.Queries.GetTransactions;
@@ -77,6 +80,47 @@ public class WalletController : ControllerBase
         return Ok(new { message = "Transfer successful" });
     }
 
+    [HttpPost("top-up/vnpay/init")]
+    public async Task<IActionResult> InitVnPayTopUp([FromBody] VnPayTopUpInitRequest request, CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var ipAddress = GetClientIpAddress();
+        var result = await _sender.Send(new VnPayInitTopUpCommand(userId, request.Amount, ipAddress), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("top-up/vnpay/return")]
+    [AllowAnonymous]
+    public async Task<IActionResult> VnPayReturn(CancellationToken cancellationToken)
+    {
+        var parameters = Request.Query.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.ToString()
+        );
+
+        var result = await _sender.Send(new VnPayProcessReturnCommand(parameters), cancellationToken);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    private string GetClientIpAddress()
+    {
+        var forwardedFor = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(forwardedFor))
+        {
+            return forwardedFor.Split(',')[0].Trim();
+        }
+
+        return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+    }
+
     private Guid GetUserId()
     {
         var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
@@ -95,4 +139,9 @@ public class TransferRequest
     public Guid ReceiverId { get; set; }
     public decimal Amount { get; set; }
     public string? Note { get; set; }
+}
+
+public class VnPayTopUpInitRequest
+{
+    public decimal Amount { get; set; }
 }

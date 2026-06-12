@@ -1,5 +1,4 @@
 using Locker.Backend.Application.Models;
-using Locker.Backend.Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +14,9 @@ using Locker.Backend.Application.Features.Auth.Commands.Logout;
 using Locker.Backend.Application.Features.Auth.Commands.LogoutAll;
 using Locker.Backend.Application.Features.Auth.Commands.SendForgotPasswordOtp;
 using Locker.Backend.Application.Features.Auth.Commands.ResetPassword;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace Locker.Backend.Controllers;
 

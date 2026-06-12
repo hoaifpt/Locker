@@ -20,7 +20,7 @@ namespace Locker.Backend.Controllers;
 [ApiController]
 [Route("api/bookings")]
 [Authorize]
-public class BookingsController : ControllerBase
+public class BookingsController : BaseApiController
 {
     private readonly ISender _sender;
 
@@ -97,11 +97,5 @@ public class BookingsController : ControllerBase
         var success = await _sender.Send(new CancelBookingCommand(id, userId), cancellationToken);
         if (!success) return BadRequest(new { message = "Cannot cancel this booking" });
         return NoContent();
-    }
-
-    private Guid GetUserId()
-    {
-        var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        return Guid.TryParse(idStr, out var id) ? id : Guid.Empty;
     }
 }

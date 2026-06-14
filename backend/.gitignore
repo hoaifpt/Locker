@@ -4,3 +4,5 @@ obj/
 target/
 *.log
 .env
+appsettings.Production.json
+appsettings.Development.json

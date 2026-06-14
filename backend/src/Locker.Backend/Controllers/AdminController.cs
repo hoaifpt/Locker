@@ -68,9 +68,14 @@ public class AdminController : ControllerBase
     // ── Payments ───────────────────────────────────────────
 
     [HttpGet("payments")]
-    public async Task<IActionResult> GetAllPayments(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAllPayments(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] DateTime? dateFrom = null,
+        [FromQuery] DateTime? dateTo = null,
+        CancellationToken cancellationToken = default)
     {
-        var payments = await _sender.Send(new GetAllPaymentsQuery(), cancellationToken);
+        var payments = await _sender.Send(new GetAllPaymentsQuery(pageNumber, pageSize, dateFrom, dateTo), cancellationToken);
         return Ok(payments);
     }
 }

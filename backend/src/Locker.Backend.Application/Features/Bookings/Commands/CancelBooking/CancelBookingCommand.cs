@@ -25,7 +25,13 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
     {
         var booking = await _bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
         if (booking == null || booking.UserId != request.UserId) return false;
-        if (booking.Status == BookingStatus.Completed) return false;
+
+        if (booking.Status == BookingStatus.Completed)
+            throw new InvalidOperationException("Không thể hủy booking đã hoàn thành.");
+        if (booking.Status == BookingStatus.Expired)
+            throw new InvalidOperationException("Không thể hủy booking đã hết hạn.");
+        if (booking.Status == BookingStatus.Canceled)
+            throw new InvalidOperationException("Booking này đã bị hủy từ trước.");
 
         var locker = await _lockerRepository.GetByIdAsync(booking.LockerId, cancellationToken);
         if (locker != null)

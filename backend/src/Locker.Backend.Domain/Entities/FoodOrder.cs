@@ -13,6 +13,7 @@ public class FoodOrder : BaseEntity
     
     public List<FoodOrderItem> Items { get; set; } = new();
     public decimal TotalAmount { get; set; }
+    public Guid? PaymentId { get; set; }
     
     public FoodOrderStatus Status { get; set; }
     
@@ -20,6 +21,7 @@ public class FoodOrder : BaseEntity
     public DateTime? DeliveredAt { get; set; }
     public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsDeleted { get; set; } = false;
 }
 
 public class FoodOrderItem

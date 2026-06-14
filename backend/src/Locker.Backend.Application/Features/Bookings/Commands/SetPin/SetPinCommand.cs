@@ -35,17 +35,19 @@ public class SetPinCommandHandler : IRequestHandler<SetPinCommand, bool>
         if (booking == null || booking.UserId != request.UserId) return false;
         if (booking.Status != BookingStatus.Pending) return false;
 
-        // Payment must be completed before setting PIN
-        if (booking.PaymentId != null)
-        {
-            var payment = await _paymentRepository.GetByBookingIdAsync(request.BookingId, cancellationToken);
-            if (payment == null || payment.Status != PaymentStatus.Completed) return false;
-        }
+        if (booking.PaymentId == null)
+            return false;
+
+        var payment = await _paymentRepository.GetByBookingIdAsync(request.BookingId, cancellationToken);
+        if (payment == null || payment.Status != PaymentStatus.Completed)
+            return false;
 
         var locker = await _lockerRepository.GetByIdAsync(booking.LockerId, cancellationToken);
         if (locker == null) return false;
 
         booking.PinHash = _passwordHasher.Hash(request.Pin);
+        booking.PinAttempts = 0;
+        booking.PinLockedUntil = null;
         booking.Status = BookingStatus.Active;
         booking.StartedAt = DateTime.UtcNow;
 

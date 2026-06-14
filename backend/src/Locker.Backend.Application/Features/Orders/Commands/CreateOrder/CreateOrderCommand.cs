@@ -4,7 +4,6 @@ using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
 using MediatR;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OrderEntity = Locker.Backend.Domain.Entities.Order;
@@ -29,7 +28,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
 
     private const int PaymentExpirationMinutes = 15;
     private const int MaxConcurrentOrders = 5;
-    private const int MaxDurationHours = 7 * 24; // 7 days
+    private const int MaxDurationHours = 7 * 24;
     private const int MinDurationHours = 1;
 
     public CreateOrderCommandHandler(
@@ -48,10 +47,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         if (locker == null)
             return null;
 
-        var slot = locker.Slots.FirstOrDefault(s => s.Index == request.SlotIndex);
-        if (slot == null || slot.Status != LockerSlotStatus.Available)
-            return null;
-
         var package = await _packageRepository.GetByIdAsync(request.PackageId, cancellationToken);
         if (package == null || !package.IsActive)
             return null;
@@ -60,7 +55,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             return null;
 
         var checkOutTime = request.CheckInTime.AddHours(request.DurationHours);
-
         var conflictingOrders = await _orderRepository.GetConflictingOrdersAsync(
             request.LockerId,
             request.SlotIndex,
@@ -71,19 +65,13 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         if (conflictingOrders.Count > 0)
             return null;
 
-        var activeUserOrders = await _orderRepository.GetByUserIdAndStatusAsync(
-            request.UserId,
-            OrderStatus.Active,
-            cancellationToken);
-
+        var activeUserOrders = await _orderRepository.GetByUserIdAndStatusAsync(request.UserId, OrderStatus.Active, cancellationToken);
         if (activeUserOrders.Count >= MaxConcurrentOrders)
             return null;
 
         var subtotal = package.PricePerHour * request.DurationHours;
-        var taxes = subtotal * 0.1m; // 10% tax
-        var discount = 0m;
-
-        var totalAmount = subtotal + taxes - discount;
+        var taxes = subtotal * 0.1m;
+        var totalAmount = subtotal + taxes;
 
         var order = new OrderEntity
         {
@@ -99,20 +87,20 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             BaseRate = package.PricePerHour,
             Subtotal = subtotal,
             Taxes = taxes,
-            Discount = discount,
+            Discount = 0m,
             TotalAmount = totalAmount,
             Notes = request.Notes,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            PaymentExpirationTime = DateTime.UtcNow.AddMinutes(PaymentExpirationMinutes)
         };
 
-        slot.Status = LockerSlotStatus.Pending;
-        slot.BookingId = order.Id;
+        var reserved = await _lockerRepository.TryReserveSlotAsync(request.LockerId, request.SlotIndex, order.Id, cancellationToken);
+        if (!reserved)
+            return null;
 
         await _orderRepository.CreateAsync(order, cancellationToken);
-        await _lockerRepository.UpdateAsync(locker, cancellationToken);
 
-        var expirationTime = DateTime.UtcNow.AddMinutes(PaymentExpirationMinutes);
-
+        var expirationTime = order.PaymentExpirationTime ?? DateTime.UtcNow.AddMinutes(PaymentExpirationMinutes);
         return new OrderConfirmationDto
         {
             OrderId = order.Id,

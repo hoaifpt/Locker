@@ -8,5 +8,6 @@ public class User : MongoIdentityUser<Guid>
     public string? FullName { get; set; }
     public bool IsActive { get; set; } = true;
     public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiry { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

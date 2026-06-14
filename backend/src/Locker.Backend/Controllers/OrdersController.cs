@@ -158,7 +158,7 @@ public class OrdersController : ControllerBase
         if (userId == Guid.Empty)
             return Unauthorized();
 
-        var order = await _sender.Send(new CancelOrderCommand(id, userId, request.CancellationReason), cancellationToken);
+        var order = await _sender.Send(new CancelOrderCommand(id, userId, request.CancellationReason ?? string.Empty), cancellationToken);
         if (order == null)
             return BadRequest(new { message = "Cannot cancel order. Order may be Completed or already Cancelled" });
 

@@ -8,4 +8,6 @@ public interface IJwtTokenService
     string CreateRefreshToken(TokenSubject subject);
     DateTime GetAccessTokenExpiry();
     DateTime GetRefreshTokenExpiry();
+    DateTime? GetTokenExpiry(string token);
+    string? GetTokenJti(string token);
 }

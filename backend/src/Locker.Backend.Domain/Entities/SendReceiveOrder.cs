@@ -6,6 +6,7 @@ namespace Locker.Backend.Domain.Entities;
 public class SendReceiveOrder : BaseEntity
 {
     public Guid SenderId { get; set; }
+    public Guid? ReceiverId { get; set; }
     public string ReceiverPhone { get; set; } = string.Empty;
     
     public Guid LockerId { get; set; }

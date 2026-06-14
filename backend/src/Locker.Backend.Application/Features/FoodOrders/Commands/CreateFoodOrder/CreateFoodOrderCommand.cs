@@ -31,15 +31,18 @@ public class CreateFoodOrderCommandHandler : IRequestHandler<CreateFoodOrderComm
     private readonly IFoodOrderRepository _orderRepository;
     private readonly IMenuItemRepository _menuItemRepository;
     private readonly ILockerRepository _lockerRepository;
+    private readonly IPaymentRepository _paymentRepository;
 
     public CreateFoodOrderCommandHandler(
         IFoodOrderRepository orderRepository,
         IMenuItemRepository menuItemRepository,
-        ILockerRepository lockerRepository)
+        ILockerRepository lockerRepository,
+        IPaymentRepository paymentRepository)
     {
         _orderRepository = orderRepository;
         _menuItemRepository = menuItemRepository;
         _lockerRepository = lockerRepository;
+        _paymentRepository = paymentRepository;
     }
 
     public async Task<FoodOrderDto?> Handle(CreateFoodOrderCommand request, CancellationToken cancellationToken)
@@ -49,7 +52,7 @@ public class CreateFoodOrderCommandHandler : IRequestHandler<CreateFoodOrderComm
 
         var slot = locker.Slots.FirstOrDefault(s => s.Index == request.SlotIndex);
         if (slot == null || slot.Status != LockerSlotStatus.Available)
-            return null; // For simplicity, we just check available. A real app might reserve it here.
+            return null;
 
         decimal totalAmount = 0;
         var orderItems = new List<FoodOrderItem>();
@@ -79,13 +82,26 @@ public class CreateFoodOrderCommandHandler : IRequestHandler<CreateFoodOrderComm
             SlotIndex = request.SlotIndex,
             Items = orderItems,
             TotalAmount = totalAmount,
-            Status = FoodOrderStatus.Pending,
+            Status = FoodOrderStatus.PaymentRequired,
             DeliveryNotes = request.DeliveryNotes
         };
 
         await _orderRepository.CreateAsync(order, cancellationToken);
 
-        // Mark slot as pending
+        var payment = new Payment
+        {
+            BookingId = order.Id,
+            UserId = request.UserId,
+            Amount = totalAmount,
+            Method = "Pending",
+            Status = PaymentStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _paymentRepository.CreateAsync(payment, cancellationToken);
+        order.PaymentId = payment.Id;
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+
         slot.Status = LockerSlotStatus.Pending;
         await _lockerRepository.UpdateAsync(locker, cancellationToken);
 

@@ -4,6 +4,7 @@ using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
 using MediatR;
 using System;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,16 +21,21 @@ public record CreateDeliveryRequestCommand(
 public class CreateDeliveryRequestCommandHandler : IRequestHandler<CreateDeliveryRequestCommand, DeliveryRequestDto?>
 {
     private readonly IDeliveryRequestRepository _repository;
+    private readonly ILockerEventRepository _lockerEventRepository;
+    private readonly ILockerRepository _lockerRepository;
 
-    public CreateDeliveryRequestCommandHandler(IDeliveryRequestRepository repository)
+    public CreateDeliveryRequestCommandHandler(
+        IDeliveryRequestRepository repository,
+        ILockerEventRepository lockerEventRepository,
+        ILockerRepository lockerRepository)
     {
         _repository = repository;
+        _lockerEventRepository = lockerEventRepository;
+        _lockerRepository = lockerRepository;
     }
 
     public async Task<DeliveryRequestDto?> Handle(CreateDeliveryRequestCommand request, CancellationToken cancellationToken)
     {
-        var trackingCode = $"TRK-{DateTime.UtcNow:yyyyMMddHHmmss}-{new Random().Next(1000, 9999)}";
-
         var item = new DeliveryRequest
         {
             UserId = request.UserId,
@@ -38,11 +44,24 @@ public class CreateDeliveryRequestCommandHandler : IRequestHandler<CreateDeliver
             LockerId = request.LockerId,
             SlotIndex = request.SlotIndex,
             PackageSize = request.PackageSize,
-            TrackingCode = trackingCode,
+            TrackingCode = $"TRK-{DateTime.UtcNow:yyyyMMddHHmmss}-{RandomNumberGenerator.GetInt32(1000, 10000)}",
             Status = DeliveryStatus.Pending
         };
 
+        var reserved = await _lockerRepository.TryReserveSlotAsync(item.LockerId, item.SlotIndex, item.Id, cancellationToken);
+        if (!reserved)
+            return null;
+
         await _repository.CreateAsync(item, cancellationToken);
+        await _lockerEventRepository.CreateAsync(new LockerEvent
+        {
+            LockerId = item.LockerId,
+            SlotIndex = item.SlotIndex,
+            UserId = item.UserId,
+            EventType = "DeliveryRequestCreated",
+            ReferenceId = item.Id.ToString(),
+            Notes = item.TrackingCode
+        }, cancellationToken);
 
         return new DeliveryRequestDto
         {

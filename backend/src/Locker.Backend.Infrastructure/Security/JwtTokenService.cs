@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
@@ -16,6 +15,11 @@ public class JwtTokenService : IJwtTokenService
     public JwtTokenService(IOptions<JwtSettings> settings)
     {
         _settings = settings.Value;
+
+        if (string.IsNullOrWhiteSpace(_settings.Secret) || _settings.Secret.Length < 32)
+        {
+            throw new InvalidOperationException("Jwt:Secret must be at least 32 characters long.");
+        }
     }
 
     public string CreateToken(TokenSubject subject)
@@ -27,7 +31,8 @@ public class JwtTokenService : IJwtTokenService
             new Claim(JwtRegisteredClaimNames.UniqueName, subject.Username ?? string.Empty),
             new Claim(ClaimTypes.Name, subject.Username ?? string.Empty),
             new Claim(ClaimTypes.Role, subject.Role),
-            new Claim(JwtRegisteredClaimNames.Email, subject.Email ?? string.Empty)
+            new Claim(JwtRegisteredClaimNames.Email, subject.Email ?? string.Empty),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
@@ -49,8 +54,8 @@ public class JwtTokenService : IJwtTokenService
         {
             new Claim(JwtRegisteredClaimNames.Sub, subject.UserId.ToString()),
             new Claim(ClaimTypes.NameIdentifier, subject.UserId.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, subject.Username),
-            new Claim(ClaimTypes.Name, subject.Username),
+            new Claim(JwtRegisteredClaimNames.UniqueName, subject.Username ?? string.Empty),
+            new Claim(ClaimTypes.Name, subject.Username ?? string.Empty),
             new Claim(ClaimTypes.Role, subject.Role),
             new Claim(JwtRegisteredClaimNames.Email, subject.Email ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -75,4 +80,22 @@ public class JwtTokenService : IJwtTokenService
 
     public DateTime GetRefreshTokenExpiry()
         => DateTime.UtcNow.AddDays(_settings.RefreshTokenExpiryDays);
+
+    public DateTime? GetTokenExpiry(string token)
+    {
+        var jwt = ReadToken(token);
+        return jwt?.ValidTo == default ? null : jwt?.ValidTo;
+    }
+
+    public string? GetTokenJti(string token)
+    {
+        var jwt = ReadToken(token);
+        return jwt?.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+    }
+
+    private static JwtSecurityToken? ReadToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        return handler.CanReadToken(token) ? handler.ReadJwtToken(token) : null;
+    }
 }

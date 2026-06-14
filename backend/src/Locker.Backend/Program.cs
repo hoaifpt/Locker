@@ -1,12 +1,15 @@
+using System.IdentityModel.Tokens.Jwt;
 // Assuming the project file targets net8.0
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Locker.Backend.Application;
+using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Infrastructure;
 using Locker.Backend.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,6 +24,23 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var envFile = Path.Combine(builder.Environment.ContentRootPath, ".env");
+if (File.Exists(envFile))
+{
+    foreach (var line in File.ReadAllLines(envFile))
+    {
+        var match = Regex.Match(line, @"^([^=]+)=(.*)$");
+        if (match.Success)
+        {
+            var envKey = match.Groups[1].Value.Trim();
+            var value = match.Groups[2].Value.Trim();
+            if (!string.IsNullOrEmpty(envKey) && !envKey.StartsWith("#"))
+            {
+                Environment.SetEnvironmentVariable(envKey, value);
+            }
+        }
+    }
+}
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -54,6 +74,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<Locker.Backend.Application.Validators.AuthRequestValidator>();
+
 // Rate limiting
 builder.Services.AddRateLimiter(options =>
 {
@@ -74,17 +98,23 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
-// Add CORS
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? Array.Empty<string>();
+
+if (allowedOrigins.Length == 0 && !builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException(
+        "CORS AllowedOrigins must be configured in production. " +
+        "Set 'Cors:AllowedOrigins' in appsettings.Production.json or via environment variables.");
+}
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
         policy =>
         {
-            if (builder.Environment.IsDevelopment() || allowedOrigins.Length == 0)
+            if (builder.Environment.IsDevelopment())
             {
                 policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
             }
@@ -121,6 +151,25 @@ builder.Services.AddAuthentication(options =>
         RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.Name
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var jwt = context.SecurityToken as JwtSecurityToken;
+            var jti = jwt?.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+            if (string.IsNullOrWhiteSpace(jti))
+            {
+                context.Fail("Invalid token.");
+                return;
+            }
+
+            var repository = context.HttpContext.RequestServices.GetRequiredService<IRefreshTokenRepository>();
+            if (await repository.IsAccessTokenRevokedAsync(jti, context.HttpContext.RequestAborted))
+            {
+                context.Fail("Token has been revoked.");
+            }
+        }
+    };
 });
 
 builder.Services.AddAuthorization();
@@ -129,7 +178,6 @@ var app = builder.Build();
 
 app.UseStaticFiles();
 
-// Swagger UI Configuration
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -145,10 +193,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<Locker.Backend.Middlewares.ExceptionHandlingMiddleware>();
-
 app.UseCors("AllowAll");
 
-// Security headers
 app.Use(async (ctx, next) =>
 {
     ctx.Response.Headers.Append("X-Content-Type-Options", "nosniff");

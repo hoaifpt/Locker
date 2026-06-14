@@ -6,6 +6,9 @@ using Locker.Backend.Application.Features.Users.Queries.GetProfile;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
+using System.Threading.Tasks;
+using System;
 
 namespace Locker.Backend.Controllers;
 

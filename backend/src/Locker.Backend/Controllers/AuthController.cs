@@ -17,6 +17,9 @@ using Locker.Backend.Application.Features.Auth.Commands.SendForgotPasswordOtp;
 using Locker.Backend.Application.Features.Auth.Commands.ResetPassword;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace Locker.Backend.Controllers;
 

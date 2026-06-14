@@ -1,17 +1,24 @@
 using System.IdentityModel.Tokens.Jwt;
+// Assuming the project file targets net8.0
+using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Locker.Backend;
 using Locker.Backend.Application;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Infrastructure;
 using Locker.Backend.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -34,6 +41,8 @@ if (File.Exists(envFile))
         }
     }
 }
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -65,13 +74,11 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Locker.Backend.Application.Validators.AuthRequestValidator>();
 
+// Rate limiting
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("auth", opt =>
@@ -178,6 +185,8 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Locker API v1");
         options.RoutePrefix = string.Empty;
+
+        // Inject Custom Cyberpunk Swagger Theme
         options.InjectStylesheet("/swagger-ui/cyberpunk.css");
         options.DocumentTitle = "Locker API - Cyberpunk";
     });
@@ -202,6 +211,13 @@ app.UseAuthorization();
 
 app.MapControllers().RequireRateLimiting("api");
 
-await app.Services.UseDatabaseSeeder();
+// Seed the database
+using (var scope = app.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    await serviceProvider.UseDatabaseSeeder();
+}
 
 app.Run();
+
+public partial class Program { } // Make Program class public for testing

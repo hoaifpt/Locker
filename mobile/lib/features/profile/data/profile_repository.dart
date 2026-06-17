@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/exceptions/app_exception.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../domain/entities/user_profile.dart';
 import '../domain/repositories/i_profile_repository.dart';
@@ -9,7 +11,7 @@ class ProfileRepository implements IProfileRepository {
   @override
   Future<UserProfile> getUserProfile() async {
     try {
-      final response = await _apiClient.client.get(ApiEndpoints.getMe);
+      final response = await _apiClient.client.get(ApiEndpoints.userMe);
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -27,16 +29,16 @@ class ProfileRepository implements IProfileRepository {
           address: data['address']?.toString() ?? 'No address provided',
         );
       }
-      throw Exception('Failed to load profile');
-    } catch (e) {
-      throw Exception('Error loading profile: $e');
+      throw NetworkException('Failed to load user profile');
+    } on DioException catch (e) {
+      throw NetworkException('Error fetching user profile: ${e.message}');
     }
   }
 
   @override
   Future<void> logout() async {
     try {
-      await _apiClient.client.post(ApiEndpoints.logout);
+      await _apiClient.client.post(ApiEndpoints.authLogout);
     } catch (_) {
       // Handled in auth repository usually
     }

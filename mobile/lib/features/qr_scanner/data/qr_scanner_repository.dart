@@ -1,4 +1,5 @@
 import '../../../core/constants/api_endpoints.dart';
+import 'package:dio/dio.dart';
 import '../../../core/exceptions/app_exception.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/entities/scan_result.dart';
@@ -17,9 +18,14 @@ class QrScannerRepository implements IQrScannerRepository {
         data: {'qrCode': qrCode},
       );
       return ScanResultModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      // Assuming 404 or 400 for invalid QR codes
+      if (e.response?.statusCode == 404 || e.response?.statusCode == 400) {
+        throw ValidationException('Mã QR không hợp lệ hoặc đã hết hạn.');
+      }
+      throw NetworkException('Lỗi khi quét mã QR: ${e.message}');
     } catch (e) {
-      if (e is AppException) rethrow;
-      throw NetworkException('Mã QR không hợp lệ hoặc đã hết hạn');
+      throw AppException('Đã xảy ra lỗi không mong muốn: $e');
     }
   }
 
@@ -35,8 +41,10 @@ class QrScannerRepository implements IQrScannerRepository {
             .toList();
       }
       return [];
+    } on DioException catch (e) {
+      throw NetworkException('Lỗi khi tải lịch sử quét: ${e.message}');
     } catch (e) {
-      throw NetworkException('Lỗi khi tải lịch sử quét: $e');
+      throw AppException('Đã xảy ra lỗi không mong muốn: $e');
     }
   }
 }

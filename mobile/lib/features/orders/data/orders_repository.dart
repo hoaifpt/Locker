@@ -12,7 +12,7 @@ class OrdersRepository implements IOrdersRepository {
   @override
   Future<List<OrderHistoryItem>> getOrders() async {
     try {
-      final response = await _apiClient.client.get(ApiEndpoints.ordersGetMy);
+      final response = await _apiClient.client.get(ApiEndpoints.ordersMy);
       if (response.statusCode == 200 && response.data is List) {
         return (response.data as List)
             .map((item) => _mapOrder(item as Map<String, dynamic>))

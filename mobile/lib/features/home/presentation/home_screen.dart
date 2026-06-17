@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../locker/domain/entities/locker.dart';
+import '../domain/entities/user.dart';
 import '../domain/entities/active_locker.dart';
 import 'controllers/home_cubit.dart';
 import 'controllers/home_state.dart';
@@ -64,9 +65,10 @@ class HomeScreen extends StatelessWidget {
               slivers: [
                 SliverToBoxAdapter(
                   child: _HomeHeader(
-                      onProfileTap: () {
-                        Navigator.pushNamed(context, '/personal-info');
-                      },
+                    user: loaded.user,
+                    onProfileTap: () {
+                      Navigator.pushNamed(context, '/personal-info');
+                    },
                     onNotificationsTap: () {
                       Navigator.pushNamed(context, '/notifications');
                     },
@@ -159,10 +161,12 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _HomeHeader extends StatelessWidget {
+  final User user;
   final VoidCallback onProfileTap;
   final VoidCallback onNotificationsTap;
 
   const _HomeHeader({
+    required this.user,
     required this.onProfileTap,
     required this.onNotificationsTap,
   });
@@ -201,23 +205,25 @@ class _HomeHeader extends StatelessWidget {
                       ],
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: Image.asset(
-                      'assets/ebox_logo.png',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.person,
-                        color: Color(0xFFFB923C),
-                      ),
-                    ),
+                    child: user.avatarUrl != null
+                        ? Image.network(
+                            user.avatarUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person,
+                              color: Color(0xFFFB923C),
+                            ),
+                          )
+                        : const Icon(Icons.person, color: Color(0xFFFB923C)),
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Xin chào, Minh Anh!',
+                        'Xin chào, ${user.fullName}!',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -227,7 +233,7 @@ class _HomeHeader extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(Icons.location_on_outlined,

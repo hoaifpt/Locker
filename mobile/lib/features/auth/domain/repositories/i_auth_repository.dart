@@ -1,7 +1,6 @@
-/// Abstract contract - data layer phải implement
 abstract class IAuthRepository {
   Future<bool> login(String username, String password);
-  Future<void> logout({bool callServer});
+  Future<void> logout({bool callServer = true});
   Future<bool> checkLoginStatus();
-  Future<void> refreshToken();
+  Future<void> resendVerificationEmail(String email);
 }

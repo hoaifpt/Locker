@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../locker/domain/entities/locker.dart';
 import '../../domain/entities/active_locker.dart';
+import '../../domain/entities/user.dart';
 
 abstract class HomeState extends Equatable {
   const HomeState();
@@ -18,16 +19,18 @@ class HomeLoading extends HomeState {
 }
 
 class HomeLoaded extends HomeState {
+  final User user;
   final List<ActiveLocker> activeLockers;
   final List<Locker> nearbyLockers;
 
   const HomeLoaded({
+    required this.user,
     required this.activeLockers,
     required this.nearbyLockers,
   });
 
   @override
-  List<Object?> get props => [activeLockers, nearbyLockers];
+  List<Object?> get props => [user, activeLockers, nearbyLockers];
 }
 
 class HomeError extends HomeState {

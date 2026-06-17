@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/api_endpoints.dart';
 import '../../../core/exceptions/app_exception.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/repositories/i_auth_repository.dart';
@@ -13,7 +14,8 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<bool> login(String username, String password) async {
     try {
-      final response = await _apiClient.client.post('/auth/login', data: {
+      final response =
+          await _apiClient.client.post(ApiEndpoints.authLogin, data: {
         'identifier': username,
         'password': password,
       });
@@ -48,7 +50,8 @@ class AuthRepository implements IAuthRepository {
       throw UnauthorizedException('Thiếu refresh token');
     }
 
-    final response = await _apiClient.client.post('/auth/refresh', data: {
+    final response =
+        await _apiClient.client.post(ApiEndpoints.authRefresh, data: {
       'refreshToken': refresh,
     });
 
@@ -60,6 +63,11 @@ class AuthRepository implements IAuthRepository {
     }
     await _saveTokens(access, newRefresh);
   }
+
+  /// Dùng sau khi register thành công, tự động đăng nhập
+  @override
+  Future<void> loginWithToken(String token, String refreshToken) async =>
+      await _saveTokens(token, refreshToken);
 
   /// Lưu token vào máy & Cập nhật cho ApiClient dùng luôn
   Future<void> _saveTokens(String access, String refresh) async {
@@ -89,7 +97,7 @@ class AuthRepository implements IAuthRepository {
 
     if (callServer && refresh != null) {
       try {
-        await _apiClient.client.post('/auth/logout', data: {
+        await _apiClient.client.post(ApiEndpoints.authLogout, data: {
           'refreshToken': refresh,
         });
       } catch (_) {
@@ -100,5 +108,20 @@ class AuthRepository implements IAuthRepository {
     await prefs.remove(AppConstants.accessTokenKey);
     await prefs.remove(AppConstants.refreshTokenKey);
     _apiClient.clearToken();
+  }
+
+  @override
+  Future<void> resendVerificationEmail(String email) async {
+    try {
+      // Giả định endpoint là /auth/resend-verification-email
+      await _apiClient.client.post(
+        '/auth/resend-verification-email',
+        data: {'email': email},
+      );
+    } on DioException catch (e) {
+      throw NetworkException(e.message ?? 'Lỗi khi gửi lại email xác thực.');
+    } catch (e) {
+      throw AppException('Đã xảy ra lỗi không mong muốn: $e');
+    }
   }
 }

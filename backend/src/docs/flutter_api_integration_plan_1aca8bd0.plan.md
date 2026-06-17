@@ -34,6 +34,12 @@ Plan nay da duoc cap nhat chinh xac theo backend source code thuc te.
 
 ## 0. Backend API Contracts - Chinh Xac Tu Source Code
 
+> [!NOTE]
+> **Tuỳ chỉnh Lỗi Phân Quyền (403 Forbidden):**
+> Khi Frontend gọi API mà thiếu quyền (ví dụ User gọi API của Admin), Backend sẽ trả về HTTP 403 kèm JSON Body:
+> `{ "error": "Forbidden", "message": "Bạn không có quyền truy cập. Yêu cầu một trong các quyền sau: Admin, Shipper." }`
+> Flutter App nên bắt lỗi 403 và hiển thị `message` này cho người dùng thay vì hiển thị lỗi chung chung.
+
 ### 0a. Auth Endpoints
 
 **POST /api/auth/register**
@@ -188,21 +194,30 @@ Plan nay da duoc cap nhat chinh xac theo backend source code thuc te.
 ["Small", "Medium", "Large"]
 ```
 
-**POST /api/delivery/requests** - [Authorize]
-```json
-// Request
-{
-  "senderName": string,      // REQUIRED - lay tu current user
-  "receiverPhone": string,
-  "lockerId": "guid",
-  "slotIndex": int,
-  "packageSize": "Small|Medium|Large"
-}
-// Response 200 - DeliveryRequestDto
-{ "id", "userId", "senderName", "receiverPhone", "lockerId", "slotIndex", "packageSize", "trackingCode", "status", "createdAt" }
-```
+**POST /api/delivery/requests** - [Authorize(Roles = "Shipper")]
+   Tạo yêu cầu giao hàng mới (dành cho Shipper).
 
-**GET /api/delivery/requests/my** - [Authorize]
+   Body: `{ "senderName", "receiverPhone", "lockerId", "slotIndex", "packageSize" }`
+   - packageSize tu `package-sizes` api.
+
+   Response 200:
+   ```json
+   {
+     "id": "guid",
+     "userId": "guid",
+     "senderName": "string",
+     "receiverPhone": "string",
+     "lockerId": "guid",
+     "slotIndex": 1,
+     "packageSize": "Small",
+     "trackingCode": "TRK-...",
+     "status": "Pending",
+     "createdAt": "iso8601"
+   }
+   ```
+   // Response 200 - DeliveryRequestDto
+
+**GET /api/delivery/requests/my** - [Authorize(Roles = "Shipper")]
 **GET /api/delivery/requests/track/{trackingCode}** - [AllowAnonymous]
 
 ### 0g. Send/Receive Endpoints

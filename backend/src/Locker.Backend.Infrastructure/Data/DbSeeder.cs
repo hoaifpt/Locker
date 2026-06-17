@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
@@ -57,31 +58,44 @@ public static class DbSeeder
         // 2. Admin
         var adminUser = await userManager.FindByNameAsync(adminUsername);
         Guid adminId = adminUser?.Id ?? Guid.NewGuid();
-        if (adminUser == null)
-        {
-            await CreateUserAsync(userManager, adminId, adminUsername, adminEmail, "0000000000", "Admin", "Administrator", adminPassword);
-        }
+        await CreateUserAsync(userManager, adminId, adminUsername, adminEmail, "0000000000", "Admin", "Administrator", adminPassword);
 
         // 3. Sample Users
         var customerIds = new List<Guid>();
-        for (int i = 1; i <= customersCount; i++)
+        var customerNames = new[] { "Nguyễn Văn An", "Trần Thị Mai", "Lê Hoàng Tuấn", "Phạm Ngọc Bích", "Vũ Xuân Đạt" };
+        var customerUsernames = new[] { "nguyenvanan", "tranthimai", "lehoangtuan", "phamngocbich", "vuxuandat" };
+        var customerPhones = new[] { "0901234567", "0912345678", "0923456789", "0934567890", "0945678901" };
+
+        for (int i = 0; i < customersCount; i++)
         {
-            var uName = $"customer{i}";
+            var idx = i % customerNames.Length;
+            var uName = customerUsernames[idx] + (i >= customerNames.Length ? (i + 1).ToString() : "");
+            var fullName = customerNames[idx];
+            var phone = customerPhones[idx];
+            var email = $"{uName}@gmail.com";
+            
             var u = await userManager.FindByNameAsync(uName);
             var id = u?.Id ?? Guid.NewGuid();
-            if (u == null)
-                await CreateUserAsync(userManager, id, uName, $"{uName}@locker.com", $"090{i:D8}", "User", $"Customer {i}", defaultPassword);
+            await CreateUserAsync(userManager, id, uName, email, phone, "User", fullName, defaultPassword);
             customerIds.Add(id);
         }
 
         var shipperIds = new List<Guid>();
-        for (int i = 1; i <= shippersCount; i++)
+        var shipperNames = new[] { "Đinh Văn Giao", "Lý Thanh Hải", "Bùi Trọng Hiếu", "Đỗ Văn Toàn" };
+        var shipperUsernames = new[] { "dinhvangiao", "lythanhhai", "buitronghieu", "dovantoan" };
+        var shipperPhones = new[] { "0812345678", "0823456789", "0834567890", "0845678901" };
+
+        for (int i = 0; i < shippersCount; i++)
         {
-            var uName = $"shipper{i}";
+            var idx = i % shipperNames.Length;
+            var uName = shipperUsernames[idx] + (i >= shipperNames.Length ? (i + 1).ToString() : "");
+            var fullName = shipperNames[idx];
+            var phone = shipperPhones[idx];
+            var email = $"{uName}@fastdelivery.com";
+            
             var u = await userManager.FindByNameAsync(uName);
             var id = u?.Id ?? Guid.NewGuid();
-            if (u == null)
-                await CreateUserAsync(userManager, id, uName, $"{uName}@locker.com", $"080{i:D8}", "Shipper", $"Shipper {i}", defaultPassword);
+            await CreateUserAsync(userManager, id, uName, email, phone, "Shipper", fullName, defaultPassword);
             shipperIds.Add(id);
         }
 
@@ -525,6 +539,11 @@ public static class DbSeeder
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user, role);
+            }
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Failed to create user {username}: {errors}");
             }
         }
         else

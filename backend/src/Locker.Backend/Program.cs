@@ -56,7 +56,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "JWT Authorization header using the Bearer scheme."
+        Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'your_token_here' without the 'Bearer ' prefix."
     });
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -148,15 +148,14 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        RoleClaimType = ClaimTypes.Role,
-        NameClaimType = ClaimTypes.Name
+        RoleClaimType = "role",
+        NameClaimType = "name"
     };
     options.Events = new JwtBearerEvents
     {
         OnTokenValidated = async context =>
         {
-            var jwt = context.SecurityToken as JwtSecurityToken;
-            var jti = jwt?.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+            var jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
             if (string.IsNullOrWhiteSpace(jti))
             {
                 context.Fail("Invalid token.");
@@ -168,6 +167,21 @@ builder.Services.AddAuthentication(options =>
             {
                 context.Fail("Token has been revoked.");
             }
+        },
+        OnForbidden = context =>
+        {
+            context.Response.StatusCode = 403;
+            context.Response.ContentType = "application/json";
+            
+            var endpoint = context.HttpContext.GetEndpoint();
+            var authorizeAttributes = endpoint?.Metadata.GetOrderedMetadata<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>();
+            var requiredRoles = string.Join(", ", authorizeAttributes?.Where(a => !string.IsNullOrWhiteSpace(a.Roles)).Select(a => a.Roles) ?? Array.Empty<string>());
+            
+            var message = string.IsNullOrEmpty(requiredRoles) 
+                ? "Bạn không có quyền truy cập vào chức năng này." 
+                : $"Bạn không có quyền truy cập. Yêu cầu một trong các quyền sau: {requiredRoles}.";
+                
+            return Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(context.Response, new { error = "Forbidden", message = message });
         }
     };
 });
@@ -185,10 +199,7 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Locker API v1");
         options.RoutePrefix = string.Empty;
-
-        // Inject Custom Cyberpunk Swagger Theme
-        options.InjectStylesheet("/swagger-ui/cyberpunk.css");
-        options.DocumentTitle = "Locker API - Cyberpunk";
+        options.DocumentTitle = "Locker API";
     });
 }
 

@@ -1,7 +1,11 @@
-import { LockerDto } from '../../types';
-
 interface MapViewProps {
-    locker: LockerDto;
+    locker: {
+        id: string;
+        name: string;
+        location: string;
+        latitude: number;
+        longitude: number;
+    };
     height?: string;
 }
 

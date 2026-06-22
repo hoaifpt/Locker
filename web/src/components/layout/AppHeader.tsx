@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Lock, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
-
-const NAV_LINKS = [
-  { to: '/lockers', label: 'Tủ khóa' },
-  { to: '/packages', label: 'Gói dịch vụ' },
-  { to: '/bookings', label: 'Đặt chỗ của tôi' },
-];
+import { Lock, Menu, X, User, LogOut, ChevronDown, LayoutDashboard, Settings } from 'lucide-react';
+import NotificationsDropdown from '../../features/notifications/components/NotificationsDropdown';
 
 export default function AppHeader() {
   const location = useLocation();
@@ -15,35 +10,63 @@ export default function AppHeader() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const username = localStorage.getItem('username') ?? 'Người dùng';
+  const role = localStorage.getItem('role') ?? 'User';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     localStorage.removeItem('role');
+    localStorage.removeItem('userId');
     navigate('/login');
   };
+
+  const getNavLinks = () => {
+    if (role === 'Shipper') {
+      return [
+        { to: '/dashboard', label: 'Bảng điều khiển' },
+        { to: '/shipper/tasks', label: 'Giao hàng' },
+        { to: '/wallet', label: 'Ví LuxeLock' },
+      ];
+    }
+    if (role === 'Admin') {
+      return [
+        { to: '/dashboard', label: 'Bảng điều khiển' },
+        { to: '/lockers', label: 'Quản lý tủ khóa' },
+      ];
+    }
+    return [
+      { to: '/dashboard', label: 'Dashboard' },
+      { to: '/lockers', label: 'Tủ khóa' },
+      { to: '/orders', label: 'Đơn hàng' },
+      { to: '/food', label: 'Ăn uống' },
+      { to: '/send-receive', label: 'Gửi - Nhận' },
+      { to: '/wallet', label: 'Ví LuxeLock' },
+    ];
+  };
+
+  const NAV_LINKS = getNavLinks();
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
+        <Link to={role === 'User' ? '/' : '/dashboard'} className="flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm shadow-orange-200">
             <Lock size={16} />
           </span>
           LuxeLock
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 md:flex ml-8 flex-1">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                location.pathname === link.to
-                  ? 'bg-orange-50 text-orange-500'
-                  : 'text-gray-600 hover:text-orange-500'
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                location.pathname.startsWith(link.to) && link.to !== '/'
+                  ? 'bg-orange-50 text-orange-600'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-orange-500'
               }`}
             >
               {link.label}
@@ -51,83 +74,93 @@ export default function AppHeader() {
           ))}
         </nav>
 
-        {/* User menu */}
+        {/* Right actions */}
         <div className="hidden items-center gap-3 md:flex">
+          {/* Notifications */}
+          <NotificationsDropdown />
+
+          <div className="h-6 w-px bg-gray-200"></div>
+
+          {/* User menu */}
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-orange-50"
+              className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-orange-50"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
-                {username[0].toUpperCase()}
+              <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm ${role === 'Admin' ? 'bg-purple-500' : role === 'Shipper' ? 'bg-blue-500' : 'bg-orange-500'}`}>
+                {username[0]?.toUpperCase() ?? 'U'}
               </span>
-              {username}
-              <ChevronDown size={14} />
+              <div className="hidden lg:block text-left">
+                <p className="text-sm font-bold text-gray-900 leading-tight">{username}</p>
+                <p className="text-[10px] text-gray-500 font-semibold">{role}</p>
+              </div>
+              <ChevronDown size={14} className="text-gray-400" />
             </button>
             {dropdownOpen && (
-              <div className="absolute right-0 mt-1 w-44 rounded-2xl border border-gray-100 bg-white py-1 shadow-xl">
-                <Link
-                  to="/profile"
-                  onClick={() => setDropdownOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50"
-                >
-                  <User size={14} />
-                  Hồ sơ của tôi
+              <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-gray-100 bg-white py-2 shadow-xl shadow-gray-200/50 z-50">
+                <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                  <LayoutDashboard size={16} /> Bảng điều khiển
                 </Link>
-                <div className="my-1 h-px bg-gray-100" />
+                <Link to="/profile" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                  <User size={16} /> Hồ sơ cá nhân
+                </Link>
+                <Link to="/settings" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                  <Settings size={16} /> Cài đặt
+                </Link>
+                <div className="my-1 border-t border-gray-100"></div>
                 <button
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50"
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
                 >
-                  <LogOut size={14} />
-                  Đăng xuất
+                  <LogOut size={16} /> Đăng xuất
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Mobile menu toggle */}
         <button
-          className="p-2 text-gray-700 md:hidden"
+          className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile nav */}
       {mobileOpen && (
-        <div className="border-t border-gray-100 bg-white px-6 pb-4 pt-2 md:hidden">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              onClick={() => setMobileOpen(false)}
-              className={`block rounded-lg px-4 py-2.5 text-sm font-medium ${
-                location.pathname === link.to
-                  ? 'bg-orange-50 text-orange-500'
-                  : 'text-gray-700 hover:bg-orange-50'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <div className="mt-2 border-t border-gray-100 pt-2">
+        <div className="border-t border-gray-100 bg-white px-4 py-4 shadow-lg md:hidden">
+          <nav className="flex flex-col gap-2">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setMobileOpen(false)}
+                className={`rounded-xl px-4 py-3 text-sm font-medium ${
+                  location.pathname === link.to
+                    ? 'bg-orange-50 text-orange-600'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="my-2 border-t border-gray-100"></div>
             <Link
               to="/profile"
               onClick={() => setMobileOpen(false)}
-              className="block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50"
+              className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
             >
-              Hồ sơ của tôi
+              <User size={18} /> Hồ sơ cá nhân
             </Link>
             <button
               onClick={handleLogout}
-              className="block w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium text-red-500 hover:bg-red-50"
+              className="flex items-center gap-2 rounded-xl px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50"
             >
-              Đăng xuất
+              <LogOut size={18} /> Đăng xuất
             </button>
-          </div>
+          </nav>
         </div>
       )}
     </header>

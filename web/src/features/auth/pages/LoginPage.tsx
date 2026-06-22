@@ -33,11 +33,12 @@ export default function LoginPage() {
       return;
     }
     // Save session to localStorage
+    localStorage.setItem('token', 'mock-jwt-token');
     localStorage.setItem('userId', result.user.id);
     localStorage.setItem('username', result.user.username);
     localStorage.setItem('fullName', result.user.fullName);
     localStorage.setItem('role', result.user.role);
-    navigate('/lockers');
+    navigate('/dashboard');
   };
 
   return (

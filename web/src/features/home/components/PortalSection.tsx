@@ -13,12 +13,11 @@ export default function PortalSection() {
           className="mx-auto max-w-2xl text-center"
         >
           <span className="inline-block rounded-full bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-orange-500">
-            Quản lý
+            Hệ Sinh Thái Phần Mềm
           </span>
-          <h2 className="mt-4 text-4xl font-extrabold text-gray-900">Cổng quản lý</h2>
+          <h2 className="mt-4 text-4xl font-extrabold text-gray-900">Nền Tảng Đa Vai Trò</h2>
           <p className="mt-4 text-gray-600">
-            Kiểm soát hoàn toàn trong tầm tay. Theo dõi trạng thái, phân quyền và phân tích
-            dữ liệu từ bảng điều khiển tập trung của LuxeLock.
+            Cung cấp App di động cho Khách hàng & Shipper, cùng lúc mang đến Cổng Quản lý (Web Portal) chuyên nghiệp để quản trị viên theo dõi trạng thái phần cứng và đơn hàng theo thời gian thực.
           </p>
         </motion.div>
 

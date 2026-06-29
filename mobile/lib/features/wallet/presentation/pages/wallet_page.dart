@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/wallet_repository.dart';
+// ...existing code...
 import '../../domain/entities/wallet_transaction.dart';
 import '../../domain/usecases/get_wallet_overview_usecase.dart';
 import '../controllers/wallet_cubit.dart';
 import '../controllers/wallet_state.dart';
+import 'top_up_page.dart';
 import '../widgets/index.dart';
 
 class WalletPage extends StatelessWidget {
@@ -18,6 +21,7 @@ class WalletPage extends StatelessWidget {
         getWalletOverview: GetWalletOverviewUseCase(
           repository: WalletRepository(),
         ),
+        walletRepository: WalletRepository(),
       )..load(),
       child: const _WalletView(),
     );
@@ -52,8 +56,11 @@ class _WalletView extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: Color(0xFFFD8D64)),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Color(0xFFFD8D64),
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         state.errorMessage!,
@@ -114,7 +121,14 @@ class _WalletView extends StatelessWidget {
                               balance: overview.balance,
                               monthlyChange: overview.monthlyChange,
                               points: overview.points,
-                              onTopUp: () {},
+                              onTopUp: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const TopUpPage(),
+                                  ),
+                                );
+                              },
                               onWithdraw: () {},
                             ),
                             const SizedBox(height: 32),
@@ -211,8 +225,11 @@ class _TransactionsList extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 4),
               child: Opacity(
                 opacity: 0.5,
-                child:
-                    Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+                child: Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFEEEEEE),
+                ),
               ),
             ),
         ],

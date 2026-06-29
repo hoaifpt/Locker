@@ -20,9 +20,9 @@ public class MongoContext
         };
         ConventionRegistry.Register("CamelCaseIgnoreExtra", pack, _ => true);
 
-        #pragma warning disable CS0618
+#pragma warning disable CS0618
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
 
         if (!BsonClassMap.IsClassMapRegistered(typeof(BaseEntity)))
         {

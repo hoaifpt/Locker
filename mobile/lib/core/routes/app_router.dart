@@ -29,57 +29,60 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/notifications/presentation/pages/notification_page.dart';
 import '../../features/security_privacy/presentation/pages/security_privacy_page.dart';
 import '../../features/personal_info/presentation/pages/personal_info_page.dart';
+import '../../features/change_password/presentation/pages/change_password_page.dart';
 
 class AppRouter {
   static const initialRoute = '/login';
 
   static Map<String, WidgetBuilder> get routes => {
-        '/login': (context) => const LoginPage(),
-        '/sign-up': (context) => const SignUpPage(),
-        '/home': (context) => const HomePage(),
-        '/profile': (context) => const ProfilePage(),
-        '/wallet': (context) => const WalletPage(),
-        '/orders': (context) => const OrdersPage(),
-        '/send-receive': (context) => const SendReceivePage(),
-        '/delivery': (context) => const delivery.SendReceivePage(),
-        '/payment': (context) => PaymentPage(
-              orderData: (ModalRoute.of(context)?.settings.arguments
-                      as Map<String, dynamic>?) ??
-                  {},
-            ),
-        '/food-order': (context) => const FoodOrderPage(),
-        '/food-cart-payment': (context) => EBoxFoodCartPayment(
-              initialData: ModalRoute.of(context)?.settings.arguments
-                  as FoodCartPaymentArgs?,
-            ),
-        '/payment-success': (context) => PaymentSuccessPage(
-              request: ModalRoute.of(context)?.settings.arguments
-                  as PaymentSuccessRequest?,
-            ),
-        '/payment-failed': (context) => PaymentFailedPage(
-              request: ModalRoute.of(context)?.settings.arguments
-                  as PaymentFailedRequest?,
-            ),
-        '/send-success': (context) => SendSuccessPage(
-              request: ModalRoute.of(context)?.settings.arguments
-                  as SendSuccessRequest?,
-            ),
-        '/photo-confirmation': (context) => PhotoConfirmationPage(
-              lockerId: ModalRoute.of(context)?.settings.arguments as String?,
-            ),
-        '/menu': (context) => MenuPage(
-            restaurantId:
-                ModalRoute.of(context)!.settings.arguments as String?),
-        '/lockers': (context) => const LockerScreen(),
-        '/locker-map': (context) => const LockerMapPage(),
-        '/locker-detail': (context) => LockerDetailPage(
-              lockerId: ModalRoute.of(context)!.settings.arguments as String,
-            ),
-        '/qr-scanner': (context) => const QrScannerPage(),
-        '/scan-history': (context) => const ScanHistoryPage(),
-        '/settings': (context) => const SettingsPage(),
-        '/notifications': (context) => const NotificationPage(),
-        '/security-privacy': (context) => const SecurityPrivacyPage(),
-        '/personal-info': (context) => const PersonalInfoPage(),
-      };
+    '/login': (context) => const LoginPage(),
+    '/sign-up': (context) => const SignUpPage(),
+    '/home': (context) => const HomePage(),
+    '/profile': (context) => const ProfilePage(),
+    '/wallet': (context) => const WalletPage(),
+    '/orders': (context) => const OrdersPage(),
+    '/send-receive': (context) => const SendReceivePage(),
+    '/delivery': (context) => const delivery.SendReceivePage(),
+    '/payment': (context) => PaymentPage(
+      orderData:
+          (ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?) ??
+          {},
+    ),
+    '/food-order': (context) => const FoodOrderPage(),
+    '/food-cart-payment': (context) => EBoxFoodCartPayment(
+      initialData:
+          ModalRoute.of(context)?.settings.arguments as FoodCartPaymentArgs?,
+    ),
+    '/payment-success': (context) => PaymentSuccessPage(
+      request:
+          ModalRoute.of(context)?.settings.arguments as PaymentSuccessRequest?,
+    ),
+    '/payment-failed': (context) => PaymentFailedPage(
+      request:
+          ModalRoute.of(context)?.settings.arguments as PaymentFailedRequest?,
+    ),
+    '/send-success': (context) => SendSuccessPage(
+      request:
+          ModalRoute.of(context)?.settings.arguments as SendSuccessRequest?,
+    ),
+    '/photo-confirmation': (context) => PhotoConfirmationPage(
+      lockerId: ModalRoute.of(context)?.settings.arguments as String?,
+    ),
+    '/menu': (context) => MenuPage(
+      restaurantId: ModalRoute.of(context)!.settings.arguments as String?,
+    ),
+    '/lockers': (context) => const LockerScreen(),
+    '/locker-map': (context) => const LockerMapPage(),
+    '/locker-detail': (context) => LockerDetailPage(
+      lockerId: ModalRoute.of(context)!.settings.arguments as String,
+    ),
+    '/qr-scanner': (context) => const QrScannerPage(),
+    '/scan-history': (context) => const ScanHistoryPage(),
+    '/settings': (context) => const SettingsPage(),
+    '/notifications': (context) => const NotificationPage(),
+    '/security-privacy': (context) => const SecurityPrivacyPage(),
+    '/personal-info': (context) => const PersonalInfoPage(),
+    '/change-password': (context) => const ChangePasswordPage(),
+  };
 }

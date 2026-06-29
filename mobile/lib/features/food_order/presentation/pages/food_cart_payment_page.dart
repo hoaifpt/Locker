@@ -78,7 +78,8 @@ class _EBoxFoodCartPaymentState extends State<EBoxFoodCartPayment> {
         )
         .toList();
 
-    _orderCode = initialData?.orderCode ??
+    _orderCode =
+        initialData?.orderCode ??
         'EBOX-${DateTime.now().millisecondsSinceEpoch % 100000}';
   }
 
@@ -87,10 +88,8 @@ class _EBoxFoodCartPaymentState extends State<EBoxFoodCartPayment> {
 
   int get _total => _subtotal + _shippingFee;
 
-  String _formatPrice(int price) => '${price.toString().replaceAllMapped(
-        RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-        (match) => '${match[1]}.',
-      )}đ';
+  String _formatPrice(int price) =>
+      '${price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}đ';
 
   void _increaseQuantity(int index) {
     setState(() {
@@ -125,12 +124,14 @@ class _EBoxFoodCartPaymentState extends State<EBoxFoodCartPayment> {
 
   void _addCandidateToCart(_MenuCandidate candidate) {
     setState(() {
-      final existingIndex =
-          _items.indexWhere((item) => item.id == candidate.id);
+      final existingIndex = _items.indexWhere(
+        (item) => item.id == candidate.id,
+      );
       if (existingIndex >= 0) {
         final current = _items[existingIndex];
-        _items[existingIndex] =
-            current.copyWith(quantity: current.quantity + 1);
+        _items[existingIndex] = current.copyWith(
+          quantity: current.quantity + 1,
+        );
         return;
       }
 
@@ -830,7 +831,7 @@ class _CheckoutBar extends StatelessWidget {
               Container(
                 width: 1,
                 height: 24,
-                color: Colors.white.withOpacity(0.30),
+                color: Colors.white.withValues(alpha: 0),
               ),
               const SizedBox(width: 12),
               Text(

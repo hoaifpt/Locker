@@ -15,14 +15,8 @@ class PhotoConfirmationTopBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.70),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A1B1C19),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(32),
       ),
       child: Row(
         children: [

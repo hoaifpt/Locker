@@ -11,17 +11,17 @@ class LockerModel extends Locker {
 
   factory LockerModel.fromJson(Map<String, dynamic> json) {
     return LockerModel(
-      id: json['id']?.toString() ?? '',
-      code: json['code']?.toString() ?? 'Unknown',
+      id: (json['_id'] ?? json['id'])?.toString() ?? '',
+      code: json['name']?.toString() ?? json['code']?.toString() ?? 'Unknown',
       isOccupied: json['isOccupied'] ?? false,
       location: json['location']?.toString() ?? '',
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'code': code,
-        'isOccupied': isOccupied,
-        'location': location,
-      };
+    'id': id,
+    'code': code,
+    'isOccupied': isOccupied,
+    'location': location,
+  };
 }

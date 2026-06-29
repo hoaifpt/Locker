@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/routes/app_router.dart';
@@ -8,6 +9,8 @@ import 'core/theme/app_theme.dart';
 void main() {
   // Đảm bảo các binding của Flutter đã được khởi tạo trước khi chạy app
   WidgetsFlutterBinding.ensureInitialized();
+  MapboxOptions.setAccessToken(
+      "pk.eyJ1IjoiaG9haSIsImEiOiJjbXFpeXZnangwN3FqMnBxMDN4ajV4MDN3In0.Y9MvMmyCPIHQgtCh0fNpqQ");
 
   // Gọi hàm cấu hình dependency injection
   configureDependencies();

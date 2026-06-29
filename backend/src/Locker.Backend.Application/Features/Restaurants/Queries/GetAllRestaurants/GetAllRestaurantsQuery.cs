@@ -29,7 +29,9 @@ public class GetAllRestaurantsQueryHandler : IRequestHandler<GetAllRestaurantsQu
             Description = x.Description,
             Address = x.Address,
             ImageUrl = x.ImageUrl,
-            Rating = x.Rating
+            Rating = x.Rating,
+            Longitude = x.Location?.Coordinates?.Count >= 2 ? x.Location.Coordinates[0] : 0.0,
+            Latitude = x.Location?.Coordinates?.Count >= 2 ? x.Location.Coordinates[1] : 0.0
         }).ToList();
     }
 }

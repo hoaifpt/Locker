@@ -17,6 +17,8 @@ class FoodOrderRepository implements IFoodOrderRepository {
         isOpen: true,
         tags: ['PHỞ BÒ', 'BÁNH MÌ', 'CÀ PHÊ', 'BÚN CHẢ'],
         imageUrl: 'https://placehold.co/80x80',
+        description: 'Bún chả gia truyền.',
+        address: '123 Street, District 1',
       ),
       RestaurantPinModel(
         id: 'res-2',
@@ -28,6 +30,8 @@ class FoodOrderRepository implements IFoodOrderRepository {
         isOpen: true,
         tags: ['PHỞ', 'CƠM TẤM'],
         imageUrl: 'https://placehold.co/80x80',
+        description: 'phở gia truyền.',
+        address: '456 Street, District 3',
       ),
       RestaurantPinModel(
         id: 'res-3',
@@ -39,6 +43,8 @@ class FoodOrderRepository implements IFoodOrderRepository {
         isOpen: false,
         tags: ['BÚN CHẢ', 'NEM'],
         imageUrl: 'https://placehold.co/80x80',
+        description: 'Bún chả ngon truyền thống.',
+        address: '789 Street, District 7',
       ),
     ];
   }

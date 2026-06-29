@@ -11,7 +11,6 @@ class UserRepository implements IUserRepository {
   @override
   Future<User> getProfile() async {
     try {
-      // Assuming the endpoint to get user profile is '/users/me'
       final response = await _apiClient.client.get(ApiEndpoints.userMe);
       if (response.statusCode == 200) {
         return UserModel.fromJson(response.data as Map<String, dynamic>);

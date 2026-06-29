@@ -45,7 +45,7 @@ public class UsersController : ControllerBase
         if (userId == Guid.Empty)
             return Unauthorized();
 
-        var user = await _sender.Send(new UpdateProfileCommand(userId, request.Email, request.FullName), cancellationToken);
+        var user = await _sender.Send(new UpdateProfileCommand(userId, request.Email, request.FullName, request.PhoneNumber), cancellationToken);
         if (user == null)
             return NotFound();
 

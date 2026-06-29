@@ -6,6 +6,7 @@ class NotificationEntity {
   final String iconType; // 'success', 'warning', 'info'
   final String category; // 'MỚI NHẤT', 'TRƯỚC ĐÓ'
   final bool isRead;
+  final Map<String, dynamic>? metadata;
 
   const NotificationEntity({
     required this.id,
@@ -15,5 +16,6 @@ class NotificationEntity {
     required this.iconType,
     required this.category,
     required this.isRead,
+    this.metadata,
   });
 }

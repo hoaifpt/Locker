@@ -13,4 +13,5 @@ public class Restaurant : BaseEntity
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public bool IsDeleted { get; set; } = false;
+    public GeoLocation Location { get; set; } = new GeoLocation();
 }

@@ -20,6 +20,7 @@ class PersonalInfoOverviewModel extends PersonalInfoOverview {
             value: item['value'] as String,
             hint: item['hint'] as String,
             isEditable: item['isEditable'] as bool? ?? true,
+            onTap: item['onTap'], // Thêm dòng này
           ),
         )
         .toList(growable: false);
@@ -41,7 +42,6 @@ class PersonalInfoOverviewModel extends PersonalInfoOverview {
         phoneNumber: data['phoneNumber'] as String,
         email: data['email'] as String,
         address: data['address'] as String,
-        birthday: data['birthday'] as String,
         membershipTier: data['membershipTier'] as String,
         avatarUrl: data['avatarUrl'] as String,
       ),

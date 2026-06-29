@@ -1,11 +1,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:usesCleartextTraffic="true"
         android:label="locker"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+            android:name="com.mapbox.accessToken"
+            android:value="pk.eyJ1IjoiaG9haSIsImEiOiJjbXFpeXZnangwN3FqMnBxMDN4ajV4MDN3In0.Y9MvMmyCPIHQgtCh0fNpqQ"
+        />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -23,6 +32,7 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"
             />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -1,0 +1,6 @@
+-dontwarn com.mapbox.**
+-keep class com.mapbox.** { *; }
+-keep class com.mapbox.mapboxsdk.** { *; }
+-keep class com.mapbox.mapboxsdk.plugins.** { *; }
+-keep interface com.mapbox.mapboxsdk.plugins.** { *; }
+-keepattributes Signature

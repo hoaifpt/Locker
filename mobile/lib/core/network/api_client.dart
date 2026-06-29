@@ -23,6 +23,8 @@ class ApiClient {
       },
     );
 
+    logInfo("Base URL đang dùng: ${baseOptions.baseUrl}");
+
     _dio = Dio(baseOptions);
     _refreshDio = Dio(baseOptions);
 

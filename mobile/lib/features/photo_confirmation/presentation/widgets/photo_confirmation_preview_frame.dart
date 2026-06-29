@@ -19,9 +19,7 @@ class PhotoConfirmationPreviewFrame extends StatelessWidget {
           Positioned.fill(
             child: Image.network(previewImageUrl, fit: BoxFit.cover),
           ),
-          Positioned.fill(
-            child: Container(color: const Color(0x401B1C19)),
-          ),
+          Positioned.fill(child: Container(color: const Color(0x401B1C19))),
           const Positioned(
             left: 32,
             right: 32,
@@ -36,7 +34,7 @@ class PhotoConfirmationPreviewFrame extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.80),
+                color: Colors.white.withValues(alpha: 0.80),
                 borderRadius: BorderRadius.circular(9999),
               ),
               child: Row(
@@ -80,7 +78,10 @@ class _FrameCorners extends StatelessWidget {
         Positioned(top: 0, right: 0, child: _Corner(top: true, left: false)),
         Positioned(bottom: 0, left: 0, child: _Corner(top: false, left: true)),
         Positioned(
-            bottom: 0, right: 0, child: _Corner(top: false, left: false)),
+          bottom: 0,
+          right: 0,
+          child: _Corner(top: false, left: false),
+        ),
       ],
     );
   }
@@ -100,16 +101,28 @@ class _Corner extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           top: top
-              ? BorderSide(color: Colors.white.withOpacity(0.85), width: 4)
+              ? BorderSide(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  width: 4,
+                )
               : BorderSide.none,
           bottom: !top
-              ? BorderSide(color: Colors.white.withOpacity(0.85), width: 4)
+              ? BorderSide(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  width: 4,
+                )
               : BorderSide.none,
           left: left
-              ? BorderSide(color: Colors.white.withOpacity(0.85), width: 4)
+              ? BorderSide(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  width: 4,
+                )
               : BorderSide.none,
           right: !left
-              ? BorderSide(color: Colors.white.withOpacity(0.85), width: 4)
+              ? BorderSide(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  width: 4,
+                )
               : BorderSide.none,
         ),
         borderRadius: BorderRadius.only(

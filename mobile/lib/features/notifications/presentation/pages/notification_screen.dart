@@ -4,6 +4,8 @@ import '../../domain/entities/notification.dart';
 import '../controllers/notification_cubit.dart';
 import '../controllers/notification_state.dart';
 import '../widgets/index.dart';
+import '../../../../features/delivery/presentation/controllers/delivery_cubit.dart';
+import '../../../../features/delivery/domain/usecases/submit_receive_code_usecase.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -37,8 +39,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline,
-                        size: 48, color: Color(0xFFF27B50)),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Color(0xFFF27B50),
+                    ),
                     const SizedBox(height: 16),
                     Text('Error: ${state.message}'),
                   ],
@@ -64,10 +69,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   children: [
                     NotificationHeader(
                       onBackToHome: () {
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                          '/home',
-                          (route) => false,
-                        );
+                        Navigator.of(
+                          context,
+                        ).pushNamedAndRemoveUntil('/home', (route) => false);
                       },
                       onMarkAllAsRead: () {
                         context
@@ -77,7 +81,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -108,7 +114,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                           context
                                               .read<NotificationCubit>()
                                               .markNotificationAsRead(
-                                                  notification.id);
+                                                notification.id,
+                                              );
+
+                                          if (notification.category ==
+                                                  'DELIVERY' &&
+                                              notification.metadata != null) {
+                                            final lockerId =
+                                                notification
+                                                        .metadata!['lockerId']
+                                                    as String;
+                                            final slotIndex =
+                                                notification
+                                                        .metadata!['slotIndex']
+                                                    as int;
+                                          }
                                         },
                                       ),
                                   ],
@@ -124,9 +144,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               );
             }
 
-            return const Center(
-              child: Text('No notifications'),
-            );
+            return const Center(child: Text('No notifications'));
           },
         ),
       ),

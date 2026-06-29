@@ -8,6 +8,8 @@ class RestaurantPin {
   final bool isOpen;
   final List<String> tags;
   final String imageUrl;
+  final String description;
+  final String address;
 
   const RestaurantPin({
     required this.id,
@@ -19,5 +21,7 @@ class RestaurantPin {
     required this.isOpen,
     required this.tags,
     required this.imageUrl,
+    required this.description,
+    required this.address,
   });
 }

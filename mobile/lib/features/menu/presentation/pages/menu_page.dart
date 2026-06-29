@@ -64,10 +64,7 @@ class _MenuPageState extends State<MenuPage> {
   }
 
   int _cartCount(List<MenuItem> items) {
-    return items.fold<int>(
-      0,
-      (sum, item) => sum + _itemQuantity(item.id),
-    );
+    return items.fold<int>(0, (sum, item) => sum + _itemQuantity(item.id));
   }
 
   int _cartTotal(List<MenuItem> items) {
@@ -132,10 +129,7 @@ class _MenuPageState extends State<MenuPage> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.search_rounded), onPressed: () {}),
         ],
       ),
       body: FutureBuilder<List<MenuItem>>(
@@ -256,8 +250,10 @@ class _MenuPageState extends State<MenuPage> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: index == _selectedCategory
                       ? const Color(0xFFEC5B13)
@@ -340,8 +336,10 @@ class _MenuPageState extends State<MenuPage> {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return const Center(
-                    child: Icon(Icons.restaurant_rounded,
-                        color: Color(0xFF9E9E9E)),
+                    child: Icon(
+                      Icons.restaurant_rounded,
+                      color: Color(0xFF9E9E9E),
+                    ),
                   );
                 },
               ),
@@ -526,8 +524,10 @@ class _CartSummaryBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF8E65),
                     borderRadius: BorderRadius.circular(9999),
-                    border:
-                        Border.all(color: const Color(0xFF1C1917), width: 2),
+                    border: Border.all(
+                      color: const Color(0xFF1C1917),
+                      width: 2,
+                    ),
                   ),
                   child: Text(
                     '$itemCount',

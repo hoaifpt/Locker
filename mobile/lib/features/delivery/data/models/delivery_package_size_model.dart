@@ -13,9 +13,9 @@ class DeliveryPackageSizeModel extends DeliveryPackageSize {
     return DeliveryPackageSizeModel(
       id: json['id']?.toString() ?? '',
       size: json['size']?.toString() ?? '',
-      price: (json['price'] as num?)?.toInt() ?? 0,
+      price: (json['pricePerHour'] as num?)?.toInt() ?? 0,
       description: json['description']?.toString() ?? '',
-      recommended: json['recommended'] as bool? ?? false,
+      recommended: json['isActive'] as bool? ?? false,
     );
   }
 }

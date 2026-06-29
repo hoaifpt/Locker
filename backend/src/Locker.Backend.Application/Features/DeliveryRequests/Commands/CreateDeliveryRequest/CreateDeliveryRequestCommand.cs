@@ -23,15 +23,21 @@ public class CreateDeliveryRequestCommandHandler : IRequestHandler<CreateDeliver
     private readonly IDeliveryRequestRepository _repository;
     private readonly ILockerEventRepository _lockerEventRepository;
     private readonly ILockerRepository _lockerRepository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly IIdentityService _identityService;
 
     public CreateDeliveryRequestCommandHandler(
         IDeliveryRequestRepository repository,
         ILockerEventRepository lockerEventRepository,
-        ILockerRepository lockerRepository)
+        ILockerRepository lockerRepository,
+        INotificationRepository notificationRepository,
+        IIdentityService identityService)
     {
         _repository = repository;
         _lockerEventRepository = lockerEventRepository;
         _lockerRepository = lockerRepository;
+        _notificationRepository = notificationRepository;
+        _identityService = identityService;
     }
 
     public async Task<DeliveryRequestDto?> Handle(CreateDeliveryRequestCommand request, CancellationToken cancellationToken)
@@ -62,6 +68,20 @@ public class CreateDeliveryRequestCommandHandler : IRequestHandler<CreateDeliver
             ReferenceId = item.Id.ToString(),
             Notes = item.TrackingCode
         }, cancellationToken);
+
+        // Gửi thông báo cho người nhận nếu tìm thấy trong hệ thống
+        var receiver = await _identityService.FindByPhoneNumberAsync(request.ReceiverPhone);
+        if (receiver != null)
+        {
+            await _notificationRepository.CreateAsync(new Notification
+            {
+                UserId = receiver.Id,
+                Title = "Kiện hàng mới",
+                Message = $"Bạn có một kiện hàng mới từ {request.SenderName} tại tủ {item.LockerId}",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            }, cancellationToken);
+        }
 
         return new DeliveryRequestDto
         {

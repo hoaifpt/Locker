@@ -6,10 +6,7 @@ import '../../domain/usecases/get_orders_usecase.dart';
 class OrdersScreen extends StatefulWidget {
   final GetOrdersUsecase getOrders;
 
-  const OrdersScreen({
-    super.key,
-    required this.getOrders,
-  });
+  const OrdersScreen({super.key, required this.getOrders});
 
   @override
   State<OrdersScreen> createState() => _OrdersScreenState();
@@ -17,6 +14,7 @@ class OrdersScreen extends StatefulWidget {
 
 class _OrdersScreenState extends State<OrdersScreen> {
   late final Future<List<OrderHistoryItem>> _future;
+  String _selectedFilter = 'Hôm nay';
 
   @override
   void initState() {
@@ -24,28 +22,18 @@ class _OrdersScreenState extends State<OrdersScreen> {
     _future = widget.getOrders();
   }
 
-  String _formatDate(DateTime dateTime) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${dateTime.day.toString().padLeft(2, '0')} ${months[dateTime.month - 1]} ${dateTime.year} • ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  String _formatTime(DateTime dateTime) {
+    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} ${dateTime.hour >= 12 ? 'PM' : 'AM'}';
+  }
+
+  String _formatDateHeader(DateTime dateTime) {
+    return 'HÔM NAY - ${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F2),
+      backgroundColor: const Color(0xFFF8F7F6),
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
@@ -58,20 +46,25 @@ class _OrdersScreenState extends State<OrdersScreen> {
         title: const Text(
           'Lịch sử truy cập',
           style: TextStyle(
-            color: Color(0xFF4A4036),
-            fontSize: 20,
-            fontFamily: 'Manrope',
+            color: Color(0xFF0F172A),
+            fontSize: 18,
+            fontFamily: 'Plus Jakarta Sans',
             fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: Color(0xFF64748B)),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: FutureBuilder<List<OrderHistoryItem>>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFFFB923C)),
+              child: CircularProgressIndicator(color: Color(0xFFF27B50)),
             );
           }
 
@@ -87,28 +80,41 @@ class _OrdersScreenState extends State<OrdersScreen> {
           final orders = snapshot.data ?? const <OrderHistoryItem>[];
 
           if (orders.isEmpty) {
-            return const Center(
-              child: Text('Chưa có đơn hàng nào'),
-            );
+            return const Center(child: Text('Chưa có đơn hàng nào'));
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            itemCount: orders.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return _FilterChips(
-                  onSelected: (_) {},
-                );
-              }
-
-              final order = orders[index - 1];
-              return _OrderCard(
-                order: order,
-                formatDate: _formatDate,
-              );
-            },
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            children: [
+              _SearchField(),
+              const SizedBox(height: 16),
+              _FilterChips(
+                selectedFilter: _selectedFilter,
+                onSelected: (filter) {
+                  setState(() {
+                    _selectedFilter = filter;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _formatDateHeader(DateTime.now()),
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...orders.map(
+                (order) => _TimelineItem(
+                  order: order,
+                  isLast: orders.indexOf(order) == orders.length - 1,
+                  formatTime: _formatTime,
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -116,19 +122,39 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 }
 
+class _SearchField extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: InputDecoration(
+        hintText: 'Search logs (e.g. Locker ID)...',
+        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+        prefixIcon: const Icon(
+          Icons.search,
+          color: Color(0xFFF27B50),
+          size: 20,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+}
+
 class _FilterChips extends StatelessWidget {
+  final String selectedFilter;
   final ValueChanged<String> onSelected;
 
-  const _FilterChips({required this.onSelected});
+  const _FilterChips({required this.selectedFilter, required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
-    const chips = [
-      ('Hôm nay', true),
-      ('Hôm qua', false),
-      ('Tuần này', false),
-      ('Date', false),
-    ];
+    const chips = [('Hôm nay', true), ('Hôm qua', false), ('Tuần này', false)];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -136,16 +162,19 @@ class _FilterChips extends StatelessWidget {
         children: chips
             .map(
               (chip) => Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
-                  selected: chip.$2,
+                  selected: selectedFilter == chip.$1,
                   label: Text(chip.$1),
                   onSelected: (_) => onSelected(chip.$1),
                   labelStyle: TextStyle(
-                    color: chip.$2 ? Colors.white : const Color(0xFF8C8075),
+                    color: selectedFilter == chip.$1
+                        ? Colors.white
+                        : const Color(0xFF64748B),
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  selectedColor: const Color(0xFFFF8C42),
+                  selectedColor: const Color(0xFFF27B50),
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(9999),
@@ -159,164 +188,137 @@ class _FilterChips extends StatelessWidget {
   }
 }
 
-class _OrderCard extends StatelessWidget {
+class _TimelineItem extends StatelessWidget {
   final OrderHistoryItem order;
-  final String Function(DateTime) formatDate;
+  final bool isLast;
+  final String Function(DateTime) formatTime;
 
-  const _OrderCard({
+  const _TimelineItem({
     required this.order,
-    required this.formatDate,
+    required this.isLast,
+    required this.formatTime,
   });
 
-  Color _statusColor() {
-    switch (order.status) {
+  IconData _getIcon() {
+    switch (order.status.toLowerCase()) {
       case 'completed':
-        return const Color(0xFF16A34A);
+        return Icons.lock_open_rounded;
       case 'pending':
-        return const Color(0xFFE58A00);
+        return Icons.lock_rounded;
       case 'cancelled':
-        return const Color(0xFFEF4444);
+        return Icons.history_rounded;
       default:
-        return const Color(0xFF8C8075);
+        return Icons.key_rounded;
     }
   }
 
-  Color _statusBackground() {
-    switch (order.status) {
+  Color _getIconColor() {
+    switch (order.status.toLowerCase()) {
       case 'completed':
-        return const Color(0xFFEFFAF3);
+        return const Color(0xFFF27B50);
       case 'pending':
-        return const Color(0x0CFF8C42);
-      case 'cancelled':
-        return const Color(0x0CEB4A4A);
+        return const Color(0xFFF27B50);
       default:
-        return const Color(0xFFF9FAFB);
+        return const Color(0xFF94A3B8);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return IntrinsicHeight(
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF7ED),
-                  borderRadius: BorderRadius.circular(14),
+          // Timeline Left Column
+          SizedBox(
+            width: 40,
+            child: Column(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: _getIconColor().withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(_getIcon(), size: 18, color: _getIconColor()),
+                  ),
                 ),
-                child: const Icon(Icons.receipt_long_rounded,
-                    color: Color(0xFFFB923C), size: 22),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
+                if (!isLast)
+                  Expanded(
+                    child: Container(width: 2, color: const Color(0xFFE2E8F0)),
+                  ),
+              ],
+            ),
+          ),
+          // Timeline Right Content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24, left: 8),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      order.title,
-                      style: const TextStyle(
-                        color: Color(0xFF4A4036),
-                        fontSize: 15,
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${order.statusLabel} ${order.lockerCode}',
+                          style: const TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontSize: 15,
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getIconColor().withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            formatTime(order.createdAt),
+                            style: TextStyle(
+                              color: _getIconColor(),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Plus Jakarta Sans',
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       order.location,
                       style: const TextStyle(
-                        color: Color(0xFF8C8075),
-                        fontSize: 12,
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF64748B),
+                        fontSize: 13,
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
                 ),
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _statusBackground(),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  order.statusLabel,
-                  style: TextStyle(
-                    color: _statusColor(),
-                    fontSize: 11,
-                    fontFamily: 'Manrope',
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                order.lockerCode,
-                style: const TextStyle(
-                  color: Color(0xFF4A4036),
-                  fontSize: 14,
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                formatDate(order.createdAt),
-                style: const TextStyle(
-                  color: Color(0xFF8C8075),
-                  fontSize: 12,
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Tổng tiền',
-                style: TextStyle(
-                  color: Color(0xFF8C8075),
-                  fontSize: 12,
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                '${order.amount.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}đ',
-                style: const TextStyle(
-                  color: Color(0xFF4A4036),
-                  fontSize: 14,
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

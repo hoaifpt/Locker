@@ -1,10 +1,10 @@
 name: locker_mobile
-description: "A new Flutter project."
+description: "A mobile application for the Locker project, featuring food ordering and maps."
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.0 <4.0.0'
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -16,6 +16,10 @@ dependencies:
   equatable: ^2.0.5
   mobile_scanner: ^6.0.0
   get_it: ^9.2.1
+  mapbox_maps_flutter: ^2.25.0
+  geolocator: ^11.0.0
+  url_launcher: ^6.2.5
+
 
 dev_dependencies:
   flutter_test:

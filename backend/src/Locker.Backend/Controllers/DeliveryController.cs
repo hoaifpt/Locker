@@ -29,7 +29,7 @@ public class DeliveryController : ControllerBase
     }
 
     [HttpPost("requests")]
-    [Authorize(Roles = "Shipper")]
+    [Authorize]
     public async Task<IActionResult> CreateRequest([FromBody] CreateDeliveryRequest dto, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
@@ -43,7 +43,7 @@ public class DeliveryController : ControllerBase
     }
 
     [HttpGet("requests/my")]
-    [Authorize(Roles = "Shipper")]
+    [Authorize]
     public async Task<IActionResult> GetMyRequests(CancellationToken cancellationToken)
     {
         var userId = GetUserId();

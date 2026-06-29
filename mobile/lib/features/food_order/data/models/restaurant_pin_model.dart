@@ -11,5 +11,7 @@ class RestaurantPinModel extends RestaurantPin {
     required super.isOpen,
     required super.tags,
     required super.imageUrl,
+    required super.description,
+    required super.address,
   });
 }

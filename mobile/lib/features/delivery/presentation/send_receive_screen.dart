@@ -20,27 +20,22 @@ class SendReceiveScreen extends StatelessWidget {
           return;
         }
 
+        if (message.startsWith('Đã tạo yêu cầu gửi hàng')) {
+          final lockerId = _extractLockerId(message);
+          _showSuccessDialog(context, message, lockerId);
+          return;
+        }
+
+        if (message.startsWith('LOCKER_OVERDUE:')) {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const LockerOverduePage()));
+          return;
+        }
+
         ScaffoldMessenger.of(context)
           ..clearSnackBars()
           ..showSnackBar(SnackBar(content: Text(message)));
-
-        // Navigate to photo confirmation on normal send flow
-        if (message.startsWith('Đã tạo yêu cầu gửi hàng')) {
-          final lockerId = _extractLockerId(message);
-          Navigator.of(context).pushNamed(
-            '/photo-confirmation',
-            arguments: lockerId,
-          );
-          return;
-        }
-
-        // If backend indicates locker is overdue, navigate to overdue page
-        if (message.startsWith('LOCKER_OVERDUE:')) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const LockerOverduePage()),
-          );
-          return;
-        }
       },
       builder: (context, state) {
         if (state.isLoading) {
@@ -125,11 +120,157 @@ class SendReceiveScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Chọn tủ trống',
+                        style: TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontSize: 14,
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 40,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: state.lockers
+                              .map((l) => l.location)
+                              .toSet()
+                              .map(
+                                (location) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ChoiceChip(
+                                    label: Text(location),
+                                    selected:
+                                        state.selectedLocation == location,
+                                    onSelected: (selected) {
+                                      context
+                                          .read<DeliveryCubit>()
+                                          .selectLocation(location);
+                                    },
+                                    selectedColor: const Color(0xFFF27B50),
+                                    labelStyle: TextStyle(
+                                      color: state.selectedLocation == location
+                                          ? Colors.white
+                                          : const Color(0xFF64748B),
+                                      fontSize: 12,
+                                      fontFamily: 'Plus Jakarta Sans',
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              mainAxisSpacing: 10,
+                              crossAxisSpacing: 10,
+                              childAspectRatio: 1,
+                            ),
+                        itemCount: state.lockers
+                            .where(
+                              (l) =>
+                                  state.selectedLocation == null ||
+                                  l.location == state.selectedLocation,
+                            )
+                            .length,
+                        itemBuilder: (context, index) {
+                          final locker = state.lockers
+                              .where(
+                                (l) =>
+                                    state.selectedLocation == null ||
+                                    l.location == state.selectedLocation,
+                              )
+                              .toList()[index];
+                          final isSelected =
+                              state.selectedLockerId == locker.id;
+                          final isOccupied = locker.isOccupied;
+
+                          return GestureDetector(
+                            onTap: isOccupied
+                                ? null
+                                : () => context
+                                      .read<DeliveryCubit>()
+                                      .selectLocker(locker.id, 0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFFF27B50)
+                                    : (isOccupied
+                                          ? const Color(0xFFF1F5F9)
+                                          : Colors.white),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFFF27B50)
+                                      : (isOccupied
+                                            ? const Color(0xFFE2E8F0)
+                                            : const Color(0xFFF1F5F9)),
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  locker.code,
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : (isOccupied
+                                              ? Colors.grey
+                                              : const Color(0xFF0F172A)),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      if (state.selectedLockerId != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 16,
+                                color: Color(0xFFFB923C),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  state.lockers
+                                      .firstWhere(
+                                        (l) => l.id == state.selectedLockerId,
+                                      )
+                                      .location,
+                                  style: const TextStyle(
+                                    color: Color(0xFF64748B),
+                                    fontSize: 13,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       TextField(
-                        onChanged: context.read<DeliveryCubit>().updateSendCode,
+                        onChanged: context
+                            .read<DeliveryCubit>()
+                            .updateSenderName,
                         decoration: InputDecoration(
-                          labelText: 'Mã đơn gửi (tuỳ chọn)',
+                          labelText: 'Tên người gửi',
                           labelStyle: const TextStyle(
                             color: Color(0xFF94A3B8),
                             fontFamily: 'Plus Jakarta Sans',
@@ -142,18 +283,60 @@ class SendReceiveScreen extends StatelessWidget {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
-                            borderSide:
-                                const BorderSide(color: Color(0xFFF1F5F9)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFF1F5F9),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
-                            borderSide:
-                                const BorderSide(color: Color(0xFFF1F5F9)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFF1F5F9),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
                             borderSide: const BorderSide(
-                                color: Color(0xFFF27B50), width: 1.5),
+                              color: Color(0xFFF27B50),
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        onChanged: context
+                            .read<DeliveryCubit>()
+                            .updateReceiverPhone,
+                        decoration: InputDecoration(
+                          labelText: 'Số điện thoại người nhận',
+                          labelStyle: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontFamily: 'Plus Jakarta Sans',
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFF1F5F9),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFF1F5F9),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFF27B50),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -214,8 +397,9 @@ class SendReceiveScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       TextField(
-                        onChanged:
-                            context.read<DeliveryCubit>().updateReceiveCode,
+                        onChanged: context
+                            .read<DeliveryCubit>()
+                            .updateReceiveCode,
                         textCapitalization: TextCapitalization.characters,
                         style: const TextStyle(
                           color: Color(0xFF0F172A),
@@ -239,18 +423,22 @@ class SendReceiveScreen extends StatelessWidget {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
-                            borderSide:
-                                const BorderSide(color: Color(0xFFF1F5F9)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFF1F5F9),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
-                            borderSide:
-                                const BorderSide(color: Color(0xFFF1F5F9)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFF1F5F9),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
                             borderSide: const BorderSide(
-                                color: Color(0xFFF27B50), width: 1.5),
+                              color: Color(0xFFF27B50),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -317,10 +505,8 @@ class SendReceiveScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed: () => Navigator.pushNamed(
-                            context,
-                            '/qr-scanner',
-                          ),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, '/qr-scanner'),
                           icon: const Icon(Icons.qr_code_scanner_rounded),
                           label: const Text(
                             'Quét QR để nhận',
@@ -358,8 +544,79 @@ class SendReceiveScreen extends StatelessWidget {
   }
 
   String? _extractLockerId(String message) {
-    final match = RegExp(r'size\s+(.+)$').firstMatch(message);
+    final match = RegExp(r'Locker ID:\s+([a-f0-9-]+)').firstMatch(message);
     return match?.group(1)?.trim();
+  }
+
+  void _showSuccessDialog(
+    BuildContext context,
+    String message,
+    String? lockerId,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Column(
+          children: [
+            const Icon(Icons.check_circle, color: Color(0xFFF27B50), size: 64),
+            const SizedBox(height: 16),
+            const Text(
+              'Thành công!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                fontFamily: 'Plus Jakarta Sans',
+                color: Color(0xFF0F172A),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            color: Color(0xFF64748B),
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Đóng dialog
+                if (lockerId != null) {
+                  Navigator.of(
+                    context,
+                  ).pushNamed('/photo-confirmation', arguments: lockerId);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF27B50),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Tiếp tục',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

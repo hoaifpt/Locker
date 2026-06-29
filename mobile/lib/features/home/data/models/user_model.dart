@@ -4,6 +4,7 @@ class UserModel extends User {
   const UserModel({
     required super.id,
     required super.fullName,
+    super.emailConfirmed,
     super.avatarUrl,
   });
 
@@ -15,6 +16,7 @@ class UserModel extends User {
     return UserModel(
       id: json['id'] as String,
       fullName: json['fullName'] as String,
+      emailConfirmed: json['emailConfirmed'] as bool? ?? false,
       avatarUrl: json['avatarUrl'] as String?,
     );
   }

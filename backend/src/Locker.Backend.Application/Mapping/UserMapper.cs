@@ -11,6 +11,7 @@ public class UserMapper : IMapper<User, UserDto>
         Username = user.UserName,
         Email = user.Email,
         FullName = user.FullName,
+        PhoneNumber = user.PhoneNumber,
         Role = "User",
         IsActive = user.IsActive,
         CreatedAt = user.CreatedAt

@@ -3,7 +3,7 @@ class PersonalInfoData {
   final String phoneNumber;
   final String email;
   final String address;
-  final String birthday;
+  final String? birthday;
   final String membershipTier;
   final String avatarUrl;
 
@@ -12,7 +12,7 @@ class PersonalInfoData {
     required this.phoneNumber,
     required this.email,
     required this.address,
-    required this.birthday,
+    this.birthday,
     required this.membershipTier,
     required this.avatarUrl,
   });

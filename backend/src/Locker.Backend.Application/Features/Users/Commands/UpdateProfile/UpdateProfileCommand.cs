@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Locker.Backend.Application.Features.Users.Commands.UpdateProfile;
 
-public record UpdateProfileCommand(Guid UserId, string? Email, string? FullName) : IRequest<UserDto?>;
+public record UpdateProfileCommand(Guid UserId, string? Email, string? FullName, string? PhoneNumber) : IRequest<UserDto?>;
 
 public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand, UserDto?>
 {
@@ -49,13 +49,17 @@ public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand,
         if (request.FullName != null)
             user.FullName = request.FullName;
 
+        if (request.PhoneNumber != null)
+            user.PhoneNumber = request.PhoneNumber;
+
         await _identityService.UpdateUserAsync(user);
-        
+
         var dto = _userMapper.Map(user);
         var roles = await _identityService.GetRolesAsync(user);
         dto.Role = roles.FirstOrDefault() ?? "User";
-        
+
         return dto;
     }
 }
+
 

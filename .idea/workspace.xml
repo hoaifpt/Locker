@@ -5,60 +5,86 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.builder/config/data.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IGenericRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Mongo/FlexibleStringIdSerializer.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/GenericRepository.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/src/components/ui/BookingConfirmationModal.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/src/components/ui/LockerSizeInfo.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/src/components/ui/LockersMapGrid.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/src/components/ui/MapView.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/src/components/ui/Toast.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/src/context/ToastContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/src/lib/validators.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IBookingRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IBookingRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/ILockerRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/ILockerRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IOtpRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IOtpRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IPackageRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IPackageRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IPaymentRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IPaymentRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IRefreshTokenRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IRefreshTokenRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IUserRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/IUserRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Locker.Backend.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Locker.Backend.Application.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Mapping/LockerMapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Mapping/LockerMapper.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/AuthRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/AuthRequest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/CreateLockerRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/CreateLockerRequest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/LockerDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/LockerDto.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/UpdateLockerRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/UpdateLockerRequest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/AuthService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/AuthService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/LockerService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/LockerService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/PackageService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Services/PackageService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Validators/RequestValidators.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Validators/RequestValidators.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/BaseEntity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/BaseEntity.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Locker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Locker.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Package.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Package.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Locker.Backend.Domain.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Locker.Backend.Domain.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Locker.Backend.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Locker.Backend.Infrastructure.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/DeliveryRequests/Commands/CreateDeliveryRequest/CreateDeliveryRequestCommand.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/DeliveryRequests/Commands/CreateDeliveryRequest/CreateDeliveryRequestCommand.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Restaurants/Queries/GetAllRestaurants/GetAllRestaurantsQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Restaurants/Queries/GetAllRestaurants/GetAllRestaurantsQuery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Restaurants/Queries/GetRestaurantById/GetRestaurantByIdQuery.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Restaurants/Queries/GetRestaurantById/GetRestaurantByIdQuery.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Users/Commands/UpdateProfile/UpdateProfileCommand.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Users/Commands/UpdateProfile/UpdateProfileCommand.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Mapping/UserMapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Mapping/UserMapper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/RestaurantDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/RestaurantDto.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/UpdateProfileRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/UpdateProfileRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/UserDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/UserDto.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Restaurant.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/Restaurant.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/User.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Domain/Entities/User.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Mongo/MongoContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Mongo/MongoContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/BookingRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/BookingRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/LockerRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/LockerRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/OtpRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/OtpRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/PackageRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/PackageRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/PaymentRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/PaymentRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/RefreshTokenRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/RefreshTokenRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/UserRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Repositories/UserRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/AuthController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/AuthController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/LockersController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/LockersController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/PackagesController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/PackagesController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Locker.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Locker.Backend.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/tests/Locker.Backend.Tests/Locker.Backend.Tests.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tests/Locker.Backend.Tests/Locker.Backend.Tests.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/locker/domain/models/locker_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/locker/domain/models/locker_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/DeliveryController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/DeliveryController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/UsersController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/UsersController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Properties/launchSettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/android/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/core/constants/api_endpoints.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/constants/api_endpoints.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/core/network/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/network/api_client.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/core/routes/app_router.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/routes/app_router.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/data/delivery_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/data/delivery_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/data/models/delivery_package_size_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/data/models/delivery_package_size_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/entities/delivery_package_size.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/entities/delivery_package_size.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/entities/delivery_request.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/entities/delivery_request.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/repositories/i_delivery_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/repositories/i_delivery_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/usecases/create_send_request_usecase.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/usecases/create_send_request_usecase.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/usecases/get_delivery_package_sizes_usecase.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/usecases/get_delivery_package_sizes_usecase.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/usecases/submit_receive_code_usecase.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/domain/usecases/submit_receive_code_usecase.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/controllers/delivery_cubit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/controllers/delivery_cubit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/controllers/delivery_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/controllers/delivery_state.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/pages/send_receive_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/pages/send_receive_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/send_receive_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/send_receive_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/widgets/delivery_banner.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/widgets/delivery_banner.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/widgets/delivery_package_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/widgets/delivery_package_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/widgets/delivery_section_header.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/widgets/delivery_section_header.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/widgets/index.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/delivery/presentation/widgets/index.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/data/food_order_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/data/food_order_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/data/models/restaurant_pin_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/data/models/restaurant_pin_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/domain/entities/restaurant_pin.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/domain/entities/restaurant_pin.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/controllers/food_order_cubit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/controllers/food_order_cubit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/controllers/food_order_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/controllers/food_order_state.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/food_order_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/food_order_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/pages/food_cart_payment_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/pages/food_cart_payment_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/pages/food_order_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/pages/food_order_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/widgets/restaurant_bottom_sheet.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/widgets/restaurant_bottom_sheet.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/home/data/models/user_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/home/data/models/user_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/home/data/user_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/home/data/user_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/home/domain/entities/user.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/home/domain/entities/user.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/home/presentation/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/home/presentation/home_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/locker/data/models/locker_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/locker/data/models/locker_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/menu/presentation/pages/menu_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/menu/presentation/pages/menu_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/notifications/data/models/notification_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/notifications/data/models/notification_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/notifications/domain/entities/notification.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/notifications/domain/entities/notification.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/notifications/presentation/pages/notification_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/notifications/presentation/pages/notification_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/orders/presentation/pages/orders_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/orders/presentation/pages/orders_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/data/models/personal_info_overview_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/data/models/personal_info_overview_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/data/personal_info_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/data/personal_info_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/domain/entities/personal_info_data.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/domain/entities/personal_info_data.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/domain/entities/personal_info_item.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/domain/entities/personal_info_item.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/domain/repositories/i_personal_info_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/domain/repositories/i_personal_info_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/presentation/controllers/personal_info_cubit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/presentation/controllers/personal_info_cubit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/presentation/controllers/personal_info_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/presentation/controllers/personal_info_state.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/presentation/pages/personal_info_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/presentation/pages/personal_info_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/personal_info/presentation/widgets/personal_info_field_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/personal_info/presentation/widgets/personal_info_field_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/photo_confirmation/presentation/widgets/photo_confirmation_preview_frame.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/photo_confirmation/presentation/widgets/photo_confirmation_preview_frame.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/photo_confirmation/presentation/widgets/photo_confirmation_top_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/photo_confirmation/presentation/widgets/photo_confirmation_top_bar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/wallet/data/wallet_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/wallet/data/wallet_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/wallet/domain/repositories/i_wallet_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/wallet/domain/repositories/i_wallet_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/wallet/presentation/controllers/wallet_cubit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/wallet/presentation/controllers/wallet_cubit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/wallet/presentation/pages/wallet_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/wallet/presentation/pages/wallet_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/linux/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/linux/flutter/generated_plugin_registrant.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/linux/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/linux/flutter/generated_plugins.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mobile/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/features/bookings/pages/BookingDetailPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/features/bookings/pages/BookingDetailPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/features/lockers/pages/LockerDetailPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/features/lockers/pages/LockerDetailPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/features/packages/pages/PackagesPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/features/packages/pages/PackagesPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/mocks/seed.ts" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/mocks/seed.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/types/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/windows/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/windows/flutter/generated_plugin_registrant.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/windows/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/windows/flutter/generated_plugins.cmake" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,30 +97,31 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="3B6n85YQ5tj0m0U7MBL9aYLRJxq" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "Merging master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "E:/FPTUNI/semester_7/locker",
-    "settings.editor.selected.configurable": "AndroidSdkUpdater"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/FPTUNI/semester_7/locker&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;AndroidSdkUpdater&quot;
   }
-}]]></component>
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="" />
@@ -104,5 +131,16 @@
       <updated>1773818226141</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

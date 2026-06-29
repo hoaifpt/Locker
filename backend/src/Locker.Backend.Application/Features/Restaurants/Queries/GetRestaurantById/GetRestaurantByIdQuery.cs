@@ -22,7 +22,7 @@ public class GetRestaurantByIdQueryHandler : IRequestHandler<GetRestaurantByIdQu
     {
         var item = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (item == null) return null;
-        
+
         return new RestaurantDto
         {
             Id = item.Id,
@@ -30,7 +30,9 @@ public class GetRestaurantByIdQueryHandler : IRequestHandler<GetRestaurantByIdQu
             Description = item.Description,
             Address = item.Address,
             ImageUrl = item.ImageUrl,
-            Rating = item.Rating
+            Rating = item.Rating,
+            Longitude = item.Location?.Coordinates?.Count >= 2 ? item.Location.Coordinates[0] : 0.0,
+            Latitude = item.Location?.Coordinates?.Count >= 2 ? item.Location.Coordinates[1] : 0.0
         };
     }
 }

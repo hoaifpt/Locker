@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'dart:ui' as ui;
+import 'dart:developer';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mapbox;
+import 'package:geolocator/geolocator.dart' as geo;
 import 'controllers/food_order_cubit.dart';
 import 'controllers/food_order_state.dart';
+import 'package:locker_mobile/features/restaurant_map/domain/entities/restaurant.dart';
 import 'widgets/restaurant_bottom_sheet.dart';
-import 'widgets/restaurant_pin_widget.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+
+final GlobalKey<_MapLayerState> _mapLayerKey = GlobalKey();
 
 class FoodOrderScreen extends StatelessWidget {
   const FoodOrderScreen({super.key});
@@ -22,25 +29,23 @@ class FoodOrderScreen extends StatelessWidget {
               );
             }
 
-            final selected = state.selectedRestaurant;
-            if (selected == null) {
-              return const Center(child: Text('Không có quán ăn gần đây'));
-            }
-
             return Stack(
               children: [
-                _MapLayer(
-                  state: state,
-                  onSelect: (id) =>
-                      context.read<FoodOrderCubit>().selectRestaurant(id),
-                ),
-                const _TopOverlay(),
-                Positioned(
+                // Lớp bản đồ đã được cấu trúc để tích hợp sâu hơn với Mapbox
+                _MapLayer(key: _mapLayerKey),
+                const Positioned(
+                  top: 0,
                   left: 0,
                   right: 0,
-                  bottom: 0,
-                  child: RestaurantBottomSheet(restaurant: selected),
+                  child: _TopOverlay(),
                 ),
+                if (state.selectedPin != null)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: RestaurantBottomSheet(restaurant: state.selectedPin),
+                  ),
               ],
             );
           },
@@ -56,14 +61,16 @@ class _TopOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      color: Colors.white.withValues(alpha: 0.70),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+      color: Colors.white.withAlpha(217), // 85% opacity
       child: Column(
         children: [
           Row(
             children: [
               _circleIconButton(
-                  Icons.arrow_back_rounded, () => Navigator.pop(context)),
+                Icons.arrow_back_rounded,
+                () => Navigator.pop(context),
+              ),
               const Spacer(),
               const Text(
                 'Bản đồ',
@@ -83,8 +90,10 @@ class _TopOverlay extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F3F4),
                     borderRadius: BorderRadius.circular(999),
@@ -109,15 +118,23 @@ class _TopOverlay extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFD8D64),
-                  shape: BoxShape.circle,
+              GestureDetector(
+                onTap: () {
+                  // Gọi hàm định vị thông qua key
+                  _mapLayerKey.currentState?.moveToUserLocation();
+                },
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFD8D64),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.my_location_rounded,
+                    color: Colors.white,
+                  ),
                 ),
-                child:
-                    const Icon(Icons.my_location_rounded, color: Colors.white),
               ),
             ],
           ),
@@ -142,72 +159,256 @@ class _TopOverlay extends StatelessWidget {
   }
 }
 
-class _MapLayer extends StatelessWidget {
-  final FoodOrderState state;
-  final ValueChanged<String> onSelect;
+// Lớp hiển thị bản đồ và các marker
+class _MapLayer extends StatefulWidget {
+  const _MapLayer({super.key});
 
-  const _MapLayer({required this.state, required this.onSelect});
+  @override
+  State<_MapLayer> createState() => _MapLayerState();
+}
+
+class _MapLayerState extends State<_MapLayer> {
+  MapboxMap? _mapboxMap;
+  PointAnnotationManager? _pointAnnotationManager;
+  final Map<String, PointAnnotation> _annotations = {};
+  final Map<String, String> _markerToRestaurantIdMap = {};
+  bool _initialCameraSet = false;
+  List<Restaurant>? _pendingRestaurants;
+
+  // Chuyển thành async để tải icon marker và cải thiện xử lý lỗi
+  void _onMapCreated(MapboxMap mapboxMap) async {
+    _mapboxMap = mapboxMap;
+    log('[Map] Map created.');
+
+    _mapboxMap?.setCamera(
+      CameraOptions(
+        center: Point(
+          coordinates: Position(106.7017896, 10.7780127),
+        ), // Tọa độ Q1
+        zoom: 14.0,
+      ),
+    );
+
+    try {
+      // Sửa lỗi: Phiên bản Mapbox SDK này yêu cầu cung cấp kích thước ảnh.
+      // Chúng ta sẽ decode ảnh để lấy width/height trước khi thêm vào style.
+      final ByteData byteData = await rootBundle.load(
+        'assets/green_pin.png',
+      );
+      final Uint8List markerImageBytes = byteData.buffer.asUint8List();
+
+      // Decode the image to get its dimensions
+      final ui.Codec codec = await ui.instantiateImageCodec(markerImageBytes);
+      final ui.FrameInfo frameInfo = await codec.getNextFrame();
+
+      // Sửa lỗi: Gọi addStyleImage với đúng 7 tham số vị trí theo yêu cầu của SDK.
+      // Phiên bản này yêu cầu các thành phần của ảnh thay vì một đối tượng MbxImage.
+      await _mapboxMap?.style.addStyleImage(
+        'green-pin',
+        1.0, // scale (double)
+        MbxImage(
+          width: 64, // double
+          height: 64, // double
+          data: markerImageBytes,
+        ),
+        false, // sdf (bool)
+        <ImageStretches>[], // stretchX
+        <ImageStretches>[], // stretchY
+        null, // content (ImageContent?)
+      );
+      log('[Map] Custom marker image loaded and added to style.');
+
+      // GIỚI HẠN CAMERA CHỈ Ở VIỆT NAM
+      _mapboxMap?.setBounds(
+        CameraBoundsOptions(
+          bounds: CoordinateBounds(
+            southwest: Point(coordinates: Position(102.1, 8.0)),
+            northeast: Point(coordinates: Position(109.5, 23.4)),
+            infiniteBounds: false,
+          ),
+          minZoom: 5.0,
+        ),
+      );
+
+      // Tạo manager cho các điểm annotation (marker)
+      final manager = await mapboxMap.annotations
+          .createPointAnnotationManager();
+      _pointAnnotationManager = manager;
+      log('[Map] PointAnnotationManager created.');
+
+      // Đăng ký sự kiện nhấn vào marker
+      manager.tapEvents(
+        onTap: (tappedAnnotation) {
+          log('[Map] Tapped annotation: ${tappedAnnotation.id}');
+          final restaurantId = _markerToRestaurantIdMap[tappedAnnotation.id];
+          if (restaurantId != null) {
+            context.read<FoodOrderCubit>().selectRestaurant(restaurantId);
+          }
+        },
+      );
+
+      // GIẢI PHÁP CHO RACE CONDITION: Kiểm tra state hiện tại ngay khi manager sẵn sàng.
+      final currentState = context.read<FoodOrderCubit>().state;
+      log(
+        '[Map] Checking state: ${currentState.restaurants.length} restaurants',
+      );
+      if (currentState.restaurants.isNotEmpty) {
+        log('[Map] Initial data found, updating annotations.');
+        _updateAnnotations(currentState.restaurants);
+      }
+
+      _showUserLocation();
+    } catch (e, stackTrace) {
+      log('[Map] Error during map setup: $e', stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> moveToUserLocation() async {
+    log('[Debug] Nút cam đã được bấm, đang bắt đầu định vị...');
+    try {
+      // 1. Kiểm tra và xin quyền
+      geo.LocationPermission permission =
+          await geo.Geolocator.checkPermission();
+      if (permission == geo.LocationPermission.denied) {
+        permission = await geo.Geolocator.requestPermission();
+      }
+
+      if (permission == geo.LocationPermission.whileInUse ||
+          permission == geo.LocationPermission.always) {
+        // 2. Lấy vị trí với cách gọi đơn giản của v11
+        // Lưu ý: Không cần 'locationSettings' nữa, truyền thẳng accuracy
+        geo.Position position = await geo.Geolocator.getCurrentPosition(
+          desiredAccuracy: geo.LocationAccuracy.high,
+        );
+
+        log("Vị trí GPS: ${position.latitude}, ${position.longitude}");
+
+        // 3. Bay tới vị trí
+        _mapboxMap?.flyTo(
+          mapbox.CameraOptions(
+            center: mapbox.Point(
+              coordinates: mapbox.Position(
+                position.longitude,
+                position.latitude,
+              ),
+            ),
+            zoom: 15.0,
+          ),
+          mapbox.MapAnimationOptions(duration: 1000),
+        );
+      }
+    } catch (e) {
+      log("Lỗi định vị: $e");
+    }
+  }
+
+  Future<void> _updateAnnotations(List<Restaurant> restaurants) async {
+    if (_pointAnnotationManager == null || !mounted) {
+      log(
+        '[Map] Annotation manager not ready or widget not mounted. Skipping update.',
+      );
+      return;
+    }
+
+    final options = restaurants.map((res) {
+      return mapbox.PointAnnotationOptions(
+        geometry: mapbox.Point(
+          coordinates: mapbox.Position(res.longitude, res.latitude),
+        ),
+        iconImage: 'green-pin',
+        iconSize: 0.8,
+      );
+    }).toList();
+
+    await _pointAnnotationManager?.deleteAll();
+    _annotations.clear();
+    _markerToRestaurantIdMap.clear();
+
+    if (options.isNotEmpty) {
+      final newAnnotations = await _pointAnnotationManager?.createMulti(
+        options,
+      );
+      log('[Map] Created ${newAnnotations?.length ?? 0} new annotations.');
+      if (newAnnotations != null) {
+        for (int i = 0; i < newAnnotations.length; i++) {
+          final PointAnnotation? annotation = newAnnotations[i];
+          if (annotation != null) {
+            final res = restaurants[i];
+            if (res.id.isNotEmpty) {
+              _annotations[res.id] = annotation;
+              _markerToRestaurantIdMap[annotation.id] = res.id;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void _showUserLocation() {
+    _mapboxMap?.location.updateSettings(
+      LocationComponentSettings(enabled: true, pulsingEnabled: true),
+    );
+  }
+
+  void _flyTo(Restaurant restaurant) {
+    _mapboxMap?.flyTo(
+      CameraOptions(
+        center: Point(
+          coordinates: Position(restaurant.longitude, restaurant.latitude),
+        ),
+        zoom: 16.0,
+        pitch: 0.0,
+      ),
+      MapAnimationOptions(duration: 1500, startDelay: 0),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final mapHeight = constraints.maxHeight;
-        return Stack(
-          children: [
-            Container(color: const Color(0xFFF9F9F9)),
-            Positioned.fill(child: CustomPaint(painter: _RoadPainter())),
-            for (final restaurant in state.restaurants)
-              Positioned(
-                left: constraints.maxWidth * restaurant.offsetX,
-                top: mapHeight * restaurant.offsetY,
-                child: RestaurantPinWidget(
-                  label: restaurant.name,
-                  selected: state.selectedRestaurantId == restaurant.id,
-                  onTap: () => onSelect(restaurant.id),
+    return BlocListener<FoodOrderCubit, FoodOrderState>(
+      listener: (context, state) {
+        if (state.restaurants.isNotEmpty) {
+          log('[Map] BlocListener: ${state.restaurants.length} restaurants');
+          _updateAnnotations(
+            state.restaurants,
+          ); // ✅ luôn gọi, _updateAnnotations tự check null
+        }
+
+        if (state.selectedRestaurant != null) {
+          _flyTo(state.selectedRestaurant!);
+        }
+
+        if (state.restaurants.isNotEmpty && !_initialCameraSet) {
+          _mapboxMap?.setCamera(
+            CameraOptions(
+              center: Point(
+                coordinates: Position(
+                  state.restaurants.first.longitude,
+                  state.restaurants.first.latitude,
                 ),
               ),
-          ],
-        );
+              zoom: 14.5,
+            ),
+          );
+          _initialCameraSet = true;
+        }
       },
+
+      child: GestureDetector(
+        // ✅ BỌC MapWidget
+        onTap: () {
+          log('[Map] Click vùng trống');
+          context.read<FoodOrderCubit>().selectRestaurant("");
+        },
+        child: MapWidget(
+          key: const ValueKey("mapview"),
+          styleUri: 'mapbox://styles/hoai/cmqrnr7qe000o01sifrrmhpr5',
+          onMapCreated: _onMapCreated,
+          onMapLoadErrorListener: (error) {
+            log('[Map] A map error occurred: ${error.message}');
+          },
+        ),
+      ),
     );
   }
-}
-
-class _RoadPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final road = Paint()
-      ..color = const Color(0xFFE7E7E7)
-      ..strokeWidth = 10
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final major = Path()
-      ..moveTo(size.width * 0.10, size.height * 0.20)
-      ..quadraticBezierTo(size.width * 0.35, size.height * 0.28,
-          size.width * 0.80, size.height * 0.35)
-      ..quadraticBezierTo(size.width * 0.60, size.height * 0.52,
-          size.width * 0.25, size.height * 0.60)
-      ..quadraticBezierTo(size.width * 0.15, size.height * 0.63,
-          size.width * 0.08, size.height * 0.75);
-    canvas.drawPath(major, road);
-
-    final road2 = Paint()
-      ..color = const Color(0xFFF0F0F0)
-      ..strokeWidth = 6
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final minor = Path()
-      ..moveTo(size.width * 0.75, size.height * 0.15)
-      ..quadraticBezierTo(size.width * 0.65, size.height * 0.30,
-          size.width * 0.58, size.height * 0.42)
-      ..quadraticBezierTo(size.width * 0.49, size.height * 0.55,
-          size.width * 0.45, size.height * 0.70);
-    canvas.drawPath(minor, road2);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

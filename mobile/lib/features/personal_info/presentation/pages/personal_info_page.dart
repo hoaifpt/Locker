@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/personal_info_repository.dart';
 import '../../domain/usecases/get_personal_info_overview_usecase.dart';
+import '../../domain/entities/personal_info_item.dart';
 import '../controllers/personal_info_cubit.dart';
 import '../controllers/personal_info_state.dart';
 import '../widgets/index.dart';
+import '../widgets/edit_profile_dialog.dart';
 
 class PersonalInfoPage extends StatelessWidget {
   const PersonalInfoPage({super.key});
@@ -17,6 +19,7 @@ class PersonalInfoPage extends StatelessWidget {
         getOverview: GetPersonalInfoOverviewUseCase(
           repository: PersonalInfoRepository(),
         ),
+        repository: PersonalInfoRepository(),
       )..load(),
       child: const _PersonalInfoView(),
     );
@@ -51,8 +54,11 @@ class _PersonalInfoView extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.person_off_outlined,
-                          size: 48, color: Color(0xFFFB923C)),
+                      const Icon(
+                        Icons.person_off_outlined,
+                        size: 48,
+                        color: Color(0xFFFB923C),
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         state.errorMessage!,
@@ -117,38 +123,41 @@ class _PersonalInfoView extends StatelessWidget {
                             ),
                             const SizedBox(height: 24),
                             const PersonalInfoSectionHeader(
-                                title: 'THÔNG TIN CÁ NHÂN'),
+                              title: 'THÔNG TIN CÁ NHÂN',
+                            ),
                             const SizedBox(height: 12),
-                            ...overview.items
-                                .map(
-                                  (item) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: PersonalInfoFieldCard(
-                                      label: item.label,
-                                      value: item.value,
-                                      hint: item.hint,
-                                      isEditable: item.isEditable,
-                                    ),
-                                  ),
-                                )
-                                ,
+                            ...overview.items.map(
+                              (item) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: PersonalInfoFieldCard(
+                                  label: item.label,
+                                  value: item.value,
+                                  hint: item.hint,
+                                  isEditable: item.isEditable,
+                                  onTap: item.isEditable
+                                      ? () => _showEditDialog(context, item)
+                                      : null,
+                                ),
+                              ),
+                            ),
                             const SizedBox(height: 12),
                             const PersonalInfoSectionHeader(
-                                title: 'QUẢN LÝ TÀI KHOẢN'),
+                              title: 'QUẢN LÝ TÀI KHOẢN',
+                            ),
                             const SizedBox(height: 12),
-                            ...overview.actions
-                                .map(
-                                  (action) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: PersonalInfoActionCard(
-                                      title: action.title,
-                                      subtitle: action.subtitle,
-                                      onTap: () => Navigator.pushNamed(
-                                          context, action.route),
-                                    ),
+                            ...overview.actions.map(
+                              (action) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: PersonalInfoActionCard(
+                                  title: action.title,
+                                  subtitle: action.subtitle,
+                                  onTap: () => Navigator.pushNamed(
+                                    context,
+                                    action.route,
                                   ),
-                                )
-                                ,
+                                ),
+                              ),
+                            ),
                             const SizedBox(height: 12),
                             Container(
                               width: double.infinity,
@@ -219,8 +228,9 @@ class _PersonalInfoView extends StatelessWidget {
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content:
-                                      Text('Đã lưu thay đổi thông tin cá nhân'),
+                                  content: Text(
+                                    'Đã lưu thay đổi thông tin cá nhân',
+                                  ),
                                 ),
                               );
                             },
@@ -253,6 +263,34 @@ class _PersonalInfoView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showEditDialog(BuildContext context, PersonalInfoItem item) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: context.read<PersonalInfoCubit>(),
+        child: EditProfileDialog(
+          title: 'Chỉnh sửa ${item.label}',
+          initialValue: item.value,
+          label: item.label,
+          isLoading: context.watch<PersonalInfoCubit>().state.isUpdating,
+          onSave: (newValue) async {
+            if (item.label == 'HỌ VÀ TÊN') {
+              context.read<PersonalInfoCubit>().updateProfile(
+                fullName: newValue,
+              );
+            } else if (item.label == 'EMAIL') {
+              context.read<PersonalInfoCubit>().updateProfile(email: newValue);
+            } else if (item.label == 'SỐ ĐIỆN THOẠI') {
+              context.read<PersonalInfoCubit>().updateProfile(
+                phoneNumber: newValue,
+              );
+            }
+          },
+        ),
+      ),
     );
   }
 }

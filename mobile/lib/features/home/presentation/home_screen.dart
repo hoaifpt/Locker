@@ -31,8 +31,11 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: Color(0xFFEF4444)),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Color(0xFFEF4444),
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         state.message,
@@ -50,6 +53,9 @@ class HomeScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFB923C),
                           foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         child: const Text('Thử lại'),
                       ),
@@ -76,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
                     child: HomeSearchBar(
                       hintText: 'Tìm dịch vụ hoặc vị trí tủ...',
                       onTap: () {},
@@ -126,7 +132,8 @@ class HomeScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: _ActiveLockerSection(
-                          activeLockers: loaded.activeLockers),
+                        activeLockers: loaded.activeLockers,
+                      ),
                     ),
                   ),
                 ),
@@ -136,13 +143,14 @@ class HomeScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: _NearbyLockerList(
-                          nearbyLockers: loaded.nearbyLockers),
+                        nearbyLockers: loaded.nearbyLockers,
+                      ),
                     ),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                     child: PromoCard(
                       title: 'Liên Kết Sàn TMĐT',
                       subtitle: 'Mua sắm ưu đãi, giao tận tủ E-BOX',
@@ -226,7 +234,7 @@ class _HomeHeader extends StatelessWidget {
                         'Xin chào, ${user.fullName}!',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Color(0xFF1E293B),
                           fontSize: 18,
                           fontFamily: 'Inter',
@@ -234,10 +242,13 @@ class _HomeHeader extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Row(
+                      const Row(
                         children: [
-                          Icon(Icons.location_on_outlined,
-                              size: 14, color: Color(0xFF6B7280)),
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 14,
+                            color: Color(0xFF6B7280),
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Hồ Chí Minh',
@@ -275,8 +286,10 @@ class _HomeHeader extends StatelessWidget {
               child: Stack(
                 children: [
                   const Center(
-                    child: Icon(Icons.notifications_none_rounded,
-                        color: Color(0xFF334155)),
+                    child: Icon(
+                      Icons.notifications_none_rounded,
+                      color: Color(0xFF334155),
+                    ),
                   ),
                   Positioned(
                     right: 11,
@@ -364,10 +377,7 @@ class _ActiveLockerSection extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (_, index) {
           final locker = activeLockers[index];
-          return SizedBox(
-            width: 300,
-            child: _ActiveLockerCard(locker: locker),
-          );
+          return SizedBox(width: 300, child: _ActiveLockerCard(locker: locker));
         },
       ),
     );
@@ -410,7 +420,9 @@ class _ActiveLockerCard extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: isActive
                             ? const Color(0xFFEFFAF3)
@@ -488,8 +500,11 @@ class _ActiveLockerCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.access_time_rounded,
-                    size: 16, color: Color(0xFFFB923C)),
+                const Icon(
+                  Icons.access_time_rounded,
+                  size: 16,
+                  color: Color(0xFFFB923C),
+                ),
                 const SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -607,8 +622,10 @@ class _NearbyLockerTile extends StatelessWidget {
               color: const Color(0xFFFFF7ED),
               borderRadius: BorderRadius.circular(14),
             ),
-            child:
-                const Icon(Icons.storefront_rounded, color: Color(0xFFFB923C)),
+            child: const Icon(
+              Icons.storefront_rounded,
+              color: Color(0xFFFB923C),
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -724,16 +741,21 @@ class _BottomNavBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _BottomNavItem(
-              icon: Icons.home_rounded, label: 'Trang chủ', active: true),
+            icon: Icons.home_rounded,
+            label: 'Trang chủ',
+            active: true,
+          ),
           _BottomNavItem(icon: Icons.shopping_bag_outlined, label: 'Mua sắm'),
           _BottomNavItem(
-              icon: Icons.receipt_long_outlined,
-              label: 'Đơn hàng',
-              routeName: '/orders'),
+            icon: Icons.receipt_long_outlined,
+            label: 'Đơn hàng',
+            routeName: '/orders',
+          ),
           _BottomNavItem(
-              icon: Icons.person_outline_rounded,
-              label: 'Tài khoản',
-              routeName: '/profile'),
+            icon: Icons.person_outline_rounded,
+            label: 'Tài khoản',
+            routeName: '/profile',
+          ),
         ],
       ),
     );
@@ -755,10 +777,12 @@ class _BottomNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor =
-        active ? const Color(0xFFFB923C) : const Color(0xFF94A3B8);
-    final labelColor =
-        active ? const Color(0xFFFB923C) : const Color(0xFF94A3B8);
+    final iconColor = active
+        ? const Color(0xFFFB923C)
+        : const Color(0xFF94A3B8);
+    final labelColor = active
+        ? const Color(0xFFFB923C)
+        : const Color(0xFF94A3B8);
 
     final child = Column(
       mainAxisSize: MainAxisSize.min,
@@ -827,11 +851,6 @@ final List<_ServiceItem> _services = [
     label: 'Gửi Nhận Đồ',
     icon: Icons.move_to_inbox_outlined,
     route: '/send-receive',
-    onTap: _noop,
-  ),
-  const _ServiceItem(
-    label: 'Nhập Mã Tủ',
-    icon: Icons.pin_outlined,
     onTap: _noop,
   ),
 ];

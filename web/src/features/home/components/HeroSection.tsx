@@ -19,7 +19,7 @@ export default function HeroSection() {
               transition={trans(0)}
               className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-orange-600"
             >
-              Tương lai của lưu trữ
+              Nền tảng App Thông Minh
             </motion.span>
 
             <motion.h1
@@ -28,7 +28,7 @@ export default function HeroSection() {
               transition={trans(0.1)}
               className="mt-6 text-5xl font-extrabold leading-tight tracking-tight text-gray-900 lg:text-6xl"
             >
-              Hệ thống <span className="text-orange-500">tủ khóa</span> thông minh
+              Ứng dụng <span className="text-orange-500">Giao Nhận</span> Tủ Khóa
             </motion.h1>
 
             <motion.p
@@ -37,8 +37,7 @@ export default function HeroSection() {
               transition={trans(0.2)}
               className="mt-5 max-w-lg text-lg leading-relaxed text-gray-600"
             >
-              An toàn, liền mạch và thời thượng. LuxeLock cung cấp hệ sinh thái tủ khóa
-              thông minh thế hệ mới — kết nối mọi không gian, bảo vệ mọi tài sản.
+              LuxeLock là hệ sinh thái phần mềm toàn diện giúp kết nối Khách hàng, Shipper và hệ thống Tủ khóa phần cứng. Đặt đồ ăn, gửi nhận bưu kiện và điều khiển tủ chỉ bằng vài cú chạm.
             </motion.p>
 
             {/* CTA Buttons */}

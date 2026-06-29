@@ -13,6 +13,8 @@ export type PaymentStatus = 'Pending' | 'Completed' | 'Failed' | 'Refunded';
 
 export type PackageSize = 'S' | 'M' | 'L' | 'XL';
 
+export type FoodOrderStatus = 'PaymentRequired' | 'Pending' | 'Preparing' | 'Delivering' | 'DeliveredToLocker' | 'Completed' | 'Cancelled';
+
 // ─── Auth ──────────────────────────────────────
 export interface LoginRequest {
   identifier: string; // username or email
@@ -104,4 +106,46 @@ export interface PaymentDto {
   transactionId?: string;
   createdAt: string;
   paidAt?: string;
+}
+
+// ─── Food Orders & Restaurants ─────────────────
+export interface RestaurantDto {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  imageUrl: string;
+  rating: number;
+}
+
+export interface MenuItemDto {
+  id: string;
+  restaurantId: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+  isAvailable: boolean;
+}
+
+export interface FoodOrderItemDto {
+  menuItemId: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  notes?: string;
+}
+
+export interface FoodOrderDto {
+  id: string;
+  userId: string;
+  restaurantId: string;
+  lockerId: string;
+  slotIndex: number;
+  items: FoodOrderItemDto[];
+  totalAmount: number;
+  status: FoodOrderStatus;
+  deliveryNotes?: string;
+  createdAt: string;
 }

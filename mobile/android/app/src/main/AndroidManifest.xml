@@ -12,7 +12,7 @@
         android:icon="@mipmap/ic_launcher">
         <meta-data
             android:name="com.mapbox.accessToken"
-            android:value="pk.eyJ1IjoiaG9haSIsImEiOiJjbXFpeXZnangwN3FqMnBxMDN4ajV4MDN3In0.Y9MvMmyCPIHQgtCh0fNpqQ"
+            android:value="${mapboxAccessToken}"
         />
 
         <activity

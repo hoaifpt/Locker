@@ -5,6 +5,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val localProperties = java.util.Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+val mapboxToken = localProperties.getProperty("mapbox.access.token") ?: ""
+
 android {
     namespace = "com.example.locker"
     compileSdk = flutter.compileSdkVersion
@@ -30,6 +37,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["mapboxAccessToken"] = mapboxToken
     }
 
     buildTypes {

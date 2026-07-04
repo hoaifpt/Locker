@@ -16,6 +16,11 @@ import 'package:locker_mobile/features/sign_up/domain/repositories/i_sign_up_rep
 import 'package:locker_mobile/features/sign_up/domain/usecases/sign_up_usecase.dart';
 import 'package:locker_mobile/features/sign_up/presentation/controllers/sign_up_cubit.dart';
 
+import 'package:locker_mobile/features/wallet/data/wallet_repository.dart';
+import 'package:locker_mobile/features/wallet/domain/repositories/i_wallet_repository.dart';
+import 'package:locker_mobile/features/wallet/domain/usecases/get_wallet_overview_usecase.dart';
+import 'package:locker_mobile/features/wallet/presentation/controllers/wallet_cubit.dart';
+
 import '../../features/home/data/home_repository.dart';
 import '../../features/home/data/user_repository.dart';
 import '../../features/home/domain/repositories/i_home_repository.dart';
@@ -46,18 +51,22 @@ void configureDependencies() {
   getIt.registerLazySingleton(() => LogoutUsecase(getIt()));
   getIt.registerLazySingleton(() => CheckLoginUsecase(getIt()));
   getIt.registerLazySingleton(
-      () => ResendVerificationEmailUseCase(getIt<IAuthRepository>()));
+    () => ResendVerificationEmailUseCase(getIt<IAuthRepository>()),
+  );
 
   // Cubits
   // Cubits are registered as factories because they hold state and a new
   // instance should be created for each feature/screen that needs it.
-  getIt.registerFactory(() => AuthCubit(
-        loginUsecase: getIt(),
-        logoutUsecase: getIt(),
-        checkLoginUsecase: getIt(),
-      ));
   getIt.registerFactory(
-      () => VerifyEmailCubit(resendVerificationEmailUseCase: getIt()));
+    () => AuthCubit(
+      loginUsecase: getIt(),
+      logoutUsecase: getIt(),
+      checkLoginUsecase: getIt(),
+    ),
+  );
+  getIt.registerFactory(
+    () => VerifyEmailCubit(resendVerificationEmailUseCase: getIt()),
+  );
 
   //========================================================================
   //                               SIGN UP
@@ -73,12 +82,30 @@ void configureDependencies() {
   getIt.registerFactory(() => SignUpCubit(signUpUseCase: getIt()));
 
   //========================================================================
+  //                                 WALLET
+  //========================================================================
+
+  // Repositories
+  getIt.registerLazySingleton<IWalletRepository>(() => WalletRepository());
+
+  // Use Cases
+  getIt.registerLazySingleton(
+    () => GetWalletOverviewUseCase(repository: getIt()),
+  );
+
+  // Cubits
+  getIt.registerFactory(
+    () => WalletCubit(getWalletOverview: getIt(), walletRepository: getIt()),
+  );
+
+  //========================================================================
   //                              QR SCANNER
   //========================================================================
 
   // Repositories
-  getIt
-      .registerLazySingleton<IQrScannerRepository>(() => QrScannerRepository());
+  getIt.registerLazySingleton<IQrScannerRepository>(
+    () => QrScannerRepository(),
+  );
 
   // Use Cases
   getIt.registerLazySingleton(() => ValidateQrCodeUsecase(getIt()));

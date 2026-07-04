@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/wallet_cubit.dart';
 import '../controllers/wallet_state.dart';
+import '../../../payment_failed/domain/entities/payment_failed_info.dart';
+import '../../../payment_success/domain/entities/payment_success_info.dart';
 
 class TopUpPage extends StatefulWidget {
   const TopUpPage({super.key});
@@ -36,32 +38,71 @@ class _TopUpPageState extends State<TopUpPage> {
   void _handleTopUp() async {
     final amount = double.tryParse(_amountController.text) ?? 0;
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập số tiền hợp lệ')),
-      );
+      _showSnackBar('Vui lòng nhập số tiền hợp lệ');
       return;
     }
 
-    if (_selectedPaymentMethod == 'vnpay') {
-      final url = await context.read<WalletCubit>().topUp(amount);
-      if (url != null) {
-        if (await canLaunchUrl(Uri.parse(url))) {
-          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Không thể mở trang thanh toán VNPay'),
+    if (_selectedPaymentMethod != 'vnpay') {
+      _showSnackBar('Phương thức $_selectedPaymentMethod chưa được hỗ trợ');
+      return;
+    }
+
+    final cubit = context.read<WalletCubit>();
+    final url = await cubit.topUp(amount);
+
+    if (url != null) {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+        if (mounted) {
+          Navigator.pushNamed(
+            context,
+            '/payment-success',
+            arguments: PaymentSuccessRequest(
+              paidAmount: amount.toInt(),
+              orderCode: 'TOPUP-${DateTime.now().millisecondsSinceEpoch}',
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          _showSnackBar('Không thể mở trang thanh toán VNPay');
+          Navigator.pushNamed(
+            context,
+            '/payment-failed',
+            arguments: PaymentFailedRequest(
+              amount: amount.toInt(),
+              paymentMethod: _selectedPaymentMethod,
+              reason: 'Không thể mở URL thanh toán',
             ),
           );
         }
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Phương thức $_selectedPaymentMethod chưa được hỗ trợ'),
-        ),
-      );
+      final currentState = context.read<WalletCubit>().state;
+      final errorMessage =
+          currentState.errorMessage ?? 'Khởi tạo thanh toán thất bại';
+
+      if (mounted) {
+        _showSnackBar(errorMessage);
+        Navigator.pushNamed(
+          context,
+          '/payment-failed',
+          arguments: PaymentFailedRequest(
+            amount: amount.toInt(),
+            paymentMethod: _selectedPaymentMethod,
+            reason: errorMessage,
+          ),
+        );
+      }
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -69,7 +110,12 @@ class _TopUpPageState extends State<TopUpPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFD82D8B), // MoMo-like pink/red
+        backgroundColor: const Color.fromARGB(
+          255,
+          236,
+          129,
+          53,
+        ), // MoMo-like pink/red
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -123,7 +169,7 @@ class _TopUpPageState extends State<TopUpPage> {
                       Text(
                         '${_formatMoney(balance)}đ',
                         style: const TextStyle(
-                          color: Color(0xFFD82D8B),
+                          color: Color.fromARGB(255, 232, 154, 52),
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
@@ -227,7 +273,7 @@ class _TopUpPageState extends State<TopUpPage> {
                   child: ElevatedButton(
                     onPressed: _handleTopUp,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD82D8B),
+                      backgroundColor: const Color.fromARGB(255, 235, 130, 65),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
@@ -278,7 +324,9 @@ class _AmountChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFD82D8B) : Colors.white,
+          color: isSelected
+              ? const Color.fromARGB(255, 247, 167, 76)
+              : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
@@ -329,7 +377,7 @@ class _PaymentMethodTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFFD82D8B)
+                ? const Color.fromARGB(255, 246, 146, 46)
                 : const Color(0xFFF1F5F9),
             width: isSelected ? 2 : 1,
           ),
@@ -369,7 +417,10 @@ class _PaymentMethodTile extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.radio_button_checked, color: Color(0xFFD82D8B))
+              const Icon(
+                Icons.radio_button_checked,
+                color: Color.fromARGB(255, 239, 152, 54),
+              )
             else
               const Icon(
                 Icons.radio_button_unchecked,

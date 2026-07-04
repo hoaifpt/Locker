@@ -1,7 +1,5 @@
-using System.Collections.Specialized;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using Locker.Backend.Application.Features.Wallet.Commands.VnPayInitTopUp;
@@ -40,15 +38,17 @@ public class VnPayService : IVnPayService
             ["vnp_IpAddr"] = ipAddress
         };
 
+        // Tính hash TRƯỚC khi thêm vào parameters
         var hashData = BuildHashData(parameters);
         parameters["vnp_SecureHash"] = hashData;
 
+        // Xây dựng query string với URL encoding
         var queryBuilder = new StringBuilder();
         foreach (var param in parameters)
         {
             if (queryBuilder.Length > 0)
                 queryBuilder.Append('&');
-            queryBuilder.Append($"{param.Key}={Uri.EscapeDataString(param.Value.ToString() ?? string.Empty)}");
+            queryBuilder.Append($"{param.Key}={Uri.EscapeDataString(param.Value)}");
         }
 
         return $"{_settings.BaseUrl}?{queryBuilder}";
@@ -69,6 +69,7 @@ public class VnPayService : IVnPayService
             .OrderBy(kvp => kvp.Key, StringComparer.Ordinal)
             .ToList();
 
+        // Tính hash từ các tham số đã sắp xếp
         var signData = new StringBuilder();
         foreach (var (key, value) in sortedParams)
         {
@@ -76,10 +77,9 @@ public class VnPayService : IVnPayService
                 signData.Append('&');
             signData.Append($"{key}={Uri.EscapeDataString(value)}");
         }
-        signData.Append($"&{_settings.HashSecret}");
 
-        using var sha256 = SHA256.Create();
-        var computedHash = Convert.ToHexString(sha256.ComputeHash(Encoding.UTF8.GetBytes(signData.ToString()))).ToLowerInvariant();
+        // Tính HMACSHA512
+        var computedHash = ComputeHash(signData.ToString());
 
         if (!string.Equals(providedHash, computedHash, StringComparison.OrdinalIgnoreCase))
         {
@@ -97,11 +97,18 @@ public class VnPayService : IVnPayService
         {
             if (hashData.Length > 0)
                 hashData.Append('&');
-            hashData.Append($"{param.Key}={param.Value}");
+            // ✅ URL encode giá trị khi tính hash
+            hashData.Append($"{param.Key}={Uri.EscapeDataString(param.Value)}");
         }
-        hashData.Append($"&{_settings.HashSecret}");
 
-        using var sha256 = SHA256.Create();
-        return Convert.ToHexString(sha256.ComputeHash(Encoding.UTF8.GetBytes(hashData.ToString()))).ToLowerInvariant();
+        return ComputeHash(hashData.ToString());
+    }
+
+    private string ComputeHash(string data)
+    {
+        // ✅ Sử dụng HMACSHA512 thay vì SHA256
+        using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(_settings.HashSecret));
+        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
+        return Convert.ToHexString(hash).ToLowerInvariant();
     }
 }

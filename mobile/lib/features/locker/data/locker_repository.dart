@@ -13,9 +13,10 @@ class LockerRepository implements ILockerRepository {
     try {
       final response = await _apiClient.client.get('/lockers');
       if (response.statusCode == 200 && response.data is List) {
-        return (response.data as List)
-            .map((e) => LockerModel.fromJson(e as Map<String, dynamic>))
-            .toList();
+        final models = (response.data as List).map(
+          (e) => LockerModel.fromJson(e as Map<String, dynamic>),
+        );
+        return List<Locker>.from(models);
       }
       return [];
     } catch (e) {
@@ -29,9 +30,10 @@ class LockerRepository implements ILockerRepository {
     try {
       final response = await _apiClient.client.get('/lockers/available');
       if (response.statusCode == 200 && response.data is List) {
-        return (response.data as List)
-            .map((e) => LockerModel.fromJson(e as Map<String, dynamic>))
-            .toList();
+        final models = (response.data as List).map(
+          (e) => LockerModel.fromJson(e as Map<String, dynamic>),
+        );
+        return List<Locker>.from(models);
       }
       return [];
     } catch (e) {

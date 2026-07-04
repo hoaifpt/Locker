@@ -182,43 +182,55 @@ class _MapLayerState extends State<_MapLayer> {
 
     _mapboxMap?.setCamera(
       CameraOptions(
-        center: Point(
-          coordinates: Position(106.7017896, 10.7780127),
-        ), // Tọa độ Q1
+        center: Point(coordinates: Position(106.7017896, 10.7780127)),
         zoom: 14.0,
       ),
     );
 
+    // ================== KHỐI 1: load ảnh marker ==================
+    // Lỗi ở đây (nếu có) sẽ KHÔNG chặn phần tạo PointAnnotationManager ở khối 2
     try {
-      // Sửa lỗi: Phiên bản Mapbox SDK này yêu cầu cung cấp kích thước ảnh.
-      // Chúng ta sẽ decode ảnh để lấy width/height trước khi thêm vào style.
-      final ByteData byteData = await rootBundle.load(
-        'assets/green_pin.png',
-      );
-      final Uint8List markerImageBytes = byteData.buffer.asUint8List();
+      final ByteData byteData = await rootBundle.load('assets/green_pin.png');
+      final Uint8List pngBytes = byteData.buffer.asUint8List();
 
-      // Decode the image to get its dimensions
-      final ui.Codec codec = await ui.instantiateImageCodec(markerImageBytes);
+      final ui.Codec codec = await ui.instantiateImageCodec(pngBytes);
       final ui.FrameInfo frameInfo = await codec.getNextFrame();
+      final ui.Image image = frameInfo.image;
 
-      // Sửa lỗi: Gọi addStyleImage với đúng 7 tham số vị trí theo yêu cầu của SDK.
-      // Phiên bản này yêu cầu các thành phần của ảnh thay vì một đối tượng MbxImage.
-      await _mapboxMap?.style.addStyleImage(
-        'green-pin',
-        1.0, // scale (double)
-        MbxImage(
-          width: 64, // double
-          height: 64, // double
-          data: markerImageBytes,
-        ),
-        false, // sdf (bool)
-        <ImageStretches>[], // stretchX
-        <ImageStretches>[], // stretchY
-        null, // content (ImageContent?)
+      // Lấy đúng raw RGBA pixel data (đã decode), không dùng bytes PNG nén nữa
+      final ByteData? rawRgba = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
       );
-      log('[Map] Custom marker image loaded and added to style.');
 
-      // GIỚI HẠN CAMERA CHỈ Ở VIỆT NAM
+      if (rawRgba != null) {
+        final Uint8List rawBytes = rawRgba.buffer.asUint8List();
+
+        await _mapboxMap?.style.addStyleImage(
+          'green-pin',
+          1.0,
+          MbxImage(
+            width: image.width, // ✅ size thật của ảnh, không hardcode 64
+            height: image.height, // ✅
+            data: rawBytes, // ✅ raw RGBA, không phải PNG nén
+          ),
+          false,
+          <ImageStretches>[],
+          <ImageStretches>[],
+          null,
+        );
+        log('[Map] Custom marker image loaded and added to style.');
+      }
+
+      image.dispose(); // giải phóng bộ nhớ native, tránh leak
+    } catch (e, stackTrace) {
+      log(
+        '[Map] Lỗi load marker image (bỏ qua, sẽ không có icon custom): $e',
+        stackTrace: stackTrace,
+      );
+    }
+
+    // ================== KHỐI 2: setup manager, luôn chạy ==================
+    try {
       _mapboxMap?.setBounds(
         CameraBoundsOptions(
           bounds: CoordinateBounds(
@@ -230,36 +242,44 @@ class _MapLayerState extends State<_MapLayer> {
         ),
       );
 
-      // Tạo manager cho các điểm annotation (marker)
+      log('[Map] Creating PointAnnotationManager...');
       final manager = await mapboxMap.annotations
           .createPointAnnotationManager();
       _pointAnnotationManager = manager;
-      log('[Map] PointAnnotationManager created.');
+      log('[Map] PointAnnotationManager created successfully.');
 
-      // Đăng ký sự kiện nhấn vào marker
       manager.tapEvents(
         onTap: (tappedAnnotation) {
           log('[Map] Tapped annotation: ${tappedAnnotation.id}');
           final restaurantId = _markerToRestaurantIdMap[tappedAnnotation.id];
           if (restaurantId != null) {
+            log('[Map] Selecting restaurant: $restaurantId');
             context.read<FoodOrderCubit>().selectRestaurant(restaurantId);
+          } else {
+            log(
+              '[Map] Restaurant ID not found for annotation ${tappedAnnotation.id}',
+            );
           }
         },
       );
 
-      // GIẢI PHÁP CHO RACE CONDITION: Kiểm tra state hiện tại ngay khi manager sẵn sàng.
       final currentState = context.read<FoodOrderCubit>().state;
       log(
-        '[Map] Checking state: ${currentState.restaurants.length} restaurants',
+        '[Map] Checking initial state: ${currentState.restaurants.length} restaurants, isLoading: ${currentState.isLoading}',
       );
       if (currentState.restaurants.isNotEmpty) {
         log('[Map] Initial data found, updating annotations.');
         _updateAnnotations(currentState.restaurants);
+      } else {
+        log('[Map] No initial data yet - BlocListener will handle updates');
       }
 
       _showUserLocation();
     } catch (e, stackTrace) {
-      log('[Map] Error during map setup: $e', stackTrace: stackTrace);
+      log(
+        '[Map] Error creating annotation manager: $e',
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -310,7 +330,14 @@ class _MapLayerState extends State<_MapLayer> {
       return;
     }
 
+    log(
+      '[Map] _updateAnnotations called with ${restaurants.length} restaurants',
+    );
+
     final options = restaurants.map((res) {
+      log(
+        '[Map] Creating annotation for ${res.name} - lat: ${res.latitude}, lng: ${res.longitude}',
+      );
       return mapbox.PointAnnotationOptions(
         geometry: mapbox.Point(
           coordinates: mapbox.Position(res.longitude, res.latitude),
@@ -325,22 +352,34 @@ class _MapLayerState extends State<_MapLayer> {
     _markerToRestaurantIdMap.clear();
 
     if (options.isNotEmpty) {
-      final newAnnotations = await _pointAnnotationManager?.createMulti(
-        options,
-      );
-      log('[Map] Created ${newAnnotations?.length ?? 0} new annotations.');
-      if (newAnnotations != null) {
-        for (int i = 0; i < newAnnotations.length; i++) {
-          final PointAnnotation? annotation = newAnnotations[i];
-          if (annotation != null) {
-            final res = restaurants[i];
-            if (res.id.isNotEmpty) {
-              _annotations[res.id] = annotation;
-              _markerToRestaurantIdMap[annotation.id] = res.id;
+      log('[Map] Creating ${options.length} annotations...');
+      try {
+        final newAnnotations = await _pointAnnotationManager?.createMulti(
+          options,
+        );
+        log(
+          '[Map] Created ${newAnnotations?.length ?? 0} new annotations successfully.',
+        );
+        if (newAnnotations != null) {
+          for (int i = 0; i < newAnnotations.length; i++) {
+            final PointAnnotation? annotation = newAnnotations[i];
+            if (annotation != null) {
+              final res = restaurants[i];
+              if (res.id.isNotEmpty) {
+                _annotations[res.id] = annotation;
+                _markerToRestaurantIdMap[annotation.id] = res.id;
+                log(
+                  '[Map] Mapped annotation ${annotation.id} to restaurant ${res.name}',
+                );
+              }
             }
           }
         }
+      } catch (e, stackTrace) {
+        log('[Map] Error creating annotations: $e', stackTrace: stackTrace);
       }
+    } else {
+      log('[Map] No options to create - restaurants list may be empty');
     }
   }
 
@@ -367,18 +406,30 @@ class _MapLayerState extends State<_MapLayer> {
   Widget build(BuildContext context) {
     return BlocListener<FoodOrderCubit, FoodOrderState>(
       listener: (context, state) {
+        log(
+          '[Screen] BlocListener triggered - restaurants: ${state.restaurants.length}, isLoading: ${state.isLoading}',
+        );
+
         if (state.restaurants.isNotEmpty) {
-          log('[Map] BlocListener: ${state.restaurants.length} restaurants');
+          log(
+            '[Screen] BlocListener: ${state.restaurants.length} restaurants received, calling _updateAnnotations',
+          );
           _updateAnnotations(
             state.restaurants,
           ); // ✅ luôn gọi, _updateAnnotations tự check null
+        } else {
+          log('[Screen] BlocListener: restaurants list is empty');
         }
 
         if (state.selectedRestaurant != null) {
+          log(
+            '[Screen] Selected restaurant: ${state.selectedRestaurant?.name}',
+          );
           _flyTo(state.selectedRestaurant!);
         }
 
         if (state.restaurants.isNotEmpty && !_initialCameraSet) {
+          log('[Screen] Setting initial camera position');
           _mapboxMap?.setCamera(
             CameraOptions(
               center: Point(

@@ -192,7 +192,8 @@ class SendReceiveScreen extends StatelessWidget {
                               .toList()[index];
                           final isSelected =
                               state.selectedLockerId == locker.id;
-                          final isOccupied = locker.isOccupied;
+                          // TODO: Logic isOccupied cần được xử lý lại vì Locker entity không có thuộc tính này. Tạm thời coi là false.
+                          const isOccupied = false;
 
                           return GestureDetector(
                             onTap: isOccupied
@@ -218,7 +219,7 @@ class SendReceiveScreen extends StatelessWidget {
                               ),
                               child: Center(
                                 child: Text(
-                                  locker.code,
+                                  locker.name,
                                   style: TextStyle(
                                     color: isSelected
                                         ? Colors.white
@@ -558,11 +559,11 @@ class SendReceiveScreen extends StatelessWidget {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Column(
+        title: const Column(
           children: [
-            const Icon(Icons.check_circle, color: Color(0xFFF27B50), size: 64),
-            const SizedBox(height: 16),
-            const Text(
+            Icon(Icons.check_circle, color: Color(0xFFF27B50), size: 64),
+            SizedBox(height: 16),
+            Text(
               'Thành công!',
               textAlign: TextAlign.center,
               style: TextStyle(

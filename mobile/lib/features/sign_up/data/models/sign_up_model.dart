@@ -2,17 +2,20 @@ import '../../domain/entities/sign_up_request.dart';
 
 class SignUpRequestModel extends SignUpRequest {
   SignUpRequestModel({
+    required super.username,
     required super.fullName,
     required super.email,
     required super.password,
+    required super.phoneNumber,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'username': email,
+      'username': username,
       'email': email,
       'fullName': fullName,
       'password': password,
+      'phoneNumber': phoneNumber,
     };
   }
 }

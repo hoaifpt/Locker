@@ -25,12 +25,18 @@ class RestaurantRepository implements IRestaurantRepository {
 
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> data = response.data as List<dynamic>;
+        log('[Repo] API returned ${data.length} items');
+
         final models = data
             .map((json) => RestaurantModel.fromJson(json))
             .toList();
 
         // Ánh xạ từ Data Model sang Domain Entity thay vì ép kiểu không an toàn
-        return models.map((model) {
+        final restaurants = models.map((model) {
+          final lat = model.location.coordinates.lat.toDouble();
+          final lng = model.location.coordinates.lng.toDouble();
+          log('[Repo] Restaurant: ${model.name} - lat: $lat, lng: $lng');
+
           return Restaurant(
             id: model.id,
             name: model.name,
@@ -38,18 +44,21 @@ class RestaurantRepository implements IRestaurantRepository {
             address: model.address,
             imageUrl: model.imageUrl,
             rating: model.rating,
-            longitude: model.location.coordinates.lng.toDouble(),
-            latitude: model.location.coordinates.lat.toDouble(),
+            longitude: lng,
+            latitude: lat,
             distanceKm: 0.0, // Giá trị mặc định, sẽ được tính toán sau
             isOpen: true, // Giá trị mặc định
           );
         }).toList();
+
+        log('[Repo] Returning ${restaurants.length} restaurants');
+        return restaurants;
       } else {
-        // If the response is not as expected, return an empty list or throw an exception
+        log('[Repo] Unexpected response: ${response.statusCode}');
         return [];
       }
-    } catch (e) {
-      // In case of any error, return an empty list or rethrow
+    } catch (e, stackTrace) {
+      log('[Repo] Error: $e', stackTrace: stackTrace);
       return [];
     }
   }

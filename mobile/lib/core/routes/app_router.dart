@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../features/wallet/presentation/controllers/wallet_cubit.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/sign_up/presentation/pages/sign_up_page.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
 import '../../features/food_order/presentation/pages/food_order_page.dart';
 import '../../features/food_order/presentation/pages/food_cart_payment_page.dart';
+import '../../features/wallet/presentation/pages/top_up_page.dart';
 import '../../features/menu/presentation/pages/menu_page.dart';
 import '../../features/payment_success/domain/entities/payment_success_info.dart';
 import '../../features/payment_success/presentation/pages/payment_success_page.dart';
@@ -40,6 +42,13 @@ class AppRouter {
     '/home': (context) => const HomePage(),
     '/profile': (context) => const ProfilePage(),
     '/wallet': (context) => const WalletPage(),
+    '/top-up': (context) {
+      final walletCubit =
+          ModalRoute.of(context)?.settings.arguments as WalletCubit?;
+      return walletCubit != null
+          ? BlocProvider.value(value: walletCubit, child: const TopUpPage())
+          : const TopUpPage(); // Or a fallback/error widget
+    },
     '/orders': (context) => const OrdersPage(),
     '/send-receive': (context) => const SendReceivePage(),
     '/delivery': (context) => const delivery.SendReceivePage(),

@@ -14,12 +14,15 @@ class LockerSizeModel extends LockerSize {
 
   factory LockerSizeModel.fromJson(Map<String, dynamic> json) {
     return LockerSizeModel(
-      id: json['id'] as String,
-      size: json['size'] as String,
-      price: json['price'] as int,
-      dimensions: json['dimensions'] as String,
-      isRecommended: json['isRecommended'] as bool? ?? false,
-      imageAsset: json['imageAsset'] as String,
+      id: json['id']?.toString() ?? '',
+      size: json['size']?.toString() ?? '',
+      price: (json['pricePerHour'] as num?)?.toInt() ?? 0,
+      dimensions: json['dimensions']?.toString() ?? 'N/A',
+      // API trả về 'isActive', ta ánh xạ nó sang 'isRecommended'.
+      isRecommended: json['isActive'] as bool? ?? false,
+      // API không trả về 'imageAsset'. Cung cấp một giá trị tạm thời.
+      imageAsset:
+          'assets/images/locker_default.png', // TODO: Cập nhật lại đường dẫn ảnh thực tế
     );
   }
 

@@ -73,7 +73,7 @@ public static class DbSeeder
             var fullName = customerNames[idx];
             var phone = customerPhones[idx];
             var email = $"{uName}@gmail.com";
-            
+
             var u = await userManager.FindByNameAsync(uName);
             var id = u?.Id ?? Guid.NewGuid();
             await CreateUserAsync(userManager, id, uName, email, phone, "User", fullName, defaultPassword);
@@ -92,7 +92,7 @@ public static class DbSeeder
             var fullName = shipperNames[idx];
             var phone = shipperPhones[idx];
             var email = $"{uName}@fastdelivery.com";
-            
+
             var u = await userManager.FindByNameAsync(uName);
             var id = u?.Id ?? Guid.NewGuid();
             await CreateUserAsync(userManager, id, uName, email, phone, "Shipper", fullName, defaultPassword);
@@ -553,12 +553,6 @@ public static class DbSeeder
             {
                 existingUser.EmailConfirmed = true;
                 existingUser.PhoneNumberConfirmed = true;
-                needUpdate = true;
-            }
-            if (!await userManager.CheckPasswordAsync(existingUser, password))
-            {
-                await userManager.RemovePasswordAsync(existingUser);
-                await userManager.AddPasswordAsync(existingUser, password);
                 needUpdate = true;
             }
             if (needUpdate)

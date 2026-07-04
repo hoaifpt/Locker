@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/exceptions/app_exception.dart';
-import '../../../core/constants/api_endpoints.dart';
 import '../domain/entities/wallet_overview.dart';
 import '../domain/entities/wallet_transaction.dart';
 import '../domain/repositories/i_wallet_repository.dart';
@@ -88,7 +87,7 @@ class WalletRepository implements IWalletRepository {
         data: {'amount': amount},
       );
       if (response.statusCode == 200) {
-        return response.data['url'];
+        return response.data['vnPayUrl'];
       }
       throw NetworkException('VNPay initialization failed');
     } catch (e) {

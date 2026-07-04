@@ -4,6 +4,10 @@ import '../domain/entities/locker_detail.dart';
 import '../domain/repositories/i_locker_detail_repository.dart';
 import 'models/locker_detail_model.dart';
 
+final _guidPattern = RegExp(
+  r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
+);
+
 class LockerDetailRepository implements ILockerDetailRepository {
   final ApiClient _apiClient = ApiClient();
 
@@ -11,16 +15,64 @@ class LockerDetailRepository implements ILockerDetailRepository {
   @override
   Future<LockerDetail> getLockerDetail(String lockerId) async {
     try {
-      final response = await _apiClient.client.get('/lockers/$lockerId');
+      final normalizedId = lockerId.trim();
+      if (normalizedId.isEmpty) {
+        throw NetworkException('Không có mã tủ để tải');
+      }
+
+      final resolvedId = await _resolveLockerId(normalizedId);
+      final response = await _apiClient.client.get(
+        '/lockers/${Uri.encodeComponent(resolvedId)}',
+      );
       if (response.statusCode == 200) {
         return LockerDetailModel.fromJson(
-            response.data as Map<String, dynamic>);
+          response.data as Map<String, dynamic>,
+        );
       }
       throw NetworkException('Không tải được chi tiết tủ');
     } catch (e) {
       if (e is AppException) rethrow;
       throw NetworkException('Lỗi khi tải chi tiết tủ: $e');
     }
+  }
+
+  Future<String> _resolveLockerId(String lockerId) async {
+    if (_guidPattern.hasMatch(lockerId)) {
+      return lockerId;
+    }
+
+    final response = await _apiClient.client.get('/lockers');
+    if (response.statusCode != 200 || response.data is! List) {
+      return lockerId;
+    }
+
+    final lockers = response.data as List;
+    for (final entry in lockers) {
+      if (entry is! Map<String, dynamic>) {
+        continue;
+      }
+
+      final candidateId = (entry['_id'] ?? entry['id'])?.toString() ?? '';
+      final candidateCode = (entry['name'] ?? entry['code'])?.toString() ?? '';
+      final normalizedInput = lockerId.toLowerCase();
+      final normalizedCode = candidateCode.toLowerCase();
+      final normalizedCodeWithoutSpaces = normalizedCode.replaceAll(' ', '');
+      final normalizedInputWithoutSpaces = normalizedInput.replaceAll(' ', '');
+
+      if (candidateId.isNotEmpty &&
+          (candidateId.toLowerCase() == normalizedInput ||
+              candidateId.toLowerCase() == normalizedInputWithoutSpaces)) {
+        return candidateId;
+      }
+
+      if (candidateCode.isNotEmpty &&
+          (normalizedCode == normalizedInput ||
+              normalizedCodeWithoutSpaces == normalizedInputWithoutSpaces)) {
+        return candidateId.isNotEmpty ? candidateId : lockerId;
+      }
+    }
+
+    return lockerId;
   }
 
   /// POST /api/lockers/{id}/open — mở khóa tủ
@@ -38,8 +90,10 @@ class LockerDetailRepository implements ILockerDetailRepository {
 
   /// PATCH /api/lockers/{id}/settings — cập nhật tự động khóa
   @override
-  Future<LockerDetail> updateAutoLock(String lockerId,
-      {required bool enabled}) async {
+  Future<LockerDetail> updateAutoLock(
+    String lockerId, {
+    required bool enabled,
+  }) async {
     try {
       final response = await _apiClient.client.patch(
         '/lockers/$lockerId/settings',
@@ -53,8 +107,10 @@ class LockerDetailRepository implements ILockerDetailRepository {
 
   /// PATCH /api/lockers/{id}/settings — cập nhật cảnh báo xâm nhập
   @override
-  Future<LockerDetail> updateIntrusionAlert(String lockerId,
-      {required bool enabled}) async {
+  Future<LockerDetail> updateIntrusionAlert(
+    String lockerId, {
+    required bool enabled,
+  }) async {
     try {
       final response = await _apiClient.client.patch(
         '/lockers/$lockerId/settings',

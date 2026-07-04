@@ -16,9 +16,12 @@ class SignUpRepository implements ISignUpRepository {
       final response = await _apiClient.client.post(
         '/auth/register',
         data: SignUpRequestModel(
+          username: request.username,
           fullName: request.fullName,
           email: request.email,
           password: request.password,
+          phoneNumber: request.phoneNumber,
+
         ).toJson(),
       );
 

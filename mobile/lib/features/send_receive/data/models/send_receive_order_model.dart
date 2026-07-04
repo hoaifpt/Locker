@@ -19,13 +19,13 @@ class SendReceiveOrderModel extends SendReceiveOrder {
     return SendReceiveOrderModel(
       id: json['id'] as String,
       lockerId: json['lockerId'] as String,
-      lockerCode: json['lockerCode'] as String,
-      location: json['location'] as String,
+      lockerCode: (json['lockerCode'] as String?) ?? 'N/A',
+      location: (json['location'] as String?) ?? 'Unknown Location',
       size: LockerSizeModel.fromJson(json['size'] as Map<String, dynamic>),
       duration: StorageDurationModel.fromJson(
         json['duration'] as Map<String, dynamic>,
       ),
-      estimatedFee: json['estimatedFee'] as int,
+      estimatedFee: (json['estimatedFee'] as num?)?.toInt() ?? 0,
       status: json['status'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );

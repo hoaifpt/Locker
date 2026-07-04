@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:locker_mobile/features/change_password/domain/repositories/i_change_password_repository.dart';
 import 'package:locker_mobile/core/constants/api_endpoints.dart';
 import 'package:locker_mobile/core/constants/app_constants.dart';

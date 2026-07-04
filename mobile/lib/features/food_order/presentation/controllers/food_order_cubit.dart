@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:locker_mobile/features/food_order/domain/entities/restaurant_pin.dart';
 import 'package:locker_mobile/features/restaurant_map/domain/usecases/get_nearby_restaurants_usecase.dart';
+import 'dart:developer';
 import 'food_order_state.dart';
 
 class FoodOrderCubit extends Cubit<FoodOrderState> {
@@ -11,12 +12,21 @@ class FoodOrderCubit extends Cubit<FoodOrderState> {
       super(FoodOrderState.initial());
 
   Future<void> load() async {
+    log('[Cubit] Starting load()');
     // 1. Đặt isLoading = true
     emit(state.copyWith(isLoading: true));
 
     // 2. Lấy danh sách nhà hàng từ usecase (tọa độ giả định)
     // TODO: Thay thế bằng vị trí thực của người dùng
+    log('[Cubit] Calling GetNearbyRestaurants with coords (10.8231, 106.6297)');
     final restaurants = await _getNearbyRestaurants(10.8231, 106.6297);
+
+    log('[Cubit] Received ${restaurants.length} restaurants from usecase');
+    for (var r in restaurants) {
+      log(
+        '[Cubit] Restaurant: ${r.name} - lat: ${r.latitude}, lng: ${r.longitude}',
+      );
+    }
 
     // 3. Chuyển đổi từ Restaurant sang RestaurantPin
     final pins = restaurants.map((restaurant) {
@@ -36,22 +46,28 @@ class FoodOrderCubit extends Cubit<FoodOrderState> {
     }).toList();
 
     // 4. Phát ra state mới với cả danh sách gốc và danh sách pin
-    emit(
-      state.copyWith(
-        isLoading: false,
-        restaurants: restaurants,
-        pins: pins,
-        selectedRestaurantId: null,
-      ),
+    final newState = state.copyWith(
+      isLoading: false,
+      restaurants: restaurants,
+      pins: pins,
+      selectedRestaurantId: null,
     );
+
+    log(
+      '[Cubit] Emitting new state with ${newState.restaurants.length} restaurants',
+    );
+    emit(newState);
+    log('[Cubit] State emitted successfully');
   }
 
   void selectRestaurant(String id) {
+    log('[Cubit] selectRestaurant($id)');
     emit(state.copyWith(selectedRestaurantId: id));
   }
 
   /// Xóa nhà hàng đang được chọn, dùng để ẩn BottomSheet
   void clearSelection() {
+    log('[Cubit] clearSelection()');
     emit(state.copyWith(clearSelection: true));
   }
 }

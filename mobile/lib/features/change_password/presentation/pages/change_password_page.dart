@@ -210,7 +210,7 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: const Color(0x19EE8C2B), width: 1),
+              borderSide: const BorderSide(color: Color(0x19EE8C2B), width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

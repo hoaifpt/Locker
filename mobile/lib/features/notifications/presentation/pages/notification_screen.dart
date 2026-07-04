@@ -4,8 +4,6 @@ import '../../domain/entities/notification.dart';
 import '../controllers/notification_cubit.dart';
 import '../controllers/notification_state.dart';
 import '../widgets/index.dart';
-import '../../../../features/delivery/presentation/controllers/delivery_cubit.dart';
-import '../../../../features/delivery/domain/usecases/submit_receive_code_usecase.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});

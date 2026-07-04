@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/wallet_repository.dart';
 // ...existing code...
@@ -8,7 +7,6 @@ import '../../domain/entities/wallet_transaction.dart';
 import '../../domain/usecases/get_wallet_overview_usecase.dart';
 import '../controllers/wallet_cubit.dart';
 import '../controllers/wallet_state.dart';
-import 'top_up_page.dart';
 import '../widgets/index.dart';
 
 class WalletPage extends StatelessWidget {
@@ -122,11 +120,10 @@ class _WalletView extends StatelessWidget {
                               monthlyChange: overview.monthlyChange,
                               points: overview.points,
                               onTopUp: () {
-                                Navigator.push(
+                                Navigator.pushNamed(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const TopUpPage(),
-                                  ),
+                                  '/top-up',
+                                  arguments: context.read<WalletCubit>(),
                                 );
                               },
                               onWithdraw: () {},

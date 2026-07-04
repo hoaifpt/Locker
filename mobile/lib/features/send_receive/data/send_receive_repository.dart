@@ -1,3 +1,8 @@
+import 'package:dio/dio.dart';
+
+import '../../../core/constants/api_endpoints.dart';
+import '../../../core/exceptions/app_exception.dart';
+import '../../../core/network/api_client.dart';
 import '../domain/entities/locker_size.dart';
 import '../domain/entities/send_receive_order.dart';
 import '../domain/entities/storage_duration.dart';
@@ -7,32 +12,7 @@ import 'models/send_receive_order_model.dart';
 import 'models/storage_duration_model.dart';
 
 class SendReceiveRepository implements ISendReceiveRepository {
-  static const _lockerSizes = <LockerSizeModel>[
-    LockerSizeModel(
-      id: 'size-s',
-      size: 'S',
-      price: 15000,
-      dimensions: '30x25x15cm',
-      isRecommended: false,
-      imageAsset: 'assets/Container.png',
-    ),
-    LockerSizeModel(
-      id: 'size-m',
-      size: 'M',
-      price: 25000,
-      dimensions: '45x35x25cm',
-      isRecommended: true,
-      imageAsset: 'assets/Medium size locker compartment.png',
-    ),
-    LockerSizeModel(
-      id: 'size-l',
-      size: 'L',
-      price: 45000,
-      dimensions: '60x50x40cm',
-      isRecommended: false,
-      imageAsset: 'assets/Large size locker compartment.png',
-    ),
-  ];
+  final ApiClient _apiClient = ApiClient();
 
   static const _storageDurations = <StorageDurationModel>[
     StorageDurationModel(
@@ -63,8 +43,23 @@ class SendReceiveRepository implements ISendReceiveRepository {
 
   @override
   Future<List<LockerSize>> getAvailableLockerSizes() async {
-    await Future<void>.delayed(const Duration(milliseconds: 120));
-    return _lockerSizes;
+    try {
+      final response = await _apiClient.client.get(ApiEndpoints.packages);
+      if (response.data != null && response.data is List) {
+        return (response.data as List)
+            .map((e) => LockerSizeModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        throw NetworkException('Không nhận được dữ liệu kích thước tủ.');
+      }
+    } on DioException catch (e) {
+      if (e.response?.data != null && e.response?.data['message'] is String) {
+        throw ValidationException(e.response!.data['message']);
+      }
+      throw NetworkException('Lỗi khi tải kích thước tủ: ${e.message}');
+    } catch (e) {
+      throw AppException('Đã xảy ra lỗi không mong muốn: $e');
+    }
   }
 
   @override
@@ -74,44 +69,70 @@ class SendReceiveRepository implements ISendReceiveRepository {
   }
 
   @override
-  Future<SendReceiveOrder> createSendReceiveOrder({
+  Future<Map<String, dynamic>> createSendReceiveOrder({
     required String lockerId,
-    required String sizeId,
-    required String durationId,
+    required int slotIndex,
+    required String packageId,
+    required int durationHours,
+    required String mobileNumber,
+    required DateTime checkInTime,
+    String? couponCode,
+    String? notes,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-
-    final size = _lockerSizes.firstWhere((s) => s.id == sizeId);
-    final duration = _storageDurations.firstWhere((d) => d.id == durationId);
-
-    return SendReceiveOrderModel(
-      id: 'order-${DateTime.now().millisecondsSinceEpoch}',
-      lockerId: lockerId,
-      lockerCode: 'Locker A-102',
-      location: 'Khu vực Q1, TP.HCM',
-      size: size,
-      duration: duration,
-      estimatedFee: size.price,
-      status: 'pending',
-      createdAt: DateTime.now(),
-    );
+    try {
+      final response = await _apiClient.client.post(
+        ApiEndpoints.ordersReserve,
+        data: {
+          'lockerId': lockerId,
+          'slotIndex': slotIndex,
+          'packageId': packageId,
+          'durationHours': durationHours,
+          'mobileNumber': mobileNumber,
+          'checkInTime': checkInTime.toUtc().toIso8601String(),
+          'couponCode': couponCode,
+          'notes': notes,
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      // Xử lý lỗi validation từ ASP.NET Core một cách chi tiết
+      if (e.response?.statusCode == 400 && e.response?.data is Map) {
+        final responseData = e.response!.data as Map<String, dynamic>;
+        final title = responseData['title'] as String? ?? 'Lỗi validation';
+        if (responseData.containsKey('errors')) {
+          final errors = responseData['errors'] as Map<String, dynamic>;
+          // Lấy thông báo lỗi của trường đầu tiên
+          final firstErrorField = errors.values.first as List<dynamic>;
+          throw ValidationException('$title: ${firstErrorField.first}');
+        }
+      }
+      throw NetworkException('Lỗi mạng khi tạo đơn hàng: ${e.message}');
+    } catch (e) {
+      throw AppException('Đã xảy ra lỗi không mong muốn: $e');
+    }
   }
 
   @override
   Future<SendReceiveOrder> getOrderById(String orderId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 120));
-
-    return SendReceiveOrderModel(
-      id: orderId,
-      lockerId: 'locker-001',
-      lockerCode: 'Locker A-102',
-      location: 'Khu vực Q1, TP.HCM',
-      size: _lockerSizes.first,
-      duration: _storageDurations[1],
-      estimatedFee: _lockerSizes.first.price,
-      status: 'active',
-      createdAt: DateTime.now(),
-    );
+    try {
+      final response = await _apiClient.client.get(
+        ApiEndpoints.orderById(orderId),
+      );
+      if (response.data != null) {
+        return SendReceiveOrderModel.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+      } else {
+        throw NetworkException('Không nhận được dữ liệu đơn hàng.');
+      }
+    } on DioException catch (e) {
+      if (e.response?.data != null && e.response?.data['message'] is String) {
+        throw ValidationException(e.response!.data['message']);
+      }
+      throw NetworkException('Lỗi khi tải thông tin đơn hàng: ${e.message}');
+    } catch (e) {
+      throw AppException('Đã xảy ra lỗi không mong muốn: $e');
+    }
   }
 
   @override

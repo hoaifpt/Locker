@@ -47,46 +47,43 @@ class _LockerScreenState extends State<LockerScreen> {
       appBar: AppBar(
         title: const Text('Tủ khả dụng'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadData,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_errorMessage!),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: _loadData,
-                        child: const Text('Thử lại'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_errorMessage!),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: _loadData,
+                    child: const Text('Thử lại'),
                   ),
-                )
-              : _lockers.isEmpty
-                  ? const Center(child: Text('Không có tủ khả dụng'))
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _lockers.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final locker = _lockers[index];
-                        return _LockerCard(
-                          locker: locker,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/locker-detail',
-                            arguments: locker.id,
-                          ),
-                        );
-                      },
-                    ),
+                ],
+              ),
+            )
+          : _lockers.isEmpty
+          ? const Center(child: Text('Không có tủ khả dụng'))
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: _lockers.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final locker = _lockers[index];
+                return _LockerCard(
+                  locker: locker,
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '/locker-detail',
+                    arguments: locker.id,
+                  ),
+                );
+              },
+            ),
     );
   }
 }
@@ -104,16 +101,21 @@ class _LockerCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10,
+        ),
         leading: CircleAvatar(
           backgroundColor: cs.primary.withValues(alpha: 0.15),
           child: Icon(Icons.inbox, color: cs.primary),
         ),
-        title: Text(locker.code,
-            style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(
+          locker.name,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
         subtitle: Text(
-            locker.location.isEmpty ? 'Không có địa chỉ' : locker.location),
+          locker.location.isEmpty ? 'Không có địa chỉ' : locker.location,
+        ),
         trailing: Icon(Icons.chevron_right, color: cs.primary),
         onTap: onTap,
       ),

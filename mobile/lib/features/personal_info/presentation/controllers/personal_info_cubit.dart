@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/entities/personal_info_overview.dart';
 import '../../domain/repositories/i_personal_info_repository.dart';
 import '../../domain/usecases/get_personal_info_overview_usecase.dart';
 import 'personal_info_state.dart';

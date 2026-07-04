@@ -13,12 +13,20 @@ class SignUpCubit extends Cubit<SignUpState> {
     emit(state.copyWith(fullName: name));
   }
 
+  void setUsername(String username) {
+    emit(state.copyWith(username: username));
+  }
+
   void setEmail(String email) {
     emit(state.copyWith(email: email));
   }
 
   void setPassword(String password) {
     emit(state.copyWith(password: password));
+  }
+
+  void setPhoneNumber(String phoneNumber) {
+    emit(state.copyWith(phoneNumber: phoneNumber));
   }
 
   Future<void> signUp() async {
@@ -28,26 +36,40 @@ class SignUpCubit extends Cubit<SignUpState> {
 
     try {
       final request = SignUpRequest(
+        username: state.username,
         fullName: state.fullName,
         email: state.email,
         password: state.password,
+        phoneNumber: state.phoneNumber,
       );
 
       final response = await signUpUseCase(request);
 
-      emit(state.copyWith(
-        isLoading: false,
-        response: response,
-      ));
+      emit(state.copyWith(isLoading: false, response: response));
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        errorMessage: 'Đăng ký thất bại: ${e.toString()}',
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: 'Đăng ký thất bại: ${e.toString()}',
+        ),
+      );
     }
   }
 
   bool _validateInputs() {
+    if (state.username.isEmpty) {
+      emit(state.copyWith(errorMessage: 'Vui lòng nhập username'));
+      return false;
+    }
+    if (!_isValidUsername(state.username)) {
+      emit(
+        state.copyWith(
+          errorMessage:
+              'Username chỉ được chứa chữ cái, số và dấu gạch dưới (_)',
+        ),
+      );
+      return false;
+    }
     if (state.fullName.isEmpty) {
       emit(state.copyWith(errorMessage: 'Vui lòng nhập họ và tên'));
       return false;
@@ -56,11 +78,19 @@ class SignUpCubit extends Cubit<SignUpState> {
       emit(state.copyWith(errorMessage: 'Vui lòng nhập email hợp lệ'));
       return false;
     }
+    if (state.phoneNumber.isEmpty) {
+      emit(state.copyWith(errorMessage: 'Vui lòng nhập số điện thoại'));
+      return false;
+    }
     if (state.password.isEmpty || state.password.length < 6) {
       emit(state.copyWith(errorMessage: 'Mật khẩu phải có ít nhất 6 ký tự'));
       return false;
     }
     return true;
+  }
+
+  bool _isValidUsername(String username) {
+    return RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(username);
   }
 
   bool _isValidEmail(String email) {

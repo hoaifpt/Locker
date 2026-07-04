@@ -18,12 +18,12 @@ class LockerDetailModel extends LockerDetail {
   factory LockerDetailModel.fromJson(Map<String, dynamic> json) {
     return LockerDetailModel(
       id: json['id']?.toString() ?? '',
-      code: json['code']?.toString() ?? '',
+      code: json['name']?.toString() ?? json['code']?.toString() ?? '',
       doorStatus: json['doorStatus']?.toString() == 'open'
           ? LockerDoorStatus.open
           : LockerDoorStatus.closed,
-      batteryPercent: (json['batteryPercent'] as num?)?.toInt() ?? 0,
-      remainingHours: (json['remainingHours'] as num?)?.toInt() ?? 0,
+      batteryPercent: (json['batteryPercent'] as num?)?.toInt() ?? 75,
+      remainingHours: (json['remainingHours'] as num?)?.toInt() ?? 24,
       isAutoLockEnabled: json['isAutoLockEnabled'] as bool? ?? false,
       isIntrusionAlertEnabled:
           json['isIntrusionAlertEnabled'] as bool? ?? false,

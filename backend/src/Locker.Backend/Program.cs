@@ -172,15 +172,15 @@ builder.Services.AddAuthentication(options =>
         {
             context.Response.StatusCode = 403;
             context.Response.ContentType = "application/json";
-            
+
             var endpoint = context.HttpContext.GetEndpoint();
             var authorizeAttributes = endpoint?.Metadata.GetOrderedMetadata<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>();
             var requiredRoles = string.Join(", ", authorizeAttributes?.Where(a => !string.IsNullOrWhiteSpace(a.Roles)).Select(a => a.Roles) ?? Array.Empty<string>());
-            
-            var message = string.IsNullOrEmpty(requiredRoles) 
-                ? "Bạn không có quyền truy cập vào chức năng này." 
+
+            var message = string.IsNullOrEmpty(requiredRoles)
+                ? "Bạn không có quyền truy cập vào chức năng này."
                 : $"Bạn không có quyền truy cập. Yêu cầu một trong các quyền sau: {requiredRoles}.";
-                
+
             return Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(context.Response, new { error = "Forbidden", message = message });
         }
     };
@@ -222,9 +222,10 @@ app.UseAuthorization();
 
 app.MapControllers().RequireRateLimiting("api");
 
-// Seed the database
-using (var scope = app.Services.CreateScope())
+var seedEnabled = builder.Configuration.GetValue<bool>("Seed:Enabled", false);
+if (seedEnabled)
 {
+    using var scope = app.Services.CreateScope();
     var serviceProvider = scope.ServiceProvider;
     await serviceProvider.UseDatabaseSeeder();
 }

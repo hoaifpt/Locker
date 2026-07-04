@@ -11,7 +11,17 @@ void main() async {
   // Đảm bảo các binding của Flutter đã được khởi tạo trước khi chạy app
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  MapboxOptions.setAccessToken(dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? "");
+
+  final mapboxToken =
+      (dotenv.env['MAPBOX_ACCESS_TOKEN'] ??
+              dotenv.env['mapbox_access_token'] ??
+              dotenv.env['MAPBOX_TOKEN'] ??
+              '')
+          .trim();
+
+  if (mapboxToken.isNotEmpty) {
+    MapboxOptions.setAccessToken(mapboxToken);
+  }
 
   // Gọi hàm cấu hình dependency injection
   configureDependencies();

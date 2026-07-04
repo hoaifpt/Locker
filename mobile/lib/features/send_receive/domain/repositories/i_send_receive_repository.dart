@@ -5,10 +5,15 @@ import '../entities/storage_duration.dart';
 abstract class ISendReceiveRepository {
   Future<List<LockerSize>> getAvailableLockerSizes();
   Future<List<StorageDuration>> getStorageDurations();
-  Future<SendReceiveOrder> createSendReceiveOrder({
+  Future<Map<String, dynamic>> createSendReceiveOrder({
     required String lockerId,
-    required String sizeId,
-    required String durationId,
+    required int slotIndex,
+    required String packageId,
+    required String mobileNumber,
+    required DateTime checkInTime,
+    required int durationHours,
+    String? couponCode,
+    String? notes,
   });
   Future<SendReceiveOrder> getOrderById(String orderId);
   Future<void> confirmOrder(String orderId);

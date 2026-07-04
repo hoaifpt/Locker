@@ -12,24 +12,30 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  late final TextEditingController _usernameController;
   late final TextEditingController _fullNameController;
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
+  late final TextEditingController _phoneNumberController;
   bool _showPassword = false;
 
   @override
   void initState() {
     super.initState();
+    _usernameController = TextEditingController();
     _fullNameController = TextEditingController();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+    _phoneNumberController = TextEditingController();
   }
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneNumberController.dispose();
     super.dispose();
   }
 
@@ -50,7 +56,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  'Đăng ký thành công. Vui lòng kiểm tra email để xác thực.'),
+                'Đăng ký thành công. Vui lòng kiểm tra email để xác thực.',
+              ),
               backgroundColor: Color(0xFF16A34A),
             ),
           );
@@ -88,13 +95,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
         Container(
           width: 64,
           height: 64,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Image.asset(
-            'assets/ebox_logo.png',
-            fit: BoxFit.contain,
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+          child: Image.asset('assets/ebox_logo.png', fit: BoxFit.contain),
         ),
         const Text(
           'Tạo tài khoản',
@@ -108,10 +110,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         const Text(
           'Tham gia E-BOX để quản lý các kiện hàng\nthông minh của bạn.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Color(0xFF757575),
-            fontSize: 16,
-          ),
+          style: TextStyle(color: Color(0xFF757575), fontSize: 16),
         ),
       ],
     );
@@ -124,11 +123,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
           spacing: 16,
           children: [
             _buildTextField(
-              controller: _fullNameController,
-              hint: 'Họ và tên',
-              prefixIcon: Icons.person_outline,
+              controller: _usernameController,
+              hint: 'Username',
+              prefixIcon: Icons.person,
               onChanged: (value) {
-                context.read<SignUpCubit>().setFullName(value);
+                context.read<SignUpCubit>().setUsername(value);
               },
             ),
             _buildTextField(
@@ -154,6 +153,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               onChanged: (value) {
                 context.read<SignUpCubit>().setPassword(value);
+              },
+            ),
+            _buildTextField(
+              controller: _fullNameController,
+              hint: 'Họ và tên',
+              prefixIcon: Icons.person_outline,
+              onChanged: (value) {
+                context.read<SignUpCubit>().setFullName(value);
+              },
+            ),
+            _buildTextField(
+              controller: _phoneNumberController,
+              hint: 'Số điện thoại',
+              prefixIcon: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+              onChanged: (value) {
+                context.read<SignUpCubit>().setPhoneNumber(value);
               },
             ),
           ],
@@ -182,7 +198,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         prefixIcon: Icon(prefixIcon, color: const Color(0xFF757575)),
         suffixIcon: suffixIcon != null
             ? Padding(
-                padding: const EdgeInsets.only(right: 12), child: suffixIcon)
+                padding: const EdgeInsets.only(right: 12),
+                child: suffixIcon,
+              )
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -196,8 +214,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFF27B50), width: 2),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 16,
+        ),
       ),
     );
   }
@@ -251,10 +271,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       children: [
         const Text(
           'Đã có tài khoản?',
-          style: TextStyle(
-            color: Color(0xFF757575),
-            fontSize: 16,
-          ),
+          style: TextStyle(color: Color(0xFF757575), fontSize: 16),
         ),
         GestureDetector(
           onTap: () => Navigator.pushReplacementNamed(context, '/login'),
@@ -275,12 +292,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Row(
       spacing: 16,
       children: [
-        Expanded(
-          child: Container(
-            height: 1,
-            color: const Color(0xFFE0E0E0),
-          ),
-        ),
+        Expanded(child: Container(height: 1, color: const Color(0xFFE0E0E0))),
         const Text(
           'HOẶC ĐĂNG KÝ VỚI',
           style: TextStyle(
@@ -290,12 +302,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             letterSpacing: 0.5,
           ),
         ),
-        Expanded(
-          child: Container(
-            height: 1,
-            color: const Color(0xFFE0E0E0),
-          ),
-        ),
+        Expanded(child: Container(height: 1, color: const Color(0xFFE0E0E0))),
       ],
     );
   }

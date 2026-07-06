@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Services/VnPayService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Services/VnPayService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/assets/green_pin.png" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/assets/green_pin.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/food_order_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/food_order_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/home/presentation/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/home/presentation/home_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/orders/data/orders_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/orders/data/orders_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/orders/presentation/pages/orders_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/orders/presentation/pages/orders_screen.dart" afterDir="false" />
-    </list>
+    <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

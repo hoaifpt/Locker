@@ -56,7 +56,8 @@ public static class DbSeeder
         }
 
         // 2. Admin
-        var adminUser = await userManager.FindByNameAsync(adminUsername);
+        var adminUser = await userManager.FindByNameAsync(adminUsername)
+                ?? await userManager.FindByEmailAsync(adminEmail);
         Guid adminId = adminUser?.Id ?? Guid.NewGuid();
         await CreateUserAsync(userManager, adminId, adminUsername, adminEmail, "0000000000", "Admin", "Administrator", adminPassword);
 
@@ -521,6 +522,12 @@ public static class DbSeeder
         string password)
     {
         var existingUser = await userManager.FindByNameAsync(username);
+
+        if (existingUser == null)
+        {
+            existingUser = await userManager.FindByEmailAsync(email);
+        }
+
         if (existingUser == null)
         {
             var user = new User
@@ -535,7 +542,9 @@ public static class DbSeeder
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
+
             var result = await userManager.CreateAsync(user, password);
+
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user, role);
@@ -548,13 +557,25 @@ public static class DbSeeder
         }
         else
         {
+            if (!await userManager.IsInRoleAsync(existingUser, role))
+            {
+                await userManager.AddToRoleAsync(existingUser, role);
+            }
+
             bool needUpdate = false;
-            if (!existingUser.EmailConfirmed || !existingUser.PhoneNumberConfirmed)
+
+            if (!existingUser.EmailConfirmed)
             {
                 existingUser.EmailConfirmed = true;
+                needUpdate = true;
+            }
+
+            if (!existingUser.PhoneNumberConfirmed)
+            {
                 existingUser.PhoneNumberConfirmed = true;
                 needUpdate = true;
             }
+
             if (needUpdate)
             {
                 await userManager.UpdateAsync(existingUser);

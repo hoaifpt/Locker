@@ -9,7 +9,6 @@ import 'controllers/food_order_cubit.dart';
 import 'controllers/food_order_state.dart';
 import 'package:locker_mobile/features/restaurant_map/domain/entities/restaurant.dart';
 import 'widgets/restaurant_bottom_sheet.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 final GlobalKey<_MapLayerState> _mapLayerKey = GlobalKey();
 
@@ -168,87 +167,42 @@ class _MapLayer extends StatefulWidget {
 }
 
 class _MapLayerState extends State<_MapLayer> {
-  MapboxMap? _mapboxMap;
-  PointAnnotationManager? _pointAnnotationManager;
-  final Map<String, PointAnnotation> _annotations = {};
+  mapbox.MapboxMap? _mapboxMap;
+  mapbox.PointAnnotationManager? _pointAnnotationManager;
+  final Map<String, mapbox.PointAnnotation> _annotations = {};
+  // Maps the Mapbox-generated annotation ID back to our restaurant ID
   final Map<String, String> _markerToRestaurantIdMap = {};
   bool _initialCameraSet = false;
-  List<Restaurant>? _pendingRestaurants;
+  bool _isStyleLoaded = false;
 
-  // Chuyển thành async để tải icon marker và cải thiện xử lý lỗi
-  void _onMapCreated(MapboxMap mapboxMap) async {
+  // Called when the map controller is ready.
+  // We initialize non-style-dependent components here.
+  void _onMapCreated(mapbox.MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
     log('[Map] Map created.');
 
-    _mapboxMap?.setCamera(
-      CameraOptions(
-        center: Point(coordinates: Position(106.7017896, 10.7780127)),
-        zoom: 14.0,
+    // Set camera constraints early.
+    _mapboxMap?.setBounds(
+      mapbox.CameraBoundsOptions(
+        bounds: mapbox.CoordinateBounds(
+          southwest: mapbox.Point(coordinates: mapbox.Position(102.1, 8.0)),
+          northeast: mapbox.Point(coordinates: mapbox.Position(109.5, 23.4)),
+          infiniteBounds: false,
+        ),
+        minZoom: 5.0,
       ),
     );
 
-    // ================== KHỐI 1: load ảnh marker ==================
-    // Lỗi ở đây (nếu có) sẽ KHÔNG chặn phần tạo PointAnnotationManager ở khối 2
+    // Create the annotation manager. This is not style-dependent.
+    log('[Map] Creating PointAnnotationManager...');
     try {
-      final ByteData byteData = await rootBundle.load('assets/green_pin.png');
-      final Uint8List pngBytes = byteData.buffer.asUint8List();
-
-      final ui.Codec codec = await ui.instantiateImageCodec(pngBytes);
-      final ui.FrameInfo frameInfo = await codec.getNextFrame();
-      final ui.Image image = frameInfo.image;
-
-      // Lấy đúng raw RGBA pixel data (đã decode), không dùng bytes PNG nén nữa
-      final ByteData? rawRgba = await image.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      );
-
-      if (rawRgba != null) {
-        final Uint8List rawBytes = rawRgba.buffer.asUint8List();
-
-        await _mapboxMap?.style.addStyleImage(
-          'green-pin',
-          1.0,
-          MbxImage(
-            width: image.width, // ✅ size thật của ảnh, không hardcode 64
-            height: image.height, // ✅
-            data: rawBytes, // ✅ raw RGBA, không phải PNG nén
-          ),
-          false,
-          <ImageStretches>[],
-          <ImageStretches>[],
-          null,
-        );
-        log('[Map] Custom marker image loaded and added to style.');
-      }
-
-      image.dispose(); // giải phóng bộ nhớ native, tránh leak
-    } catch (e, stackTrace) {
-      log(
-        '[Map] Lỗi load marker image (bỏ qua, sẽ không có icon custom): $e',
-        stackTrace: stackTrace,
-      );
-    }
-
-    // ================== KHỐI 2: setup manager, luôn chạy ==================
-    try {
-      _mapboxMap?.setBounds(
-        CameraBoundsOptions(
-          bounds: CoordinateBounds(
-            southwest: Point(coordinates: Position(102.1, 8.0)),
-            northeast: Point(coordinates: Position(109.5, 23.4)),
-            infiniteBounds: false,
-          ),
-          minZoom: 5.0,
-        ),
-      );
-
-      log('[Map] Creating PointAnnotationManager...');
       final manager = await mapboxMap.annotations
           .createPointAnnotationManager();
       _pointAnnotationManager = manager;
       log('[Map] PointAnnotationManager created successfully.');
 
-      manager.tapEvents(
+      // For SDK v2.25.0, use tapEvents to handle marker taps.
+      _pointAnnotationManager?.tapEvents(
         onTap: (tappedAnnotation) {
           log('[Map] Tapped annotation: ${tappedAnnotation.id}');
           final restaurantId = _markerToRestaurantIdMap[tappedAnnotation.id];
@@ -262,48 +216,123 @@ class _MapLayerState extends State<_MapLayer> {
           }
         },
       );
-
-      final currentState = context.read<FoodOrderCubit>().state;
-      log(
-        '[Map] Checking initial state: ${currentState.restaurants.length} restaurants, isLoading: ${currentState.isLoading}',
-      );
-      if (currentState.restaurants.isNotEmpty) {
-        log('[Map] Initial data found, updating annotations.');
-        _updateAnnotations(currentState.restaurants);
-      } else {
-        log('[Map] No initial data yet - BlocListener will handle updates');
-      }
-
-      _showUserLocation();
     } catch (e, stackTrace) {
       log(
         '[Map] Error creating annotation manager: $e',
         stackTrace: stackTrace,
       );
     }
+
+    // Show the user's blue dot location.
+    _showUserLocation();
+  }
+
+  /// Called when the map style has finished loading.
+  /// This is the correct and safe place to add images, sources, or layers.
+  void _onStyleLoaded(mapbox.StyleLoadedEventData _) async {
+    log('[Map] Style loaded.');
+    _isStyleLoaded = true;
+
+    // 1. Add the custom marker image to the map's style.
+    await _addMarkerImageToStyle();
+
+    // 2. Now that the style and image are ready, check for initial data
+    //    that might have loaded before the map was ready.
+    final currentState = context.read<FoodOrderCubit>().state;
+    if (currentState.restaurants.isNotEmpty) {
+      log('[Map] Style loaded, initial data found. Updating annotations.');
+      await _updateAnnotations(currentState.restaurants);
+    }
+  }
+
+  /// Loads the marker PNG from assets and adds it to the map's style.
+  Future<void> _addMarkerImageToStyle() async {
+    try {
+    log("========= TEST IMAGE =========");
+
+    final ByteData byteData =
+        await rootBundle.load("assets/green_pin.png");
+
+    log("Asset bytes = ${byteData.lengthInBytes}");
+
+    final Uint8List pngBytes = byteData.buffer.asUint8List();
+
+    final ui.Codec codec =
+        await ui.instantiateImageCodec(pngBytes);
+
+    final ui.FrameInfo frameInfo =
+        await codec.getNextFrame();
+
+    final ui.Image image = frameInfo.image;
+
+    log("Image width = ${image.width}");
+    log("Image height = ${image.height}");
+
+    final ByteData? rawRgbaBytes =
+        await image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
+
+    log("raw bytes null = ${rawRgbaBytes == null}");
+
+    if (rawRgbaBytes != null) {
+      log("raw bytes = ${rawRgbaBytes.lengthInBytes}");
+    }
+
+      if (rawRgbaBytes == null) {
+        log('[Map] CRITICAL: Failed to decode image to raw RGBA format.');
+        return;
+      }
+
+      await _mapboxMap?.style.addStyleImage(
+        'green-pin', // The ID we will use to reference this image.
+        1.0,
+        mapbox.MbxImage(
+          width: image.width,
+          height: image.height,
+          data: rawRgbaBytes.buffer.asUint8List(),
+        ),
+        false, // sdf
+        <mapbox.ImageStretches>[],
+        <mapbox.ImageStretches>[],
+        null,
+      );
+      log(
+        '[Map] Custom marker image "green-pin" (Size: ${image.width}x${image.height}) added to style.',
+      );
+      image.dispose(); // Release native resources
+    } catch (e, stackTrace) {
+      log(
+        '[Map] CRITICAL: Error loading marker image. Markers will not appear. Error: $e',
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   Future<void> moveToUserLocation() async {
-    log('[Debug] Nút cam đã được bấm, đang bắt đầu định vị...');
+    log('[Map] Moving to user location...');
     try {
-      // 1. Kiểm tra và xin quyền
       geo.LocationPermission permission =
           await geo.Geolocator.checkPermission();
       if (permission == geo.LocationPermission.denied) {
         permission = await geo.Geolocator.requestPermission();
       }
 
-      if (permission == geo.LocationPermission.whileInUse ||
-          permission == geo.LocationPermission.always) {
-        // 2. Lấy vị trí với cách gọi đơn giản của v11
-        // Lưu ý: Không cần 'locationSettings' nữa, truyền thẳng accuracy
+      if (permission != geo.LocationPermission.whileInUse &&
+          permission != geo.LocationPermission.always) {
+        log('[Map] Location permission not granted.');
+        return;
+      }
+
+      try {
         geo.Position position = await geo.Geolocator.getCurrentPosition(
           desiredAccuracy: geo.LocationAccuracy.high,
         );
 
-        log("Vị trí GPS: ${position.latitude}, ${position.longitude}");
+        log(
+          "[Map] User GPS location: ${position.latitude}, ${position.longitude}",
+        );
 
-        // 3. Bay tới vị trí
         _mapboxMap?.flyTo(
           mapbox.CameraOptions(
             center: mapbox.Point(
@@ -314,91 +343,90 @@ class _MapLayerState extends State<_MapLayer> {
             ),
             zoom: 15.0,
           ),
-          mapbox.MapAnimationOptions(duration: 1000),
+          mapbox.MapAnimationOptions(duration: 1200),
         );
+      } on geo.LocationServiceDisabledException {
+        log('[Map] Location service is disabled.');
+        // Optionally, show a dialog to ask the user to enable it.
       }
     } catch (e) {
-      log("Lỗi định vị: $e");
+      log("[Map] Error getting user location: $e");
     }
   }
 
+  /// Creates, updates, or deletes annotations on the map to match the list of restaurants.
   Future<void> _updateAnnotations(List<Restaurant> restaurants) async {
-    if (_pointAnnotationManager == null || !mounted) {
+    // Guard against running before the manager or style is ready.
+    if (_pointAnnotationManager == null || !_isStyleLoaded || !mounted) {
       log(
-        '[Map] Annotation manager not ready or widget not mounted. Skipping update.',
+        '[Map] Annotation manager or style not ready. Will retry on next state change.',
       );
       return;
     }
 
-    log(
-      '[Map] _updateAnnotations called with ${restaurants.length} restaurants',
-    );
+    log('[Map] Updating annotations for ${restaurants.length} restaurants.');
 
-    final options = restaurants.map((res) {
-      log(
-        '[Map] Creating annotation for ${res.name} - lat: ${res.latitude}, lng: ${res.longitude}',
-      );
-      return mapbox.PointAnnotationOptions(
-        geometry: mapbox.Point(
-          coordinates: mapbox.Position(res.longitude, res.latitude),
-        ),
-        iconImage: 'green-pin',
-        iconSize: 0.8,
-      );
-    }).toList();
-
+    // This is a simplified approach. For large datasets, a diffing algorithm
+    // would be more performant than deleteAll/createMulti.
     await _pointAnnotationManager?.deleteAll();
     _annotations.clear();
     _markerToRestaurantIdMap.clear();
 
-    if (options.isNotEmpty) {
-      log('[Map] Creating ${options.length} annotations...');
-      try {
-        final newAnnotations = await _pointAnnotationManager?.createMulti(
-          options,
-        );
-        log(
-          '[Map] Created ${newAnnotations?.length ?? 0} new annotations successfully.',
-        );
-        if (newAnnotations != null) {
-          for (int i = 0; i < newAnnotations.length; i++) {
-            final PointAnnotation? annotation = newAnnotations[i];
-            if (annotation != null) {
-              final res = restaurants[i];
-              if (res.id.isNotEmpty) {
-                _annotations[res.id] = annotation;
-                _markerToRestaurantIdMap[annotation.id] = res.id;
-                log(
-                  '[Map] Mapped annotation ${annotation.id} to restaurant ${res.name}',
-                );
-              }
-            }
+    if (restaurants.isEmpty) {
+      log('[Map] Restaurants list is empty, no annotations to create.');
+      return;
+    }
+
+    final options = restaurants.map((res) {
+      return mapbox.PointAnnotationOptions(
+        geometry: mapbox.Point(
+          coordinates: mapbox.Position(res.longitude, res.latitude),
+        ),
+        iconImage: 'green-pin', // This MUST match the ID used in addStyleImage.
+        iconSize: 0.8,
+      );
+    }).toList();
+
+    try {
+      final newAnnotations = await _pointAnnotationManager?.createMulti(
+        options,
+      );
+      if (newAnnotations != null) {
+        log('[Map] Created ${newAnnotations.length} annotations successfully.');
+        for (int i = 0; i < newAnnotations.length; i++) {
+          final annotation = newAnnotations[i];
+          if (annotation != null) {
+            final restaurant = restaurants[i];
+            _annotations[restaurant.id] = annotation;
+            _markerToRestaurantIdMap[annotation.id] = restaurant.id;
           }
         }
-      } catch (e, stackTrace) {
-        log('[Map] Error creating annotations: $e', stackTrace: stackTrace);
+        log('[Map] Annotation mapping complete.');
       }
-    } else {
-      log('[Map] No options to create - restaurants list may be empty');
+    } catch (e) {
+      log('[Map] Error during createMulti: $e');
     }
   }
 
   void _showUserLocation() {
     _mapboxMap?.location.updateSettings(
-      LocationComponentSettings(enabled: true, pulsingEnabled: true),
+      mapbox.LocationComponentSettings(enabled: true, pulsingEnabled: true),
     );
   }
 
   void _flyTo(Restaurant restaurant) {
     _mapboxMap?.flyTo(
-      CameraOptions(
-        center: Point(
-          coordinates: Position(restaurant.longitude, restaurant.latitude),
+      mapbox.CameraOptions(
+        center: mapbox.Point(
+          coordinates: mapbox.Position(
+            restaurant.longitude,
+            restaurant.latitude,
+          ),
         ),
         zoom: 16.0,
         pitch: 0.0,
       ),
-      MapAnimationOptions(duration: 1500, startDelay: 0),
+      mapbox.MapAnimationOptions(duration: 1500, startDelay: 0),
     );
   }
 
@@ -406,24 +434,18 @@ class _MapLayerState extends State<_MapLayer> {
   Widget build(BuildContext context) {
     return BlocListener<FoodOrderCubit, FoodOrderState>(
       listener: (context, state) {
-        log(
-          '[Screen] BlocListener triggered - restaurants: ${state.restaurants.length}, isLoading: ${state.isLoading}',
-        );
-
         if (state.restaurants.isNotEmpty) {
           log(
-            '[Screen] BlocListener: ${state.restaurants.length} restaurants received, calling _updateAnnotations',
+            '[BlocListener] Received ${state.restaurants.length} restaurants, updating annotations.',
           );
-          _updateAnnotations(
-            state.restaurants,
-          ); // ✅ luôn gọi, _updateAnnotations tự check null
-        } else {
-          log('[Screen] BlocListener: restaurants list is empty');
+          // DO NOT await in a listener. The _updateAnnotations method has its own
+          // guards to handle being called before the map is ready.
+          _updateAnnotations(state.restaurants);
         }
 
         if (state.selectedRestaurant != null) {
           log(
-            '[Screen] Selected restaurant: ${state.selectedRestaurant?.name}',
+            '[BlocListener] Selected restaurant: ${state.selectedRestaurant?.name}, flying to location.',
           );
           _flyTo(state.selectedRestaurant!);
         }
@@ -431,9 +453,9 @@ class _MapLayerState extends State<_MapLayer> {
         if (state.restaurants.isNotEmpty && !_initialCameraSet) {
           log('[Screen] Setting initial camera position');
           _mapboxMap?.setCamera(
-            CameraOptions(
-              center: Point(
-                coordinates: Position(
+            mapbox.CameraOptions(
+              center: mapbox.Point(
+                coordinates: mapbox.Position(
                   state.restaurants.first.longitude,
                   state.restaurants.first.latitude,
                 ),
@@ -445,16 +467,17 @@ class _MapLayerState extends State<_MapLayer> {
         }
       },
 
+      // For SDK v2.25.0, wrap with GestureDetector to handle background taps.
       child: GestureDetector(
-        // ✅ BỌC MapWidget
         onTap: () {
-          log('[Map] Click vùng trống');
-          context.read<FoodOrderCubit>().selectRestaurant("");
+          log('[Map] Clicked on map background, clearing selection.');
+          context.read<FoodOrderCubit>().clearSelection();
         },
-        child: MapWidget(
+        child: mapbox.MapWidget(
           key: const ValueKey("mapview"),
           styleUri: 'mapbox://styles/hoai/cmqrnr7qe000o01sifrrmhpr5',
           onMapCreated: _onMapCreated,
+          onStyleLoadedListener: _onStyleLoaded,
           onMapLoadErrorListener: (error) {
             log('[Map] A map error occurred: ${error.message}');
           },

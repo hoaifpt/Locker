@@ -148,16 +148,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                    child: PromoCard(
-                      title: 'Liên Kết Sàn TMĐT',
-                      subtitle: 'Mua sắm ưu đãi, giao tận tủ E-BOX',
-                      onTap: () {},
-                    ),
-                  ),
-                ),
               ],
             );
           },
@@ -750,7 +740,6 @@ class _BottomNavBar extends StatelessWidget {
             label: 'Trang chủ',
             active: true,
           ),
-          _BottomNavItem(icon: Icons.shopping_bag_outlined, label: 'Mua sắm'),
           _BottomNavItem(
             icon: Icons.receipt_long_outlined,
             label: 'Đơn hàng',

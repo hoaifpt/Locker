@@ -27,22 +27,53 @@ class OrdersRepository implements IOrdersRepository {
   }
 
   OrderHistoryItem _mapOrder(Map<String, dynamic> json) {
-    final status = json['status']?.toString().toLowerCase() ?? 'unknown';
-    final createdAt = DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
+    final dynamic statusValue = json['status'];
+    final String status;
+
+    if (statusValue is int) {
+      // TODO: This is a temporary workaround. The backend should return a string status.
+      // This mapping is based on assumptions and should be verified with the backend team.
+      status = _mapIntStatusToString(statusValue);
+    } else {
+      status = statusValue?.toString().toLowerCase() ?? 'unknown';
+    }
+
+    final createdAt =
+        DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
         DateTime.now();
     final totalAmount = (json['totalAmount'] as num?)?.toInt() ?? 0;
     final lockerId = json['lockerId']?.toString() ?? '';
 
     return OrderHistoryItem(
       id: json['id']?.toString() ?? '',
-      lockerCode: lockerId,
+      lockerCode:
+          lockerId, // Backend should provide a shorter, user-friendly code.
       title: _titleFromStatus(status),
-      location: json['location']?.toString() ?? '',
+      location: json['location']?.toString() ?? 'Không có thông tin vị trí',
       status: status,
       createdAt: createdAt,
       amount: totalAmount,
       statusLabel: _statusLabelFromStatus(status),
     );
+  }
+
+  String _mapIntStatusToString(int status) {
+    switch (status) {
+      case 0:
+        return 'pending';
+      case 1:
+        return 'active';
+      case 2:
+        return 'completed';
+      case 3:
+        return 'cancelled';
+      case 4:
+        return 'reserved';
+      case 5: // The provided JSON shows status as 5. Assuming it means 'completed'.
+        return 'completed';
+      default:
+        return 'unknown';
+    }
   }
 
   String _titleFromStatus(String status) {

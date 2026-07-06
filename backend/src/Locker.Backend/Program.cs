@@ -189,6 +189,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+Console.WriteLine("HELLO VERSION 999999");
 
 app.UseStaticFiles();
 

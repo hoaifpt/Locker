@@ -54,7 +54,9 @@ class RestaurantBottomSheet extends StatelessWidget {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: restaurant!.isOpen
                                 ? const Color(0xFFDCFCE7)
@@ -79,14 +81,19 @@ class RestaurantBottomSheet extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.location_on_outlined,
-                            color: Color(0xFF52443E), size: 16),
+                        const Icon(
+                          Icons.location_on_outlined,
+                          color: Color(0xFF52443E),
+                          size: 16,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             restaurant!.address,
                             style: const TextStyle(
-                                color: Color(0xFF52443E), fontSize: 14),
+                              color: Color(0xFF52443E),
+                              fontSize: 14,
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -96,8 +103,11 @@ class RestaurantBottomSheet extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.star_rounded,
-                            color: Color(0xFFF59E0B), size: 16),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 16,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           restaurant!.rating.toStringAsFixed(1),
@@ -191,8 +201,13 @@ class RestaurantBottomSheet extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.of(context)
-                    .pushNamed('/menu', arguments: restaurant!.name);
+                Navigator.of(context).pushNamed(
+                  '/menu',
+                  arguments: {
+                    'restaurantId': restaurant!.id,
+                    'restaurantName': restaurant!.name,
+                  },
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFEC5B13),

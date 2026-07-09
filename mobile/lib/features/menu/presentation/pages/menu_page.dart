@@ -7,8 +7,9 @@ import '../../domain/usecases/get_menu_usecase.dart';
 
 class MenuPage extends StatefulWidget {
   final String? restaurantId;
+  final String? restaurantName;
 
-  const MenuPage({super.key, this.restaurantId});
+  const MenuPage({super.key, this.restaurantId,required this.restaurantName,});
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -120,7 +121,7 @@ class _MenuPageState extends State<MenuPage> {
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
-          widget.restaurantId ?? 'Thực đơn',
+          widget.restaurantName ?? 'Thực đơn',
           style: const TextStyle(
             color: Color(0xFF1A1C1C),
             fontSize: 18,

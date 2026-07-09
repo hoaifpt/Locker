@@ -60,14 +60,43 @@ class FoodOrderCubit extends Cubit<FoodOrderState> {
     log('[Cubit] State emitted successfully');
   }
 
+  void search(String query) {
+    log('[Cubit] search("$query")');
+    if (query.isEmpty) {
+      emit(state.copyWith(searchQuery: '', searchResults: []));
+      return;
+    }
+
+    final lowerCaseQuery = query.toLowerCase();
+    final results = state.restaurants.where((restaurant) {
+      final nameMatch = restaurant.name.toLowerCase().contains(lowerCaseQuery);
+      final addressMatch =
+          restaurant.address.toLowerCase().contains(lowerCaseQuery);
+      // As per current data structure, tags are not available on the Restaurant entity for searching.
+      return nameMatch || addressMatch;
+    }).toList();
+
+    emit(state.copyWith(
+      searchQuery: query,
+      searchResults: results,
+    ));
+  }
+
   void selectRestaurant(String id) {
     log('[Cubit] selectRestaurant($id)');
-    emit(state.copyWith(selectedRestaurantId: id));
+    // When a restaurant is selected, clear the search query and results to hide the suggestion list.
+    // The search text field will be updated by the UI listener.
+    emit(state.copyWith(
+      selectedRestaurantId: id,
+      searchQuery: '',
+      searchResults: [],
+    ));
   }
 
   /// Xóa nhà hàng đang được chọn, dùng để ẩn BottomSheet
   void clearSelection() {
     log('[Cubit] clearSelection()');
-    emit(state.copyWith(clearSelection: true));
+    // Also clear search when clearing selection (e.g., user taps map background)
+    emit(state.copyWith(clearSelection: true, searchQuery: '', searchResults: []));
   }
 }

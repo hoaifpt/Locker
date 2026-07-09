@@ -6,12 +6,16 @@ class FoodOrderState {
   final List<Restaurant> restaurants;
   final List<RestaurantPin> pins;
   final String? selectedRestaurantId;
+  final String searchQuery;
+  final List<Restaurant> searchResults;
 
   const FoodOrderState({
     required this.isLoading,
     required this.restaurants,
     required this.pins,
     required this.selectedRestaurantId,
+    required this.searchQuery,
+    required this.searchResults,
   });
 
   factory FoodOrderState.initial() {
@@ -20,6 +24,8 @@ class FoodOrderState {
       restaurants: [],
       pins: [],
       selectedRestaurantId: null,
+      searchQuery: '',
+      searchResults: [],
     );
   }
 
@@ -29,6 +35,8 @@ class FoodOrderState {
     List<RestaurantPin>? pins,
     String? selectedRestaurantId,
     bool clearSelection = false,
+    String? searchQuery,
+    List<Restaurant>? searchResults,
   }) {
     return FoodOrderState(
       isLoading: isLoading ?? this.isLoading,
@@ -37,6 +45,8 @@ class FoodOrderState {
       selectedRestaurantId: clearSelection
           ? null
           : (selectedRestaurantId ?? this.selectedRestaurantId),
+      searchQuery: searchQuery ?? this.searchQuery,
+      searchResults: searchResults ?? this.searchResults,
     );
   }
 

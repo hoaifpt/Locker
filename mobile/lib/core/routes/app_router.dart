@@ -78,9 +78,15 @@ class AppRouter {
     '/photo-confirmation': (context) => PhotoConfirmationPage(
       lockerId: ModalRoute.of(context)?.settings.arguments as String?,
     ),
-    '/menu': (context) => MenuPage(
-      restaurantId: ModalRoute.of(context)!.settings.arguments as String?,
-    ),
+    '/menu': (context) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+
+      return MenuPage(
+        restaurantId: args['restaurantId'] as String?,
+        restaurantName: args['restaurantName'] as String?,
+      );
+    },
     '/lockers': (context) => const LockerScreen(),
     '/locker-map': (context) => const LockerMapPage(),
     '/locker-detail': (context) => LockerDetailPage(

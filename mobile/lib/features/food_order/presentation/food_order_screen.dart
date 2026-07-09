@@ -54,90 +54,150 @@ class FoodOrderScreen extends StatelessWidget {
   }
 }
 
-class _TopOverlay extends StatelessWidget {
+class _TopOverlay extends StatefulWidget {
   const _TopOverlay();
 
   @override
+  State<_TopOverlay> createState() => _TopOverlayState();
+}
+
+class _TopOverlayState extends State<_TopOverlay> {
+  final _searchController = TextEditingController();
+  // Flag to prevent search listener from firing when text is updated programmatically
+  bool _isProgrammaticChange = false;
+
+  void _onSearchChanged() {
+    if (_isProgrammaticChange) return;
+    context.read<FoodOrderCubit>().search(_searchController.text);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-      color: Colors.white.withAlpha(217), // 85% opacity
-      child: Column(
-        children: [
-          Row(
-            children: [
-              _circleIconButton(
-                Icons.arrow_back_rounded,
-                () => Navigator.pop(context),
-              ),
-              const Spacer(),
-              const Text(
-                'Bản đồ',
-                style: TextStyle(
-                  color: Color(0xFF1A1C1C),
-                  fontSize: 20,
-                  fontFamily: 'Alexandria',
-                  fontWeight: FontWeight.w800,
+    // This listener handles updating the search TextField when a restaurant is
+    // selected from the map/list or when the selection is cleared.
+    return BlocListener<FoodOrderCubit, FoodOrderState>(
+      listenWhen: (previous, current) =>
+          previous.selectedRestaurantId != current.selectedRestaurantId,
+      listener: (context, state) {
+        final newText = state.selectedRestaurant?.name ?? '';
+        if (_searchController.text != newText) {
+          _isProgrammaticChange = true;
+          _searchController.text = newText;
+          _isProgrammaticChange = false;
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+        color: Colors.white.withAlpha(217), // 85% opacity
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                _circleIconButton(
+                  Icons.arrow_back_rounded,
+                  () => Navigator.pop(context),
                 ),
-              ),
-              const Spacer(),
-              _circleIconButton(Icons.tune_rounded, () {}),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                const Spacer(),
+                const Text(
+                  'Bản đồ',
+                  style: TextStyle(
+                    color: Color(0xFF1A1C1C),
+                    fontSize: 20,
+                    fontFamily: 'Alexandria',
+                    fontWeight: FontWeight.w800,
                   ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F3F4),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: const Row(
+                ),
+                const Spacer(),
+                _circleIconButton(Icons.tune_rounded, () {}),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.search_rounded, color: Color(0xFF85736D)),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Tìm quán ăn sáng...',
-                          style: TextStyle(
-                            color: Color(0xFF85736D),
-                            fontSize: 14,
-                            fontFamily: 'Plus Jakarta Sans',
-                            fontWeight: FontWeight.w500,
-                          ),
+                      Container( // Search Bar
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F3F4),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.search_rounded,
+                                color: Color(0xFF85736D)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                decoration: const InputDecoration(
+                                  hintText: 'Tìm quán ăn sáng...',
+                                  hintStyle: TextStyle(
+                                    color: Color(0xFF85736D),
+                                    fontSize: 14,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  border: InputBorder.none,
+                                ),
+                                style: const TextStyle(
+                                  color: Color(0xFF1A1C1C),
+                                  fontSize: 14,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlignVertical: TextAlignVertical.center,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      _buildSearchResults(),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {
-                  // Gọi hàm định vị thông qua key
-                  _mapLayerKey.currentState?.moveToUserLocation();
-                },
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFD8D64),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.my_location_rounded,
-                    color: Colors.white,
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () {
+                    // Gọi hàm định vị thông qua key
+                    _mapLayerKey.currentState?.moveToUserLocation();
+                  },
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFD8D64),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.my_location_rounded,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -154,6 +214,79 @@ class _TopOverlay extends StatelessWidget {
         ),
         child: Icon(icon, color: const Color(0xFF1A1C1C)),
       ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return BlocBuilder<FoodOrderCubit, FoodOrderState>(
+      buildWhen: (previous, current) =>
+          previous.searchQuery != current.searchQuery ||
+          previous.searchResults != current.searchResults,
+      builder: (context, state) {
+        if (state.searchQuery.isEmpty) {
+          return const SizedBox.shrink(); // Hide when not searching
+        }
+
+        return Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.only(top: 8.0),
+            constraints: const BoxConstraints(
+              maxHeight: 220, // Limit height
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: state.searchResults.isEmpty
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          'No restaurants found',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shrinkWrap: true,
+                      itemCount: state.searchResults.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(height: 1, indent: 16, endIndent: 16),
+                      itemBuilder: (context, index) {
+                        final restaurant = state.searchResults[index];
+                        return ListTile(
+                          title: Text(restaurant.name,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600)),
+                          subtitle: Text(
+                            restaurant.address,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () {
+                            FocusScope.of(context).unfocus();
+                            context
+                                .read<FoodOrderCubit>()
+                                .selectRestaurant(restaurant.id);
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -179,7 +312,7 @@ class _MapLayerState extends State<_MapLayer> {
   // We initialize non-style-dependent components here.
   void _onMapCreated(mapbox.MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
-    log('[Map] Map created.');
+    debugPrint('[Map] Map created.');
 
     // Set camera constraints early.
     _mapboxMap?.setBounds(
@@ -230,11 +363,10 @@ class _MapLayerState extends State<_MapLayer> {
   /// Called when the map style has finished loading.
   /// This is the correct and safe place to add images, sources, or layers.
   void _onStyleLoaded(mapbox.StyleLoadedEventData _) async {
-    log('[Map] Style loaded.');
+    debugPrint('[Map] Style loaded.');
     _isStyleLoaded = true;
 
-    // 1. Add the custom marker image to the map's style.
-    await _addMarkerImageToStyle();
+
 
     // 2. Now that the style and image are ready, check for initial data
     //    that might have loaded before the map was ready.
@@ -248,39 +380,35 @@ class _MapLayerState extends State<_MapLayer> {
   /// Loads the marker PNG from assets and adds it to the map's style.
   Future<void> _addMarkerImageToStyle() async {
     try {
-    log("========= TEST IMAGE =========");
+      log("========= TEST IMAGE =========");
 
-    final ByteData byteData =
-        await rootBundle.load("assets/green_pin.png");
+      final ByteData byteData = await rootBundle.load("assets/green_pin.png");
 
-    log("Asset bytes = ${byteData.lengthInBytes}");
+      debugPrint("Asset bytes = ${byteData.lengthInBytes}");
 
-    final Uint8List pngBytes = byteData.buffer.asUint8List();
+      final Uint8List pngBytes = byteData.buffer.asUint8List();
 
-    final ui.Codec codec =
-        await ui.instantiateImageCodec(pngBytes);
+      final ui.Codec codec = await ui.instantiateImageCodec(pngBytes);
 
-    final ui.FrameInfo frameInfo =
-        await codec.getNextFrame();
+      final ui.FrameInfo frameInfo = await codec.getNextFrame();
 
-    final ui.Image image = frameInfo.image;
+      final ui.Image image = frameInfo.image;
 
-    log("Image width = ${image.width}");
-    log("Image height = ${image.height}");
+      debugPrint("Image width = ${image.width}");
+      debugPrint("Image height = ${image.height}");
 
-    final ByteData? rawRgbaBytes =
-        await image.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    );
+      final ByteData? rawRgbaBytes = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
 
-    log("raw bytes null = ${rawRgbaBytes == null}");
+      debugPrint("raw bytes null = ${rawRgbaBytes == null}");
 
-    if (rawRgbaBytes != null) {
-      log("raw bytes = ${rawRgbaBytes.lengthInBytes}");
-    }
+      if (rawRgbaBytes != null) {
+        debugPrint("raw bytes = ${rawRgbaBytes.lengthInBytes}");
+      }
 
       if (rawRgbaBytes == null) {
-        log('[Map] CRITICAL: Failed to decode image to raw RGBA format.');
+        debugPrint('[Map] CRITICAL: Failed to decode image to raw RGBA format.');
         return;
       }
 
@@ -297,7 +425,7 @@ class _MapLayerState extends State<_MapLayer> {
         <mapbox.ImageStretches>[],
         null,
       );
-      log(
+      debugPrint(
         '[Map] Custom marker image "green-pin" (Size: ${image.width}x${image.height}) added to style.',
       );
       image.dispose(); // Release native resources
@@ -377,12 +505,17 @@ class _MapLayerState extends State<_MapLayer> {
       return;
     }
 
+    final Uint8List markerBytes =
+    (await rootBundle.load("assets/green_pin.png"))
+        .buffer
+        .asUint8List();
+
     final options = restaurants.map((res) {
       return mapbox.PointAnnotationOptions(
         geometry: mapbox.Point(
           coordinates: mapbox.Position(res.longitude, res.latitude),
         ),
-        iconImage: 'green-pin', // This MUST match the ID used in addStyleImage.
+        image: markerBytes, // This MUST match the ID used in addStyleImage.
         iconSize: 0.8,
       );
     }).toList();
@@ -479,7 +612,7 @@ class _MapLayerState extends State<_MapLayer> {
           onMapCreated: _onMapCreated,
           onStyleLoadedListener: _onStyleLoaded,
           onMapLoadErrorListener: (error) {
-            log('[Map] A map error occurred: ${error.message}');
+            debugPrint('[Map] A map error occurred: ${error.message}');
           },
         ),
       ),

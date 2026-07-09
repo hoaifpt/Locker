@@ -8,9 +8,10 @@ import 'core/routes/injection.dart';
 import 'core/theme/app_theme.dart';
 
 void main() async {
-  // Đảm bảo các binding của Flutter đã được khởi tạo trước khi chạy app
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+
+  debugPrint('>>> DOTENV KEYS: ${dotenv.env.keys.toList()}');
 
   final mapboxToken =
       (dotenv.env['MAPBOX_ACCESS_TOKEN'] ??
@@ -19,11 +20,15 @@ void main() async {
               '')
           .trim();
 
+  debugPrint('>>> MAPBOX TOKEN LENGTH: ${mapboxToken.length}');
+
   if (mapboxToken.isNotEmpty) {
     MapboxOptions.setAccessToken(mapboxToken);
+    debugPrint('>>> MapboxOptions.setAccessToken CALLED');
+  } else {
+    debugPrint('>>> MAPBOX TOKEN IS EMPTY - setAccessToken NOT CALLED');
   }
 
-  // Gọi hàm cấu hình dependency injection
   configureDependencies();
 
   runApp(const MyApp());

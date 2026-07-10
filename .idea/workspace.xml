@@ -4,22 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/assets/green_pin.png" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/assets/green_pin.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/core/constants/app_constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/constants/app_constants.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/core/routes/app_router.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/routes/app_router.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/controllers/food_order_cubit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/controllers/food_order_cubit.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/controllers/food_order_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/controllers/food_order_state.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/food_order_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/food_order_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/widgets/restaurant_bottom_sheet.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/widgets/restaurant_bottom_sheet.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/locker/domain/entities/locker.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/locker/domain/entities/locker.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/menu/data/menu_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/menu/data/menu_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/menu/presentation/pages/menu_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/menu/presentation/pages/menu_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/main.dart" afterDir="false" />
-    </list>
+    <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

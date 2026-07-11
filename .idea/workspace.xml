@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="" />
+    <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/kotlin/com/example/locker/MainActivity.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/kotlin/com/example/locker_mobile/MainActivity.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/core/constants/environment.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/constants/environment.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/presentation/pages/login_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/auth/presentation/pages/login_page.dart" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

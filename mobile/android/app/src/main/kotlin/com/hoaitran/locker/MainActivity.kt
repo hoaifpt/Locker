@@ -1,4 +1,4 @@
-package com.example.locker
+package com.hoaitran.locker
 
 import io.flutter.embedding.android.FlutterActivity
 

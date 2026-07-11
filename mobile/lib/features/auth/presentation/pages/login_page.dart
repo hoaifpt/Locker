@@ -68,8 +68,10 @@ class _LoginViewState extends State<_LoginView> {
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -137,7 +139,9 @@ class _LoginViewState extends State<_LoginView> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          context.pushNamed('/change-password');
+                        },
                         child: const Text(
                           'Quên mật khẩu?',
                           style: TextStyle(color: Color(0xFFEB6C4B)),
@@ -154,9 +158,9 @@ class _LoginViewState extends State<_LoginView> {
                           onPressed: loading
                               ? null
                               : () => context.read<AuthCubit>().login(
-                                    _usernameController.text.trim(),
-                                    _passwordController.text,
-                                  ),
+                                  _usernameController.text.trim(),
+                                  _passwordController.text,
+                                ),
                         );
                       },
                     ),
@@ -226,15 +230,18 @@ class _InputField extends StatelessWidget {
       child: TextField(
         controller: controller,
         obscureText: obscure,
-        keyboardType:
-            obscure ? TextInputType.visiblePassword : TextInputType.text,
+        keyboardType: obscure
+            ? TextInputType.visiblePassword
+            : TextInputType.text,
         decoration: InputDecoration(
           hintText: hint,
           prefixIcon: Icon(icon, color: const Color(0xFFEB6C4B)),
           suffixIcon: suffix,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );

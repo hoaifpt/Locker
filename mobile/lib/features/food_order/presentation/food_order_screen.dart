@@ -127,52 +127,49 @@ class _TopOverlayState extends State<_TopOverlay> {
             ),
             const SizedBox(height: 16),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container( // Search Bar
-                        height: 56,
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F3F4),
-                          borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    // Search Bar
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F3F4),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.search_rounded,
+                          color: Color(0xFF85736D),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.search_rounded,
-                                color: Color(0xFF85736D)),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextField(
-                                controller: _searchController,
-                                decoration: const InputDecoration(
-                                  hintText: 'Tìm quán ăn sáng...',
-                                  hintStyle: TextStyle(
-                                    color: Color(0xFF85736D),
-                                    fontSize: 14,
-                                    fontFamily: 'Plus Jakarta Sans',
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  border: InputBorder.none,
-                                ),
-                                style: const TextStyle(
-                                  color: Color(0xFF1A1C1C),
-                                  fontSize: 14,
-                                  fontFamily: 'Plus Jakarta Sans',
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                textAlignVertical: TextAlignVertical.center,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: const InputDecoration(
+                              hintText: 'Tìm quán ăn sáng...',
+                              hintStyle: TextStyle(
+                                color: Color(0xFF85736D),
+                                fontSize: 14,
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontWeight: FontWeight.w500,
                               ),
+                              border: InputBorder.none,
                             ),
-                          ],
+                            style: const TextStyle(
+                              color: Color(0xFF1A1C1C),
+                              fontSize: 14,
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlignVertical: TextAlignVertical.center,
+                          ),
                         ),
-                      ),
-                      _buildSearchResults(),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -196,6 +193,7 @@ class _TopOverlayState extends State<_TopOverlay> {
                 ),
               ],
             ),
+            _buildSearchResults(),
           ],
         ),
       ),
@@ -266,9 +264,10 @@ class _TopOverlayState extends State<_TopOverlay> {
                       itemBuilder: (context, index) {
                         final restaurant = state.searchResults[index];
                         return ListTile(
-                          title: Text(restaurant.name,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w600)),
+                          title: Text(
+                            restaurant.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
                           subtitle: Text(
                             restaurant.address,
                             maxLines: 1,
@@ -276,9 +275,9 @@ class _TopOverlayState extends State<_TopOverlay> {
                           ),
                           onTap: () {
                             FocusScope.of(context).unfocus();
-                            context
-                                .read<FoodOrderCubit>()
-                                .selectRestaurant(restaurant.id);
+                            context.read<FoodOrderCubit>().selectRestaurant(
+                              restaurant.id,
+                            );
                           },
                         );
                       },
@@ -366,8 +365,6 @@ class _MapLayerState extends State<_MapLayer> {
     debugPrint('[Map] Style loaded.');
     _isStyleLoaded = true;
 
-
-
     // 2. Now that the style and image are ready, check for initial data
     //    that might have loaded before the map was ready.
     final currentState = context.read<FoodOrderCubit>().state;
@@ -408,7 +405,9 @@ class _MapLayerState extends State<_MapLayer> {
       }
 
       if (rawRgbaBytes == null) {
-        debugPrint('[Map] CRITICAL: Failed to decode image to raw RGBA format.');
+        debugPrint(
+          '[Map] CRITICAL: Failed to decode image to raw RGBA format.',
+        );
         return;
       }
 
@@ -505,10 +504,9 @@ class _MapLayerState extends State<_MapLayer> {
       return;
     }
 
-    final Uint8List markerBytes =
-    (await rootBundle.load("assets/green_pin.png"))
-        .buffer
-        .asUint8List();
+    final Uint8List markerBytes = (await rootBundle.load(
+      "assets/green_pin.png",
+    )).buffer.asUint8List();
 
     final options = restaurants.map((res) {
       return mapbox.PointAnnotationOptions(

@@ -5,14 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/mobile/assets/banh_da_cua.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/bun_bo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/bun_cha.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/bun_cha_ca.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/bun_dau.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/bun_mem.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/bun_rieu_cua.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/bun_thit_nuong.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/canh_cua.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/cha_giio.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/assets/pho_ga.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/core/constants/environment.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/constants/environment.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/food_order_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/food_order/presentation/food_order_screen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

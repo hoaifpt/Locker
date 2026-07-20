@@ -68,15 +68,16 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, (AuthResp
             EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24),
             EmailConfirmed = false
         };
+        _logger.LogInformation("STEP 1: Start Register");
 
         var result = await _identityService.CreateUserAsync(user, request.Password);
         if (!result.Success)
         {
             return (null, string.Join(", ", result.Errors));
         }
-
+        _logger.LogInformation("STEP 2: User Created");
         await _identityService.AddToRoleAsync(user, "User");
-
+        _logger.LogInformation("STEP 3: Role Added");
         try
         {
             var verificationLink = $"{_baseUrl}/api/auth/verify-email?token={verificationToken}";
@@ -86,19 +87,29 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, (AuthResp
         {
             _logger.LogWarning(ex, "Failed to send verification email to {Email}.", user.Email);
         }
+        _logger.LogInformation("STEP 4: Email Finished");
 
         var authResponse = await GenerateAuthResponseAsync(user, cancellationToken);
+        _logger.LogInformation("STEP 5: AuthResponse Generated");
         return (authResponse, null);
     }
 
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Generate Role");
         var roles = await _identityService.GetRolesAsync(user);
+        _logger.LogInformation("Generate Role DONE");
+
+        _logger.LogInformation("Generate JWT");
         var role = roles.FirstOrDefault() ?? "User";
 
         var tokenSubject = new TokenSubject(user.Id, user.UserName, user.Email, role);
         var accessToken = _jwtTokenService.CreateToken(tokenSubject);
+        _logger.LogInformation("AccessToken DONE");
         var refreshTokenValue = _jwtTokenService.CreateRefreshToken(tokenSubject);
+        _logger.LogInformation("RefreshToken Value DONE");
+
+        _logger.LogInformation("Save RefreshToken");
 
         var refreshToken = new Domain.Entities.RefreshToken
         {
@@ -110,6 +121,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, (AuthResp
         };
 
         await _refreshTokenRepository.CreateAsync(refreshToken, cancellationToken);
+        _logger.LogInformation("Save RefreshToken DONE");
+
+        _logger.LogInformation("Return AuthResponse");
 
         return new AuthResponse
         {

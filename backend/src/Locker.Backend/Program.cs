@@ -24,6 +24,10 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Console.WriteLine("========== ENV ==========");
+Console.WriteLine(builder.Environment.EnvironmentName);
+Console.WriteLine("=========================");
+
 var envFile = Path.Combine(builder.Environment.ContentRootPath, ".env");
 if (File.Exists(envFile))
 {

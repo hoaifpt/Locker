@@ -85,13 +85,27 @@ public class EmailService : IEmailService
     private async Task SendAsync(MimeMessage message, CancellationToken cancellationToken)
     {
         using var client = new SmtpClient();
+
         var secureOption = _settings.UseStartTls
             ? SecureSocketOptions.StartTls
             : (_settings.UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.None);
 
+        Console.WriteLine("SMTP CONNECT");
+
         await client.ConnectAsync(_settings.Host, _settings.Port, secureOption, cancellationToken);
+
+        Console.WriteLine("SMTP CONNECTED");
+
         await client.AuthenticateAsync(_settings.Username, _settings.Password, cancellationToken);
+
+        Console.WriteLine("SMTP AUTH");
+
         await client.SendAsync(message, cancellationToken);
+
+        Console.WriteLine("SMTP SENT");
+
         await client.DisconnectAsync(true, cancellationToken);
+
+        Console.WriteLine("SMTP DONE");
     }
 }

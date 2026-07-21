@@ -10,6 +10,7 @@ using Locker.Backend.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Locker.Backend.Domain.Entities;
+using Resend;
 
 namespace Locker.Backend.Infrastructure;
 
@@ -19,7 +20,9 @@ public static class DependencyInjection
     {
         services.Configure<MongoSettings>(configuration.GetSection("Mongo"));
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
-        services.Configure<EmailSettings>(configuration.GetSection("Email"));
+        services.Configure<ResendSettings>(configuration.GetSection("Resend"));
+        services.AddHttpClient();
+        services.AddResend(options =>{options.ApiToken = configuration["Resend:ApiKey"]!;});
         services.Configure<AppSettings>(configuration.GetSection("App"));
         services.Configure<VnPaySettings>(configuration.GetSection("VnPay"));
 
@@ -42,7 +45,7 @@ public static class DependencyInjection
         services.AddScoped<ILockerEventRepository, LockerEventRepository>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
-        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailService, ResendEmailService>();
         services.AddScoped<IIdentifierValidator, IdentifierValidator>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IVnPayService, VnPayService>();

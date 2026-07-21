@@ -85,27 +85,53 @@ public class EmailService : IEmailService
     private async Task SendAsync(MimeMessage message, CancellationToken cancellationToken)
     {
         using var client = new SmtpClient();
+        client.Timeout = 10000; // 10 giây
+
 
         var secureOption = _settings.UseStartTls
             ? SecureSocketOptions.StartTls
             : (_settings.UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.None);
+        Console.WriteLine("===== SMTP CONFIG =====");
+        Console.WriteLine($"Host={_settings.Host}");
+        Console.WriteLine($"Port={_settings.Port}");
+        Console.WriteLine($"Username={_settings.Username}");
+        Console.WriteLine($"UseSsl={_settings.UseSsl}");
+        Console.WriteLine($"UseStartTls={_settings.UseStartTls}");
+        Console.WriteLine("=======================");
 
-        Console.WriteLine("SMTP CONNECT");
+        try
+        {
+            Console.WriteLine("SMTP CONNECT");
 
-        await client.ConnectAsync(_settings.Host, _settings.Port, secureOption, cancellationToken);
+            await client.ConnectAsync(
+                _settings.Host,
+                _settings.Port,
+                secureOption,
+                cancellationToken);
 
-        Console.WriteLine("SMTP CONNECTED");
+            Console.WriteLine("SMTP CONNECTED");
 
-        await client.AuthenticateAsync(_settings.Username, _settings.Password, cancellationToken);
+            await client.AuthenticateAsync(
+                _settings.Username,
+                _settings.Password,
+                cancellationToken);
 
-        Console.WriteLine("SMTP AUTH");
+            Console.WriteLine("SMTP AUTH OK");
 
-        await client.SendAsync(message, cancellationToken);
+            await client.SendAsync(message, cancellationToken);
 
-        Console.WriteLine("SMTP SENT");
+            Console.WriteLine("SMTP SEND OK");
 
-        await client.DisconnectAsync(true, cancellationToken);
+            await client.DisconnectAsync(true, cancellationToken);
 
-        Console.WriteLine("SMTP DONE");
+            Console.WriteLine("SMTP DONE");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("=========== SMTP ERROR ===========");
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("==================================");
+            throw;
+        }
     }
 }

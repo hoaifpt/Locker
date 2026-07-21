@@ -28,28 +28,31 @@ public class ResendEmailService : IEmailService
         CancellationToken cancellationToken)
     {
         var body = $"""
-        <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto">
-            <h2>Đặt lại mật khẩu</h2>
+        <div style="background-color: #fcf0e9; padding: 40px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(244,123,89,0.1);">
+                
+                <div style="background-color: #f47b59; padding: 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; letter-spacing: 2px; font-weight: bold;">E-BOX</h1>
+                </div>
 
-            <p>Mã OTP của bạn là:</p>
+                <div style="padding: 40px 30px; color: #333333; text-align: center;">
+                    <h2 style="margin-top: 0; color: #202124; font-size: 22px;">Yêu cầu đặt lại mật khẩu</h2>
+                    <p style="font-size: 16px; color: #5f6368;">Mã OTP xác thực của bạn là:</p>
+                    
+                    <div style="font-size: 36px; font-weight: bold; color: #f47b59; letter-spacing: 8px; margin: 30px 0; padding: 15px; background-color: #fef5f2; border-radius: 8px; border: 2px dashed #f47b59; display: inline-block;">
+                        {otpCode}
+                    </div>
 
-            <div style="
-                font-size:32px;
-                font-weight:bold;
-                color:#1a73e8;
-                letter-spacing:6px;
-                margin:20px 0;">
-                {otpCode}
+                    <p style="font-size: 15px; color: #e53935; font-weight: bold;">
+                        Mã OTP này có hiệu lực trong 5 phút.
+                    </p>
+                </div>
+
+                <div style="background-color: #fef5f2; padding: 25px 30px; text-align: center; border-top: 1px solid #f9e2d9; color: #80868b; font-size: 13px;">
+                    <p style="margin: 0 0 10px 0;">Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này để đảm bảo an toàn.</p>
+                    <p style="margin: 20px 0 0 0; font-weight: bold;">© 2026 E-Box System.</p>
+                </div>
             </div>
-
-            <p>Mã OTP có hiệu lực trong <strong>5 phút</strong>.</p>
-
-            <hr>
-
-            <small>
-                Nếu bạn không yêu cầu đặt lại mật khẩu,
-                hãy bỏ qua email này.
-            </small>
         </div>
         """;
 
@@ -71,51 +74,47 @@ public class ResendEmailService : IEmailService
             : fullName;
 
         var body = $"""
-        <div style="font-family:Arial,sans-serif;max-width:550px;margin:auto">
+        <div style="background-color: #fcf0e9; padding: 40px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(244,123,89,0.1);">
+                
+                <div style="background-color: #f47b59; padding: 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; letter-spacing: 2px; font-weight: bold;">E-BOX</h1>
+                </div>
 
-            <h2>Chào {name} 👋</h2>
+                <div style="padding: 40px 30px; color: #333333;">
+                    <h2 style="margin-top: 0; color: #202124; font-size: 22px;">Chào {name}, 👋</h2>
+                    <p style="font-size: 16px; color: #5f6368;">
+                        Cảm ơn bạn đã đăng ký tài khoản sử dụng dịch vụ tủ đồ thông minh E-Box. Để đảm bảo an toàn và kích hoạt các tính năng của ứng dụng, vui lòng xác thực địa chỉ email của bạn.
+                    </p>
 
-            <p>
-                Cảm ơn bạn đã đăng ký tài khoản Locker.
-            </p>
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="{verificationLink}"
+                           style="background-color: #f47b59; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(244,123,89,0.25);">
+                            Xác thực Email ngay
+                        </a>
+                    </div>
 
-            <p>
-                Vui lòng nhấn nút dưới đây để xác thực email.
-            </p>
+                    <p style="font-size: 15px; color: #5f6368;">
+                        Nếu nút trên không hoạt động, bạn có thể copy và dán đường dẫn dưới đây vào trình duyệt:
+                    </p>
+                    
+                    <div style="background-color: #fef5f2; padding: 15px; border-radius: 6px; word-break: break-all; font-size: 13px; color: #f47b59; border: 1px dashed #f47b59;">
+                        {verificationLink}
+                    </div>
+                </div>
 
-            <div style="margin:30px 0">
-                <a href="{verificationLink}"
-                   style="
-                        background:#1a73e8;
-                        color:white;
-                        padding:14px 28px;
-                        border-radius:6px;
-                        text-decoration:none;
-                        font-weight:bold;">
-                    Xác thực Email
-                </a>
+                <div style="background-color: #fef5f2; padding: 25px 30px; text-align: center; border-top: 1px solid #f9e2d9; color: #80868b; font-size: 13px;">
+                    <p style="margin: 0 0 10px 0;">Liên kết xác thực này có hiệu lực trong vòng <strong>24 giờ</strong>.</p>
+                    <p style="margin: 0 0 10px 0;">Nếu bạn không tạo tài khoản này, vui lòng bỏ qua email và không chia sẻ liên kết cho bất kỳ ai.</p>
+                    <p style="margin: 20px 0 0 0; font-weight: bold;">© 2026 E-Box System.</p>
+                </div>
             </div>
-
-            <p>
-                Hoặc copy đường dẫn sau:
-            </p>
-
-            <p style="word-break:break-all">
-                {verificationLink}
-            </p>
-
-            <hr>
-
-            <small>
-                Liên kết xác thực có hiệu lực trong 24 giờ.
-            </small>
-
         </div>
         """;
 
         await SendEmailAsync(
             toEmail,
-            "Xác thực tài khoản Locker",
+            "Xác thực tài khoản E-Box",
             body,
             cancellationToken);
     }

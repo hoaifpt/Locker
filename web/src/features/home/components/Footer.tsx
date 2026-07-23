@@ -11,7 +11,7 @@ export default function Footer() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500">
                 <Lock size={16} className="text-white" />
               </span>
-              LuxeLock
+              E-Box
             </a>
             <p className="mt-4 text-sm leading-relaxed">
               Hệ sinh thái tủ khóa thông minh hàng đầu, kết nối và bảo vệ cuộc sống hiện đại.
@@ -84,7 +84,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-16 border-t border-white/10 pt-8 text-center text-xs text-gray-600">
-          © 2024 LuxeLock Systems. Bảo lưu mọi quyền.
+          © 2024 E-Box Systems. Bảo lưu mọi quyền.
         </div>
       </div>
     </footer>

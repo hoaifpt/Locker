@@ -37,7 +37,7 @@ export default function HeroSection() {
               transition={trans(0.2)}
               className="mt-5 max-w-lg text-lg leading-relaxed text-gray-600"
             >
-              LuxeLock là hệ sinh thái phần mềm toàn diện giúp kết nối Khách hàng, Shipper và hệ thống Tủ khóa phần cứng. Đặt đồ ăn, gửi nhận bưu kiện và điều khiển tủ chỉ bằng vài cú chạm.
+              E-Box là hệ sinh thái phần mềm toàn diện giúp kết nối Khách hàng, Shipper và hệ thống Tủ khóa phần cứng. Đặt đồ ăn, gửi nhận bưu kiện và điều khiển tủ chỉ bằng vài cú chạm.
             </motion.p>
 
             {/* CTA Buttons */}

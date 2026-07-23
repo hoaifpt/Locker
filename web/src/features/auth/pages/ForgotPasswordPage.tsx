@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
               <Lock size={16} />
             </span>
-            LuxeLock
+            E-Box
           </Link>
           <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-orange-500">
             ← Quay lại đăng nhập

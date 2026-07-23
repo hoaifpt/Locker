@@ -51,7 +51,7 @@ export default function ResetPasswordPage() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
               <Lock size={16} />
             </span>
-            LuxeLock
+            E-Box
           </Link>
           <Link to="/forgot-password" className="text-sm font-medium text-gray-600 hover:text-orange-500">
             ← Gửi lại OTP

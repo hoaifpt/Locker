@@ -55,7 +55,7 @@ export default function WalletPage() {
           </div>
           <div className="relative z-10 flex items-center justify-between">
             <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
-              <ShieldCheck size={14} /> LuxeLock Pay
+              <ShieldCheck size={14} /> E-Box Pay
             </span>
           </div>
           <div className="relative z-10 mt-6">

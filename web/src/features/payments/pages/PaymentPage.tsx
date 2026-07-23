@@ -11,7 +11,7 @@ const PAYMENT_METHODS = [
   { id: 'vnpay', name: 'VNPay', icon: '🏦', color: 'border-blue-300 bg-blue-50' },
   { id: 'momo', name: 'MoMo', icon: '💜', color: 'border-pink-300 bg-pink-50' },
   { id: 'zalopay', name: 'ZaloPay', icon: '💙', color: 'border-blue-300 bg-sky-50' },
-  { id: 'wallet', name: 'Ví LuxeLock', icon: '🔶', color: 'border-orange-300 bg-orange-50' },
+  { id: 'wallet', name: 'Ví E-Box', icon: '🔶', color: 'border-orange-300 bg-orange-50' },
 ];
 
 export default function PaymentPage() {

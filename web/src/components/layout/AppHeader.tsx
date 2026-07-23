@@ -25,7 +25,7 @@ export default function AppHeader() {
       return [
         { to: '/dashboard', label: 'Bảng điều khiển' },
         { to: '/shipper/tasks', label: 'Giao hàng' },
-        { to: '/wallet', label: 'Ví LuxeLock' },
+        { to: '/wallet', label: 'Ví E-Box' },
       ];
     }
     if (role === 'Admin') {
@@ -40,7 +40,7 @@ export default function AppHeader() {
       { to: '/orders', label: 'Đơn hàng' },
       { to: '/food', label: 'Ăn uống' },
       { to: '/send-receive', label: 'Gửi - Nhận' },
-      { to: '/wallet', label: 'Ví LuxeLock' },
+      { to: '/wallet', label: 'Ví E-Box' },
     ];
   };
 
@@ -54,7 +54,7 @@ export default function AppHeader() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm shadow-orange-200">
             <Lock size={16} />
           </span>
-          LuxeLock
+          E-box
         </Link>
 
         {/* Desktop nav */}
@@ -63,11 +63,10 @@ export default function AppHeader() {
             <Link
               key={link.to}
               to={link.to}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-                location.pathname.startsWith(link.to) && link.to !== '/'
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition ${location.pathname.startsWith(link.to) && link.to !== '/'
                   ? 'bg-orange-50 text-orange-600'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-orange-500'
-              }`}
+                }`}
             >
               {link.label}
             </Link>
@@ -137,11 +136,10 @@ export default function AppHeader() {
                 key={link.to}
                 to={link.to}
                 onClick={() => setMobileOpen(false)}
-                className={`rounded-xl px-4 py-3 text-sm font-medium ${
-                  location.pathname === link.to
+                className={`rounded-xl px-4 py-3 text-sm font-medium ${location.pathname === link.to
                     ? 'bg-orange-50 text-orange-600'
                     : 'text-gray-600 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>

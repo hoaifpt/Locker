@@ -54,7 +54,7 @@ export default function LoginPage() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
               <Lock size={16} />
             </span>
-            LuxeLock
+            E-Box
           </Link>
           <Link
             to="/register"
@@ -79,7 +79,7 @@ export default function LoginPage() {
               Chào mừng trở lại
             </span>
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900">
-              Đăng nhập vào <span className="text-orange-500">LuxeLock</span>
+              Đăng nhập vào <span className="text-orange-500">E-Box</span>
             </h1>
             <p className="mt-2 text-sm text-gray-500">
               Quản lý tủ khóa của bạn mọi lúc, mọi nơi.

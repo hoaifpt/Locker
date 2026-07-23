@@ -26,7 +26,7 @@ export default function Navbar() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
             <Lock size={16} />
           </span>
-          LuxeLock
+          E-Box
         </Link>
 
         {/* Desktop nav */}

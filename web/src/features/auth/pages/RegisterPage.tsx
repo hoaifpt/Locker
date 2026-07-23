@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Eye, EyeOff, User, Phone, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../../lib/api';
 import { hidden, visible, trans } from '../../../lib/animations';
 
 export default function RegisterPage() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [form, setForm] = useState({
@@ -15,14 +17,57 @@ export default function RegisterPage() {
     password: '',
     confirm: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError('');
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: connect API
+    setError('');
+
+    if (form.password !== form.confirm) {
+      setError('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await apiFetch('/auth/register', {
+        method: 'POST',
+        data: {
+          username: form.username,
+          email: form.email,
+          password: form.password,
+          fullName: form.fullName || undefined,
+          phoneNumber: form.phoneNumber || undefined,
+        },
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
+        // Thử phân tích phản hồi lỗi dưới dạng JSON, nhưng xử lý các trường hợp không phải JSON.
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          // Nội dung phản hồi không phải là JSON.
+          // Chúng ta có thể sử dụng statusText làm phương án dự phòng.
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // On success, redirect to email verification page
+      navigate(`/verify-email?email=${encodeURIComponent(form.email)}`);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,7 +83,7 @@ export default function RegisterPage() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
               <Lock size={16} />
             </span>
-            LuxeLock
+            E-box
           </Link>
           <Link
             to="/login"
@@ -63,7 +108,7 @@ export default function RegisterPage() {
               Tạo tài khoản
             </span>
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900">
-              Đăng ký <span className="text-orange-500">LuxeLock</span>
+              Đăng ký <span className="text-orange-500">E-box</span>
             </h1>
             <p className="mt-2 text-sm text-gray-500">
               Miễn phí. Không cần thẻ tín dụng.
@@ -236,12 +281,19 @@ export default function RegisterPage() {
                 </span>
               </label>
 
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
               {/* Submit */}
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-semibold text-white shadow-md shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-semibold text-white shadow-md shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98] disabled:opacity-70"
               >
-                Tạo tài khoản <ChevronRight size={16} />
+                {loading ? 'Đang tạo tài khoản...' : <>Tạo tài khoản <ChevronRight size={16} /></>}
               </button>
             </form>
 

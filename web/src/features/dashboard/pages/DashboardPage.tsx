@@ -76,7 +76,7 @@ function UserDashboard({ userId }: { userId: string }) {
               { to: '/lockers', icon: Package, label: 'Tìm tủ khóa', desc: 'Đặt chỗ mới' },
               { to: '/orders', icon: Clock, label: 'Đơn hàng', desc: 'Xem đơn hàng' },
               { to: '/send-receive', icon: Truck, label: 'Gửi - Nhận', desc: 'Gửi hàng cho bạn bè' },
-              { to: '/wallet', icon: CreditCard, label: 'Ví LuxeLock', desc: 'Nạp tiền & thanh toán' },
+              { to: '/wallet', icon: CreditCard, label: 'Ví E-Box', desc: 'Nạp tiền & thanh toán' },
             ].map((item, i) => (
               <Link key={item.to} to={item.to} className="group flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-orange-200 hover:shadow-md hover:shadow-orange-100/40">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 transition group-hover:bg-orange-500">

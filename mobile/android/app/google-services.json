@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "387468164943",
+    "project_id": "locker-c469d",
+    "storage_bucket": "locker-c469d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387468164943:android:c60d0260f55d271c70cf3a",
+        "android_client_info": {
+          "package_name": "com.hoaitran.locker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSLhTwVsLGKk-3SkTqHvnnwPzdpIbxdYg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

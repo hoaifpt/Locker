@@ -4,6 +4,7 @@ import 'package:locker_mobile/features/auth/domain/repositories/i_auth_repositor
 import 'package:locker_mobile/features/auth/domain/usecases/check_login_usecase.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:locker_mobile/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/resend_verification_email_usecase.dart';
 import 'package:locker_mobile/features/auth/presentation/controllers/auth_cubit.dart';
 import 'package:locker_mobile/features/auth/presentation/controllers/verify_email_cubit.dart';
@@ -50,6 +51,7 @@ void configureDependencies() {
   getIt.registerLazySingleton(() => LoginUsecase(getIt()));
   getIt.registerLazySingleton(() => LogoutUsecase(getIt()));
   getIt.registerLazySingleton(() => CheckLoginUsecase(getIt()));
+  getIt.registerLazySingleton(() => SignInWithGoogleUsecase(getIt()));
   getIt.registerLazySingleton(
     () => ResendVerificationEmailUseCase(getIt<IAuthRepository>()),
   );
@@ -62,6 +64,7 @@ void configureDependencies() {
       loginUsecase: getIt(),
       logoutUsecase: getIt(),
       checkLoginUsecase: getIt(),
+      signInWithGoogleUsecase: getIt(),
     ),
   );
   getIt.registerFactory(

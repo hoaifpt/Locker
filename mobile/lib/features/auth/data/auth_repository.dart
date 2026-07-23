@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -14,11 +16,10 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<bool> login(String username, String password) async {
     try {
-      final response =
-          await _apiClient.client.post(ApiEndpoints.authLogin, data: {
-        'identifier': username,
-        'password': password,
-      });
+      final response = await _apiClient.client.post(
+        ApiEndpoints.authLogin,
+        data: {'identifier': username, 'password': password},
+      );
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -41,6 +42,71 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
+  /// Đăng nhập với Google thông qua Firebase, sau đó trao đổi token với backend
+  @override
+  Future<bool> signInWithGoogle() async {
+    try {
+      // 1. Bắt đầu quy trình đăng nhập Google
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      // Người dùng có thể hủy quy trình đăng nhập
+      if (googleUser == null) {
+        return false;
+      }
+
+      // 2. Lấy thông tin xác thực từ tài khoản Google
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // 3. Tạo credential cho Firebase từ token của Google
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // 4. Đăng nhập vào Firebase với credential
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser == null) {
+        throw AppException('Đăng nhập Firebase thất bại, không có người dùng.');
+      }
+
+      // 5. Lấy Firebase ID token để gửi về backend của bạn
+      final idToken = await firebaseUser.getIdToken();
+      if (idToken == null) {
+        throw AppException('Không thể lấy Firebase ID token.');
+      }
+
+      // 6. Gửi token đến backend để xác thực và nhận về JWT của hệ thống
+      final response = await _apiClient.client.post(
+        ApiEndpoints.authGoogleLogin, // Endpoint này cần được tạo ở backend
+        data: {'token': idToken},
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final access = data['token'] as String?;
+        final refresh = data['refreshToken'] as String?;
+
+        if (access != null && refresh != null) {
+          await _saveTokens(access, refresh);
+          return true;
+        }
+      }
+      return false;
+    } on FirebaseAuthException catch (e) {
+      throw AppException('Lỗi xác thực Firebase: ${e.message}');
+    } catch (e) {
+      // Đảm bảo đăng xuất khỏi Google nếu có lỗi xảy ra ở các bước sau
+      await GoogleSignIn().signOut();
+      await FirebaseAuth.instance.signOut();
+      throw AppException('Lỗi đăng nhập Google: $e');
+    }
+  }
+
   /// Refresh token nếu cần (backend: /api/auth/refresh)
   @override
   Future<void> refreshToken() async {
@@ -50,10 +116,10 @@ class AuthRepository implements IAuthRepository {
       throw UnauthorizedException('Thiếu refresh token');
     }
 
-    final response =
-        await _apiClient.client.post(ApiEndpoints.authRefresh, data: {
-      'refreshToken': refresh,
-    });
+    final response = await _apiClient.client.post(
+      ApiEndpoints.authRefresh,
+      data: {'refreshToken': refresh},
+    );
 
     final data = response.data;
     final access = data['token'] as String?;
@@ -97,9 +163,10 @@ class AuthRepository implements IAuthRepository {
 
     if (callServer && refresh != null) {
       try {
-        await _apiClient.client.post(ApiEndpoints.authLogout, data: {
-          'refreshToken': refresh,
-        });
+        await _apiClient.client.post(
+          ApiEndpoints.authLogout,
+          data: {'refreshToken': refresh},
+        );
       } catch (_) {
         // Bỏ qua lỗi logout server để vẫn xóa token local
       }

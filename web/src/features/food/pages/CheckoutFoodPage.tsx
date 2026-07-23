@@ -15,7 +15,7 @@ export default function CheckoutFoodPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { show: showToast } = useToast();
-  
+
   const state = location.state as { restaurant: SeedRestaurant, cartItems: CartItem[], totalPrice: number } | null;
 
   const [lockers, setLockers] = useState<SeedLocker[]>([]);
@@ -75,7 +75,7 @@ export default function CheckoutFoodPage() {
               </div>
               <h2 className="font-bold text-gray-900">{restaurant.name}</h2>
             </div>
-            
+
             <div className="space-y-4">
               {cartItems.map((item) => (
                 <div key={item.id} className="flex justify-between items-start text-sm">
@@ -83,14 +83,13 @@ export default function CheckoutFoodPage() {
                     <span className="font-semibold text-gray-900">{item.quantity}x</span>
                     <div>
                       <p className="font-medium text-gray-800">{item.name}</p>
-                      {item.notes && <p className="text-xs text-gray-500 mt-0.5">{item.notes}</p>}
                     </div>
                   </div>
                   <span className="font-medium text-gray-900">{(item.price * item.quantity).toLocaleString('vi-VN')}đ</span>
                 </div>
               ))}
             </div>
-            
+
             <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Tạm tính</span>
@@ -108,12 +107,12 @@ export default function CheckoutFoodPage() {
             <h2 className="mb-4 flex items-center gap-2 font-bold text-gray-900">
               <MapPin size={18} className="text-orange-500" /> Tủ khóa nhận đồ ăn
             </h2>
-            
+
             <div className="space-y-4 rounded-2xl bg-gray-50 p-4 border border-gray-100">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">Chọn Tủ khóa gần bạn</label>
-                <select 
-                  value={selectedLocker} 
+                <select
+                  value={selectedLocker}
                   onChange={e => { setSelectedLocker(e.target.value); setSelectedSlot(null); }}
                   className="w-full rounded-xl border border-gray-200 bg-white py-3 px-4 text-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                 >
@@ -123,7 +122,7 @@ export default function CheckoutFoodPage() {
                   ))}
                 </select>
               </div>
-              
+
               {currentLocker && (
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">Chọn ô tủ nhận hàng</label>
@@ -131,18 +130,17 @@ export default function CheckoutFoodPage() {
                     {currentLocker.slots.map(slot => {
                       const isAvailable = slot.status === 'Available';
                       return (
-                        <button 
-                          key={slot.index} 
-                          type="button" 
-                          disabled={!isAvailable} 
+                        <button
+                          key={slot.index}
+                          type="button"
+                          disabled={!isAvailable}
                           onClick={() => setSelectedSlot(slot.index)}
-                          className={`rounded-xl border py-2 text-xs font-semibold transition ${
-                            selectedSlot === slot.index 
-                              ? 'border-orange-500 bg-orange-100 text-orange-700 shadow-sm' 
-                              : isAvailable 
-                                ? 'border-green-200 bg-white text-green-700 hover:border-orange-300' 
+                          className={`rounded-xl border py-2 text-xs font-semibold transition ${selectedSlot === slot.index
+                              ? 'border-orange-500 bg-orange-100 text-orange-700 shadow-sm'
+                              : isAvailable
+                                ? 'border-green-200 bg-white text-green-700 hover:border-orange-300'
                                 : 'border-gray-200 bg-gray-100 text-gray-400 opacity-50 cursor-not-allowed'
-                          }`}
+                            }`}
                         >
                           Ô {slot.index + 1}
                         </button>
@@ -155,12 +153,12 @@ export default function CheckoutFoodPage() {
 
             <div className="mt-4">
               <label className="mb-1.5 block text-sm font-medium text-gray-700">Ghi chú giao hàng (Tùy chọn)</label>
-              <input 
-                type="text" 
-                value={notes} 
-                onChange={e => setNotes(e.target.value)} 
+              <input
+                type="text"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
                 placeholder="Ví dụ: Lấy nhiều muỗng đũa..."
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100" 
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
               />
             </div>
           </motion.div>
@@ -176,7 +174,7 @@ export default function CheckoutFoodPage() {
                   <ShieldCheck size={20} />
                 </div>
                 <div>
-                  <p className="font-semibold text-orange-900">LuxeLock Pay</p>
+                  <p className="font-semibold text-orange-900">E-Box Pay</p>
                   <p className="text-xs text-orange-700">Số dư: 1,500,000đ</p>
                 </div>
               </div>
@@ -189,8 +187,8 @@ export default function CheckoutFoodPage() {
               <span className="font-medium text-gray-500">Tổng thanh toán</span>
               <span className="text-2xl font-extrabold text-orange-500">{finalTotal.toLocaleString('vi-VN')}đ</span>
             </div>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={submitting || !selectedLocker || selectedSlot === null}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(249,115,22,0.3)] transition hover:bg-orange-600 active:scale-95 disabled:opacity-60 disabled:shadow-none"
             >

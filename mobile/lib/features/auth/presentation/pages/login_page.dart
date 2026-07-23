@@ -6,6 +6,7 @@ import '../../../../shared/widgets/app_button.dart';
 import '../../data/auth_repository.dart';
 import '../../domain/usecases/check_login_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/sign_in_with_google_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../controllers/auth_cubit.dart';
 import '../controllers/auth_state.dart';
@@ -21,6 +22,7 @@ class LoginPage extends StatelessWidget {
         loginUsecase: LoginUsecase(repo),
         logoutUsecase: LogoutUsecase(repo),
         checkLoginUsecase: CheckLoginUsecase(repo),
+        signInWithGoogleUsecase: SignInWithGoogleUsecase(repo),
       ),
       child: const _LoginView(),
     );
@@ -185,6 +187,57 @@ class _LoginViewState extends State<_LoginView> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 24),
+                    const Row(
+                      children: [
+                        Expanded(child: Divider(color: Color(0xFFD1D1D6))),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'hoặc tiếp tục với',
+                            style: TextStyle(color: Color(0xFF6C6C6C)),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Color(0xFFD1D1D6))),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: BlocBuilder<AuthCubit, AuthState>(
+                        builder: (context, state) {
+                          final loading = state is AuthLoading;
+                          return ElevatedButton.icon(
+                            onPressed: loading
+                                ? null
+                                : () => context
+                                      .read<AuthCubit>()
+                                      .signInWithGoogle(),
+                            icon: Image.asset(
+                              'assets/google_logo.png',
+                              height: 22,
+                              width: 22,
+                            ),
+                            label: const Text(
+                              'Đăng nhập với Google',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1C1C1E),
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFFEB6C4B),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              side: const BorderSide(color: Color(0xFFE5E5EA)),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                     const SizedBox(height: 18),
                   ],

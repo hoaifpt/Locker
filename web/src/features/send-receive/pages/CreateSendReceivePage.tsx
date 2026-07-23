@@ -49,7 +49,7 @@ export default function CreateSendReceivePage() {
 
         <motion.div initial={hidden} animate={visible} transition={trans(0)} className="mb-6">
           <h1 className="text-2xl font-extrabold text-gray-900">Tạo đơn gửi hàng</h1>
-          <p className="mt-1 text-sm text-gray-500">Gửi đồ cho bạn bè qua tủ khóa LuxeLock.</p>
+          <p className="mt-1 text-sm text-gray-500">Gửi đồ cho bạn bè qua tủ khóa E-Box.</p>
         </motion.div>
 
         <motion.form initial={hidden} animate={visible} transition={trans(0.1)} onSubmit={handleSubmit} className="space-y-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">

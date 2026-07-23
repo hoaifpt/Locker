@@ -37,7 +37,7 @@ export default function RestaurantsPage() {
             Giao đồ ăn đến <span className="text-orange-500">Tủ khóa</span>
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Đặt món ngon từ các nhà hàng yêu thích và nhận ngay tại tủ khóa LuxeLock của bạn.
+            Đặt món ngon từ các nhà hàng yêu thích và nhận ngay tại tủ khóa E-Box của bạn.
           </p>
           
           {/* Current Location Banner */}

@@ -1,5 +1,12 @@
 import 'package:get_it/get_it.dart';
 import 'package:locker_mobile/features/auth/data/auth_repository.dart';
+import 'package:locker_mobile/features/notifications/data/notification_repository.dart';
+import 'package:locker_mobile/features/notifications/domain/repositories/i_notification_repository.dart';
+import 'package:locker_mobile/features/notifications/domain/usecases/get_notifications_usecase.dart';
+import 'package:locker_mobile/features/notifications/domain/usecases/mark_all_as_read_usecase.dart';
+import 'package:locker_mobile/features/notifications/domain/usecases/mark_as_read_usecase.dart';
+import 'package:locker_mobile/features/notifications/domain/usecases/register_device_usecase.dart';
+import 'package:locker_mobile/features/notifications/presentation/controllers/notification_cubit.dart';
 import 'package:locker_mobile/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/check_login_usecase.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/login_usecase.dart';
@@ -65,6 +72,7 @@ void configureDependencies() {
       logoutUsecase: getIt(),
       checkLoginUsecase: getIt(),
       signInWithGoogleUsecase: getIt(),
+      registerDeviceUsecase: getIt(),
     ),
   );
   getIt.registerFactory(
@@ -135,6 +143,33 @@ void configureDependencies() {
       getActiveLockers: getIt(),
       getNearbyLockers: getIt(),
       getUserProfile: getIt(),
+    ),
+  );
+
+  //========================================================================
+  //                             NOTIFICATIONS
+  //========================================================================
+
+  // Repositories
+  getIt.registerLazySingleton<INotificationRepository>(
+    () => NotificationRepository(),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(
+    () => GetNotificationsUsecase(repository: getIt()),
+  );
+  getIt.registerLazySingleton(() => MarkAsReadUsecase(repository: getIt()));
+  getIt.registerLazySingleton(() => MarkAllAsReadUsecase(repository: getIt()));
+  getIt.registerLazySingleton(() => RegisterDeviceUsecase(repository: getIt()));
+
+  // Cubits
+  getIt.registerFactory(
+    () => NotificationCubit(
+      getNotifications: getIt(),
+      markAsRead: getIt(),
+      markAllAsRead: getIt(),
+      registerDevice: getIt(),
     ),
   );
 }

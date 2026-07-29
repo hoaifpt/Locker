@@ -89,5 +89,6 @@ class ApiEndpoints {
   static const String packages = '/packages';
   static String packageById(String id) => '/packages/$id';
   // Endpoint for exchanging a Firebase ID token for a custom backend JWT
-  static const String authGoogleLogin = '/auth/google-login';
+  static const String authGoogleLogin = '/auth/google';
+  static const String registerDevice = '/notifications/register-device';
 }

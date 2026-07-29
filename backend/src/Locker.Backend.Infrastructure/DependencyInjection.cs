@@ -11,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Locker.Backend.Domain.Entities;
 using Resend;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 namespace Locker.Backend.Infrastructure;
 
@@ -18,15 +20,35 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var firebaseKeyPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Firebase",
+            "firebase-admin.json");
+
+        if (FirebaseApp.DefaultInstance == null)
+        {
+            FirebaseApp.Create(new AppOptions
+            {
+                Credential = GoogleCredential.FromFile(firebaseKeyPath)
+            });
+        }
+
         services.Configure<MongoSettings>(configuration.GetSection("Mongo"));
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.Configure<ResendSettings>(configuration.GetSection("Resend"));
+
         services.AddHttpClient();
-        services.AddResend(options =>{options.ApiToken = configuration["Resend:ApiKey"]!;});
+
+        services.AddResend(options =>
+        {
+            options.ApiToken = configuration["Resend:ApiKey"]!;
+        });
+
         services.Configure<AppSettings>(configuration.GetSection("App"));
         services.Configure<VnPaySettings>(configuration.GetSection("VnPay"));
 
         services.AddSingleton<MongoContext>();
+        services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
         services.AddScoped<ILockerRepository, LockerRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
@@ -43,16 +65,22 @@ public static class DependencyInjection
         services.AddScoped<IDeliveryRequestRepository, DeliveryRequestRepository>();
         services.AddScoped<ISendReceiveOrderRepository, SendReceiveOrderRepository>();
         services.AddScoped<ILockerEventRepository, LockerEventRepository>();
+
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IEmailService, ResendEmailService>();
         services.AddScoped<IIdentifierValidator, IdentifierValidator>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IVnPayService, VnPayService>();
+
         services.AddHostedService<OverdueOrderBackgroundService>();
 
-        var mongoConnectionString = configuration.GetSection("Mongo:ConnectionString").Value ?? "mongodb://localhost:27017/LockerDb";
-        var mongoDatabaseName = configuration.GetSection("Mongo:DatabaseName").Value ?? "LockerDb";
+        var mongoConnectionString = configuration["Mongo:ConnectionString"]
+            ?? "mongodb://localhost:27017/LockerDb";
+
+        var mongoDatabaseName = configuration["Mongo:DatabaseName"]
+            ?? "LockerDb";
+
         var mongoDbIdentityConfig = new MongoDbIdentityConfiguration
         {
             MongoDbSettings = new MongoDbSettings
@@ -60,14 +88,14 @@ public static class DependencyInjection
                 ConnectionString = mongoConnectionString,
                 DatabaseName = mongoDatabaseName
             },
-            IdentityOptionsAction = identityOptions =>
+            IdentityOptionsAction = options =>
             {
-                identityOptions.Password.RequireDigit = true;
-                identityOptions.Password.RequiredLength = 8;
-                identityOptions.Password.RequireNonAlphanumeric = false;
-                identityOptions.Password.RequireUppercase = true;
-                identityOptions.Password.RequireLowercase = true;
-                identityOptions.User.RequireUniqueEmail = true;
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.User.RequireUniqueEmail = true;
             }
         };
 

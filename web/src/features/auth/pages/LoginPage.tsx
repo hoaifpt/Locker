@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Lock, User, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { mockLogin } from '../../../mocks/seed';
+import { apiFetch } from '../../../lib/api';
 
 const ERROR_MSG: Record<string, string> = {
   NOT_FOUND: 'Tên đăng nhập hoặc email không tồn tại.',
@@ -21,25 +21,48 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    // Simulate network delay — swap for real API call when backend is ready
-    await new Promise((r) => setTimeout(r, 500));
-    const result = mockLogin(identifier.trim(), password);
-    setLoading(false);
-    if ('error' in result) {
-      setError(ERROR_MSG[result.error] ?? 'Đăng nhập thất bại.');
-      return;
+  e.preventDefault();
+  setError('');
+  setLoading(true);
+
+  try {
+    const response = await apiFetch('/auth/login', {
+      method: 'POST',
+      data: {
+        identifier: identifier.trim(),
+        password: password,
+      },
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Đăng nhập thất bại.';
+
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {}
+
+      throw new Error(errorMessage);
     }
-    // Save session to localStorage
-    localStorage.setItem('token', 'mock-jwt-token');
-    localStorage.setItem('userId', result.user.id);
-    localStorage.setItem('username', result.user.username);
-    localStorage.setItem('fullName', result.user.fullName);
-    localStorage.setItem('role', result.user.role);
+
+    const data = await response.json();
+
+    // Lưu token
+    localStorage.setItem('token', data.token);
+
+    // Lưu thông tin người dùng
+    localStorage.setItem('userId', data.user.id);
+    localStorage.setItem('username', data.user.username);
+    localStorage.setItem('fullName', data.user.fullName);
+    localStorage.setItem('role', data.user.role);
+
     navigate('/dashboard');
-  };
+  } catch (err: any) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#F9F8F6] font-sans antialiased">

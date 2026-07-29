@@ -12,7 +12,20 @@
           "package_name": "com.hoaitran.locker"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "387468164943-rji61emc3507shkrc6b2hobqiggqk178.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hoaitran.locker",
+            "certificate_hash": "f4cd7674f2336f25367e2c26d1d8ae3dacb6363d"
+          }
+        },
+        {
+          "client_id": "387468164943-78bb528qtgn401dkqh0ptqvc8op9gpjk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBSLhTwVsLGKk-3SkTqHvnnwPzdpIbxdYg"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "387468164943-78bb528qtgn401dkqh0ptqvc8op9gpjk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "387468164943-5u9ga9v54pknsfts7dre61b014jtkvmi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.lockerMobile"
+              }
+            }
+          ]
         }
       }
     }

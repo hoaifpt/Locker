@@ -83,7 +83,7 @@ class AuthRepository implements IAuthRepository {
       // 6. Gửi token đến backend để xác thực và nhận về JWT của hệ thống
       final response = await _apiClient.client.post(
         ApiEndpoints.authGoogleLogin, // Endpoint này cần được tạo ở backend
-        data: {'token': idToken},
+        data: {'idToken': idToken},
       );
 
       if (response.statusCode == 200) {

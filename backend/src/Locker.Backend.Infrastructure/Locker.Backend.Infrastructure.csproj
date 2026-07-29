@@ -8,6 +8,7 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="7.0.0" />
         <PackageReference Include="DnsClient" Version="1.7.0" />
+        <PackageReference Include="FirebaseAdmin" Version="3.6.0" />
         <PackageReference Include="libphonenumber-csharp" Version="8.13.52" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
         <PackageReference Include="MongoDB.Driver" Version="3.4.2" />

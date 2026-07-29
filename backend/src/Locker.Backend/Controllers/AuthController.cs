@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-
 using MediatR;
 using Locker.Backend.Application.Features.Auth.Commands.Login;
 using Locker.Backend.Application.Features.Auth.Commands.Register;
 using Locker.Backend.Application.Features.Auth.Commands.ResendVerificationEmail;
 using Locker.Backend.Application.Features.Auth.Commands.VerifyEmail;
 using Locker.Backend.Application.Features.Auth.Commands.RefreshToken;
+using Locker.Backend.Application.Features.Auth.Commands.GoogleLogin;
 using Locker.Backend.Application.Features.Auth.Commands.Logout;
 using Locker.Backend.Application.Features.Auth.Commands.LogoutAll;
 using Locker.Backend.Application.Features.Auth.Commands.SendForgotPasswordOtp;
@@ -146,5 +146,20 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = error });
 
         return Ok(new { message = "Mật khẩu đã được đặt lại thành công." });
+    }
+
+    [HttpPost("google")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GoogleLogin(
+    [FromBody] GoogleLoginRequest request,
+    CancellationToken cancellationToken)
+    {
+        var (response, error) =
+            await _sender.Send(new GoogleLoginCommand(request.IdToken), cancellationToken);
+
+        if (response == null)
+            return Unauthorized(new { message = error });
+
+        return Ok(response);
     }
 }

@@ -11,10 +11,16 @@
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true">
+        
         <meta-data
             android:name="com.mapbox.accessToken"
             android:value="${mapboxAccessToken}"
         />
+
+        <!-- 🔔 Kênh thông báo mặc định cho Firebase Cloud Messaging -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="smart_locker_channel" />
 
         <activity
             android:name=".MainActivity"
@@ -55,7 +61,7 @@
             <data android:scheme="http" />
         </intent>
 
-        <!-- Cho text processing (cái cũ của bạn) -->
+        <!-- Cho text processing -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />

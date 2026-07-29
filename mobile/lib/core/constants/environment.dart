@@ -4,7 +4,7 @@ class Environment {
 
   static const String _api = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.hoaitran.online/api',
+    defaultValue: 'http://10.0.2.2:5000/api',
   );
   //https://api.hoaitran.online/api
   //http://10.0.2.2:5000/api

@@ -1,13 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/routes/injection.dart';
 import '../../../../shared/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_button.dart';
-import '../../data/auth_repository.dart';
-import '../../domain/usecases/check_login_usecase.dart';
-import '../../domain/usecases/login_usecase.dart';
-import '../../domain/usecases/sign_in_with_google_usecase.dart';
-import '../../domain/usecases/logout_usecase.dart';
 import '../controllers/auth_cubit.dart';
 import '../controllers/auth_state.dart';
 
@@ -16,14 +12,8 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repo = AuthRepository();
     return BlocProvider(
-      create: (_) => AuthCubit(
-        loginUsecase: LoginUsecase(repo),
-        logoutUsecase: LogoutUsecase(repo),
-        checkLoginUsecase: CheckLoginUsecase(repo),
-        signInWithGoogleUsecase: SignInWithGoogleUsecase(repo),
-      ),
+      create: (_) => getIt<AuthCubit>(),
       child: const _LoginView(),
     );
   }

@@ -21,48 +21,47 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError('');
-  setLoading(true);
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-  try {
-    const response = await apiFetch('/auth/login', {
-      method: 'POST',
-      data: {
-        identifier: identifier.trim(),
-        password: password,
-      },
-    });
+    try {
+      const response = await apiFetch('/auth/login', {
+        method: 'POST',
+        data: {
+          identifier: identifier.trim(),
+          password: password,
+        },
+      });
 
-    if (!response.ok) {
-      let errorMessage = 'Đăng nhập thất bại.';
+      if (!response.ok) {
+        let errorMessage = 'Đăng nhập thất bại.';
 
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || errorMessage;
-      } catch {}
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch { }
 
-      throw new Error(errorMessage);
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+
+      // Lưu token
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('refreshToken', data.refreshToken);
+
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('role', data.role);
+      localStorage.setItem('expiresAt', data.expiresAt);
+
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    const data = await response.json();
-
-    // Lưu token
-    localStorage.setItem('token', data.token);
-
-    // Lưu thông tin người dùng
-    localStorage.setItem('userId', data.user.id);
-    localStorage.setItem('username', data.user.username);
-    localStorage.setItem('fullName', data.user.fullName);
-    localStorage.setItem('role', data.user.role);
-
-    navigate('/dashboard');
-  } catch (err: any) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#F9F8F6] font-sans antialiased">

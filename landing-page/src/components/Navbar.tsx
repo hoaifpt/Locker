@@ -53,11 +53,11 @@ export default function Navbar() {
             <img
               src="/LOGO-EBOX.png"
               alt="E-BOX Logo"
-              className="h-12 md:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-8 sm:h-12 md:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
-            <div className="hidden sm:block">
-              <span className="text-xl md:text-2xl font-black text-gray-800">E</span>
-              <span className="text-xl md:text-2xl font-black gradient-text">-BOX</span>
+            <div className="block">
+              <span className="text-lg sm:text-xl md:text-2xl font-black text-gray-800">E</span>
+              <span className="text-lg sm:text-xl md:text-2xl font-black gradient-text">-BOX</span>
             </div>
           </a>
 

@@ -38,22 +38,22 @@ export default function Navbar() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        scrolled ? 'pt-2' : 'pt-4'
+        scrolled ? 'pt-1 md:pt-2' : 'pt-2 md:pt-4'
       }`}
     >
       {/* Glass container */}
       <div
-        className={`mx-4 md:mx-8 rounded-2xl transition-all duration-500 ${
+        className={`mx-3 sm:mx-4 md:mx-8 rounded-2xl transition-all duration-500 ${
           scrolled ? 'liquid-glass-nav' : ''
         }`}
       >
-        <div className="mx-auto flex h-14 md:h-16 max-w-7xl items-center justify-between px-4 md:px-6">
+        <div className="mx-auto flex h-12 sm:h-14 md:h-16 max-w-7xl items-center justify-between px-3 sm:px-4 md:px-6">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2 md:gap-3 group">
             <img
               src="/LOGO-EBOX.png"
               alt="E-BOX Logo"
-              className="h-8 sm:h-12 md:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-7 sm:h-12 md:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
             <div className="block">
               <span className="text-lg sm:text-xl md:text-2xl font-black text-gray-800">E</span>

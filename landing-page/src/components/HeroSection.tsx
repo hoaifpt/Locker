@@ -3,7 +3,7 @@ import { GOOGLE_PLAY_URL } from '../lib/constants';
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center pt-20 pb-16 overflow-hidden" style={{ backgroundColor: '#FFFBF7' }}>
+    <section className="relative min-h-screen flex items-center pt-28 sm:pt-32 md:pt-24 pb-16 overflow-hidden" style={{ backgroundColor: '#FFFBF7' }}>
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Gradient mesh */}

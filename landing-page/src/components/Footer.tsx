@@ -211,7 +211,7 @@ export default function Footer() {
         <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
             <div className="text-gray-500 text-xs sm:text-sm">
-              © {new Date().getFullYear()} E-BOX. All rights reserved. Developed by SWP391 Team.
+              © {new Date().getFullYear()} E-BOX. All rights reserved. Developed by E-BOX team.
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm flex-wrap justify-center">
               <a href="#" className="text-gray-500 hover:text-orange-400 transition-colors">

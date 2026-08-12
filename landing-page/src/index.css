@@ -565,12 +565,11 @@ body {
     0 2px 10px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
-  outline: 2px dashed red;
-  outline-offset: 2px;
 }
 .menu-button > svg {
-  outline: 2px dashed blue;
-  outline-offset: 2px;
+  margin: auto;
+  display: block;
+  vertical-align: middle;
 }
 
 .menu-button:hover {

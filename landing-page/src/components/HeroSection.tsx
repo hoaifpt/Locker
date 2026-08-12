@@ -97,12 +97,12 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right: SMALL illustrative locker cabinet */}
+          {/* Right: Compact white cabinet with BIG touch screen */}
           <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-300/20 to-orange-500/20 blur-3xl transform scale-110 rounded-3xl" />
 
-            {/* Cabinet - small, illustrative, real-product look */}
-            <div className="relative" style={{ width: 'min(420px, 95vw)' }}>
+            {/* Cabinet - small, white, with big touch LCD */}
+            <div className="relative" style={{ width: 'min(440px, 95vw)' }}>
               {/* Orange top header */}
               <div className="relative bg-gradient-to-b from-orange-500 to-orange-600 rounded-t-2xl shadow-lg px-4 py-2 flex items-center justify-center">
                 <span className="text-white text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase">
@@ -118,115 +118,111 @@ export default function HeroSection() {
                 </div>
               </div>
 
-              {/* Cabinet body */}
-              <div className="bg-gradient-to-b from-[#FF7A1A] to-[#FF6B0A] p-2 shadow-2xl rounded-b-2xl">
-                <div className="grid grid-cols-12 gap-0.5 sm:gap-1">
+              {/* Cabinet body - FULL WHITE */}
+              <div className="bg-gradient-to-b from-white to-gray-50 p-1.5 sm:p-2 shadow-2xl rounded-b-2xl border border-gray-200">
+                <div className="grid grid-cols-12 gap-1 sm:gap-1.5">
                   {/* Left column - B18 small lockers */}
-                  <div className="col-span-3 bg-gradient-to-b from-[#F5F2ED] to-[#E8E3D9] p-1 rounded-sm space-y-0.5">
+                  <div className="col-span-3 space-y-0.5">
                     {colLeft.map((n) => (
                       <div
                         key={n}
-                        className="relative h-3 sm:h-4 bg-gradient-to-b from-white to-[#F8F5F0] rounded-[1px] border border-[#E0DAD0] flex items-center justify-center shadow-sm"
+                        className="relative h-3 sm:h-4 bg-gradient-to-b from-white to-gray-50 rounded-[1px] border border-gray-300 flex items-center justify-center shadow-sm"
                       >
-                        <span className="text-[6px] sm:text-[7px] font-bold text-[#8B7E6A]">B{n.toString().padStart(2, '0')}</span>
-                        <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-px h-1.5 bg-[#D0C8B8] rounded-full" />
+                        <span className="text-[6px] sm:text-[7px] font-bold text-gray-500">B{n.toString().padStart(2, '0')}</span>
+                        <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-px h-1.5 bg-gray-400 rounded-full" />
                       </div>
                     ))}
                   </div>
 
-                  {/* Center - LCD + A column */}
-                  <div className="col-span-6 flex gap-0.5 sm:gap-1">
-                    {/* Left A column (top half) */}
-                    <div className="flex-1 bg-gradient-to-b from-[#F5F2ED] to-[#E8E3D9] p-1 rounded-sm space-y-0.5">
-                      {colCenterTop.slice(0, 6).map((n) => (
-                        <div
-                          key={n}
-                          className="relative h-3 sm:h-4 bg-gradient-to-b from-white to-[#F8F5F0] rounded-[1px] border border-[#E0DAD0] flex items-center justify-center shadow-sm"
-                        >
-                          <span className="text-[6px] sm:text-[7px] font-bold text-[#8B7E6A]">A{n.toString().padStart(2, '0')}</span>
-                          <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-px h-1.5 bg-[#D0C8B8] rounded-full" />
-                        </div>
-                      ))}
-                    </div>
+                  {/* Center - BIG LCD touch screen (spans full center column) */}
+                  <div className="col-span-6 flex flex-col gap-1">
+                    {/* BIG TOUCH LCD SCREEN */}
+                    <div className="relative flex-1 bg-gradient-to-br from-gray-900 to-black rounded-md p-1.5 sm:p-2 border-2 border-orange-400 shadow-inner overflow-hidden">
+                      {/* Screen reflection */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
+                      {/* Scan line */}
+                      <div className="absolute left-1 right-1 h-px bg-orange-400" style={{ animation: 'scan-line 2.5s linear infinite', top: '50%' }} />
 
-                    {/* LCD center column */}
-                    <div className="w-10 sm:w-12 flex flex-col gap-0.5">
-                      {/* LCD screen */}
-                      <div className="flex-1 bg-gradient-to-br from-gray-900 to-black rounded-sm p-1 border border-orange-300 flex flex-col items-center justify-center relative overflow-hidden">
-                        <div className="text-white text-[5px] sm:text-[6px] font-bold tracking-tight leading-tight">IT</div>
-                        <div className="text-orange-400 text-[5px] sm:text-[6px] font-bold tracking-tight leading-tight">SMART</div>
-                        <div className="text-orange-400 text-[5px] sm:text-[6px] font-bold tracking-tight leading-tight">LOCKER</div>
-                        <div className="mt-0.5 space-y-0.5 w-full px-0.5">
-                          <div className="h-px w-full bg-orange-400 opacity-80 animate-pulse" />
-                          <div className="h-px w-3/4 bg-white/60" />
-                          <div className="h-px w-2/3 bg-white/40" />
+                      <div className="relative h-full flex flex-col items-center justify-center text-center gap-1">
+                        {/* Logo/Title */}
+                        <div className="text-orange-400 text-[7px] sm:text-[9px] font-black tracking-widest">IT SMART</div>
+                        <div className="text-white text-[6px] sm:text-[8px] font-bold tracking-widest">LOCKER</div>
+
+                        {/* QR Code */}
+                        <div className="my-0.5 sm:my-1 bg-white p-1 rounded-sm">
+                          <div className="w-10 h-10 sm:w-14 sm:h-14 bg-black rounded-sm relative overflow-hidden">
+                            <div className="absolute inset-0.5 grid grid-cols-5 gap-px">
+                              {[...Array(25)].map((_, i) => (
+                                <div
+                                  key={i}
+                                  className={`rounded-sm ${[0,1,2,3,4,5,9,10,14,15,16,20,21,22,23,24].includes(i) ? 'bg-white' : 'bg-black'}`}
+                                />
+                              ))}
+                            </div>
+                            <div className="absolute top-0.5 left-0.5 w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-sm">
+                              <div className="absolute inset-0.5 bg-black rounded-sm">
+                                <div className="absolute inset-0.5 bg-white rounded-sm" />
+                              </div>
+                            </div>
+                            <div className="absolute top-0.5 right-0.5 w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-sm">
+                              <div className="absolute inset-0.5 bg-black rounded-sm">
+                                <div className="absolute inset-0.5 bg-white rounded-sm" />
+                              </div>
+                            </div>
+                            <div className="absolute bottom-0.5 left-0.5 w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-sm">
+                              <div className="absolute inset-0.5 bg-black rounded-sm">
+                                <div className="absolute inset-0.5 bg-white rounded-sm" />
+                              </div>
+                            </div>
+                            <div className="absolute left-0.5 right-0.5 h-px bg-orange-500" style={{ animation: 'scan-line 2s linear infinite', top: '50%' }} />
+                          </div>
                         </div>
-                        <div className="absolute left-0.5 right-0.5 h-px bg-orange-400" style={{ animation: 'scan-line 2.5s linear infinite', top: '50%' }} />
+
+                        {/* Status text */}
+                        <div className="text-orange-300 text-[5px] sm:text-[7px] font-bold tracking-wide">QUÉT MÃ QR</div>
+                        <div className="text-white/60 text-[5px] sm:text-[6px]">để mở tủ</div>
+
+                        {/* Action button */}
+                        <div className="mt-0.5 sm:mt-1 px-2 sm:px-3 py-0.5 bg-orange-500 rounded-full text-white text-[5px] sm:text-[7px] font-bold">
+                          BẮT ĐẦU
+                        </div>
                       </div>
-                      {/* Small mini lockers below LCD */}
-                      {colCenterTop.slice(6, 12).map((n) => (
-                        <div
-                          key={n}
-                          className="relative h-3 sm:h-4 bg-gradient-to-b from-white to-[#F8F5F0] rounded-[1px] border border-[#E0DAD0] flex items-center justify-center shadow-sm"
-                        >
-                          <span className="text-[6px] sm:text-[7px] font-bold text-[#8B7E6A]">A{n.toString().padStart(2, '0')}</span>
-                          <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-px h-1.5 bg-[#D0C8B8] rounded-full" />
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Right A column */}
-                    <div className="flex-1 bg-gradient-to-b from-[#F5F2ED] to-[#E8E3D9] p-1 rounded-sm space-y-0.5">
-                      {colCenterTop.slice(0, 6).map((n) => (
-                        <div
-                          key={`r-${n}`}
-                          className="relative h-3 sm:h-4 bg-gradient-to-b from-white to-[#F8F5F0] rounded-[1px] border border-[#E0DAD0] flex items-center justify-center shadow-sm"
-                        >
-                          <span className="text-[6px] sm:text-[7px] font-bold text-[#8B7E6A]">A{n.toString().padStart(2, '0')}</span>
-                          <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-px h-1.5 bg-[#D0C8B8] rounded-full" />
-                        </div>
-                      ))}
                     </div>
                   </div>
 
                   {/* Right column - C18 small lockers */}
-                  <div className="col-span-3 bg-gradient-to-b from-[#F5F2ED] to-[#E8E3D9] p-1 rounded-sm space-y-0.5">
+                  <div className="col-span-3 space-y-0.5">
                     {colRight.map((n) => (
                       <div
                         key={n}
-                        className="relative h-3 sm:h-4 bg-gradient-to-b from-white to-[#F8F5F0] rounded-[1px] border border-[#E0DAD0] flex items-center justify-center shadow-sm"
+                        className="relative h-3 sm:h-4 bg-gradient-to-b from-white to-gray-50 rounded-[1px] border border-gray-300 flex items-center justify-center shadow-sm"
                       >
-                        <span className="text-[6px] sm:text-[7px] font-bold text-[#8B7E6A]">C{n.toString().padStart(2, '0')}</span>
-                        <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-px h-1.5 bg-[#D0C8B8] rounded-full" />
+                        <span className="text-[6px] sm:text-[7px] font-bold text-gray-500">C{n.toString().padStart(2, '0')}</span>
+                        <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-px h-1.5 bg-gray-400 rounded-full" />
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Bottom shelf - A13-A18 */}
-                <div className="mt-1 bg-gradient-to-b from-[#E8E3D9] to-[#D8D0C0] p-1 rounded-sm">
-                  <div className="grid grid-cols-6 gap-0.5">
-                    {colCenterBottom.map((n) => (
-                      <div
-                        key={n}
-                        className="relative h-3 sm:h-4 bg-gradient-to-b from-[#F5F2ED] to-[#E8E3D9] rounded-[1px] border border-[#C8C0B0] flex items-center justify-center shadow-inner"
-                      >
-                        <span className="text-[6px] sm:text-[7px] font-bold text-[#8B7E6A]">A{n.toString().padStart(2, '0')}</span>
-                        <div className="absolute inset-0 opacity-20" style={{
-                          backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.3) 0.5px, transparent 0.5px)',
-                          backgroundSize: '2px 2px'
-                        }} />
-                      </div>
-                    ))}
-                  </div>
+                {/* Bottom shelf - A01-A18 horizontal row */}
+                <div className="mt-1 sm:mt-1.5 grid grid-cols-9 gap-0.5">
+                  {Array.from({ length: 18 }, (_, i) => i + 1).map((n) => (
+                    <div
+                      key={n}
+                      className="relative h-3 sm:h-4 bg-gradient-to-b from-white to-gray-50 rounded-[1px] border border-gray-300 flex items-center justify-center shadow-sm"
+                    >
+                      <span className="text-[6px] sm:text-[7px] font-bold text-gray-500">A{n.toString().padStart(2, '0')}</span>
+                      <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-px h-1.5 bg-gray-400 rounded-full" />
+                    </div>
+                  ))}
                 </div>
               </div>
 
               {/* Cabinet base/legs */}
-              <div className="bg-gradient-to-b from-[#E05A00] to-[#C04A00] h-1.5 rounded-b-md mx-6 shadow-lg" />
+              <div className="bg-gradient-to-b from-gray-200 to-gray-300 h-1.5 rounded-b-md mx-6 shadow-lg" />
               <div className="flex justify-between px-4 sm:px-8 -mt-0.5">
-                <div className="w-10 sm:w-14 h-2 sm:h-3 bg-gradient-to-b from-gray-700 to-gray-900 rounded-b-md shadow-md" />
-                <div className="w-10 sm:w-14 h-2 sm:h-3 bg-gradient-to-b from-gray-700 to-gray-900 rounded-b-md shadow-md" />
+                <div className="w-10 sm:w-14 h-2 sm:h-3 bg-gradient-to-b from-gray-400 to-gray-600 rounded-b-md shadow-md" />
+                <div className="w-10 sm:w-14 h-2 sm:h-3 bg-gradient-to-b from-gray-400 to-gray-600 rounded-b-md shadow-md" />
               </div>
 
               {/* Floor shadow */}

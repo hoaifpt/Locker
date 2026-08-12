@@ -111,41 +111,41 @@ export default function HeroSection() {
               <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-600 blur-3xl opacity-40 scale-110" />
               
               {/* Locker Illustration */}
-              <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-8 shadow-2xl border border-gray-700">
+              <div className="relative bg-gradient-to-br from-white to-orange-50 rounded-3xl p-8 shadow-2xl border border-orange-200">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-xs font-bold text-green-400 uppercase tracking-wider">Online</span>
+                    <span className="text-xs font-bold text-green-600 uppercase tracking-wider">Online</span>
                   </div>
-                  <div className="text-xs text-gray-400 font-mono">v2.0.1</div>
+                  <div className="text-xs text-orange-500 font-mono font-bold">v2.0.1</div>
                 </div>
 
                 {/* Locker Display */}
-                <div className="bg-gray-900 rounded-2xl p-6 mb-6">
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 mb-6 border border-orange-200">
                   <div className="grid grid-cols-3 gap-3">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                       <div
                         key={i}
                         className={`relative h-20 rounded-lg border-2 transition-all duration-300 ${
-                          i === 3 
-                            ? 'border-orange-500 bg-orange-500/20' 
-                            : i === 5 
-                            ? 'border-green-500 bg-green-500/20' 
-                            : 'border-gray-600 bg-gray-800'
+                          i === 3
+                            ? 'border-orange-500 bg-orange-500/20'
+                            : i === 5
+                            ? 'border-green-500 bg-green-500/20'
+                            : 'border-gray-300 bg-white'
                         }`}
                       >
                         <div className="absolute top-1 right-1">
                           <div className={`h-2 w-2 rounded-full ${
-                            i === 3 
-                              ? 'bg-orange-400 animate-pulse' 
-                              : i === 5 
-                              ? 'bg-green-400' 
-                              : 'bg-gray-500'
+                            i === 3
+                              ? 'bg-orange-400 animate-pulse'
+                              : i === 5
+                              ? 'bg-green-400'
+                              : 'bg-gray-400'
                           }`} />
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-black text-gray-400">
+                          <span className={`text-lg font-black ${i === 3 ? 'text-orange-600' : i === 5 ? 'text-green-600' : 'text-gray-600'}`}>
                             {String(i).padStart(2, '0')}
                           </span>
                         </div>
@@ -156,10 +156,10 @@ export default function HeroSection() {
 
                 {/* Status Bar */}
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Đang hoạt động</span>
+                  <span className="text-gray-600">Đang hoạt động</span>
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="font-bold text-green-400">Tất cả tủ online</span>
+                    <span className="font-bold text-green-600">Tất cả tủ online</span>
                   </div>
                 </div>
               </div>

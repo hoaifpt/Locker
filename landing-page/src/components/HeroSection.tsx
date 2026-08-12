@@ -1,17 +1,49 @@
 import GooglePlayButton from './GooglePlayButton';
 import { GOOGLE_PLAY_URL } from '../lib/constants';
 
+interface LockerUnit {
+  id: number;
+  status: 'available' | 'occupied' | 'reserved';
+}
+
+const lockers: LockerUnit[] = [
+  { id: 1, status: 'available' },
+  { id: 2, status: 'occupied' },
+  { id: 3, status: 'available' },
+  { id: 4, status: 'reserved' },
+  { id: 5, status: 'available' },
+  { id: 6, status: 'occupied' },
+  { id: 7, status: 'available' },
+  { id: 8, status: 'available' },
+  { id: 9, status: 'occupied' },
+  { id: 10, status: 'available' },
+  { id: 11, status: 'available' },
+  { id: 12, status: 'occupied' },
+];
+
+const statusColors = {
+  available: { bg: 'bg-green-100', text: 'text-green-600', dot: 'bg-green-500' },
+  occupied: { bg: 'bg-red-100', text: 'text-red-600', dot: 'bg-red-500' },
+  reserved: { bg: 'bg-yellow-100', text: 'text-yellow-600', dot: 'bg-yellow-500' },
+};
+
+const statusLabels = {
+  available: 'Sẵn sàng',
+  occupied: 'Đang dùng',
+  reserved: 'Đã đặt',
+};
+
 export default function HeroSection() {
+  const availableCount = lockers.filter(l => l.status === 'available').length;
+
   return (
     <section className="relative min-h-screen flex items-center pt-28 sm:pt-32 md:pt-24 pb-16 overflow-hidden" style={{ backgroundColor: '#FFFBF7' }}>
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Gradient mesh */}
         <div className="absolute -top-40 -right-40 h-[700px] w-[700px] rounded-full bg-gradient-to-br from-orange-300/50 to-orange-500/30 blur-3xl" style={{ animation: 'float 6s ease-in-out infinite' }} />
         <div className="absolute -bottom-40 -left-40 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-orange-200/40 to-orange-400/30 blur-3xl" style={{ animation: 'float-delayed 5s ease-in-out infinite', animationDelay: '1s' }} />
-        
-        {/* Grid pattern */}
-        <div 
+
+        <div
           className="absolute inset-0"
           style={{
             backgroundImage: 'linear-gradient(rgba(249, 115, 22, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(249, 115, 22, 0.05) 1px, transparent 1px)',
@@ -21,10 +53,9 @@ export default function HeroSection() {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6 w-full">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
           {/* Left: Content */}
           <div className="text-center lg:text-left order-2 lg:order-1">
-            {/* Badge */}
             <span className="inline-flex items-center gap-2 rounded-full border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100 px-5 py-2 text-sm font-bold uppercase tracking-widest text-orange-600 shadow-lg shadow-orange-200/50">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -33,7 +64,6 @@ export default function HeroSection() {
               Smart Locker System
             </span>
 
-            {/* Main Heading */}
             <h1 className="mt-8 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight tracking-tight">
               <span className="block text-gray-900">CHỦ ĐỘNG</span>
               <span className="block" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>MỌI LÚC</span>
@@ -42,15 +72,13 @@ export default function HeroSection() {
               <span className="block" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>NƠI</span>
             </h1>
 
-            {/* Subheading */}
             <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-base sm:text-lg md:text-xl leading-relaxed text-gray-600 lg:mx-0">
-              <span className="font-semibold text-gray-800">E-BOX</span> mang đến giải pháp gửi nhận hàng, 
-              lưu trữ đồ cá nhân và đặt đồ ăn 
+              <span className="font-semibold text-gray-800">E-BOX</span> mang đến giải pháp gửi nhận hàng,
+              lưu trữ đồ cá nhân và đặt đồ ăn
               <span className="font-semibold text-orange-500"> tiện lợi dành cho sinh viên </span>
               với công nghệ tủ thông minh tiên tiến nhất.
             </p>
 
-            {/* CTA Buttons */}
             <div className="mt-10 flex flex-col items-center gap-5 sm:flex-row lg:justify-start">
               <GooglePlayButton />
               <a
@@ -65,7 +93,6 @@ export default function HeroSection() {
               </a>
             </div>
 
-            {/* Trust Indicators */}
             <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:justify-start">
               <div className="glass-trust-badge">
                 <div className="trust-icon trust-icon-green">
@@ -103,97 +130,118 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right: Visual */}
+          {/* Right: Locker Cabinet (matches LockerSimulator design) */}
           <div className="relative order-1 lg:order-2">
-            {/* Main locker visual */}
-            <div className="relative mx-auto w-full max-w-lg">
-              {/* Glow behind */}
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-600 blur-3xl opacity-40 scale-110" />
-              
-              {/* Locker Illustration */}
-              <div className="relative bg-gradient-to-br from-white to-orange-50 rounded-3xl p-8 shadow-2xl border border-orange-200">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-xs font-bold text-green-600 uppercase tracking-wider">Online</span>
-                  </div>
-                  <div className="text-xs text-orange-500 font-mono font-bold">v2.0.1</div>
-                </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-orange-600/20 blur-3xl transform scale-110" />
 
-                {/* Locker Display */}
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 mb-6 border border-orange-200">
-                  <div className="grid grid-cols-3 gap-3">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <div
-                        key={i}
-                        className={`relative h-20 rounded-lg border-2 transition-all duration-300 ${
-                          i === 3
-                            ? 'border-orange-500 bg-orange-500/20'
-                            : i === 5
-                            ? 'border-green-500 bg-green-500/20'
-                            : 'border-gray-300 bg-white'
-                        }`}
-                      >
-                        <div className="absolute top-1 right-1">
-                          <div className={`h-2 w-2 rounded-full ${
-                            i === 3
-                              ? 'bg-orange-400 animate-pulse'
-                              : i === 5
-                              ? 'bg-green-400'
-                              : 'bg-gray-400'
-                          }`} />
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className={`text-lg font-black ${i === 3 ? 'text-orange-600' : i === 5 ? 'text-green-600' : 'text-gray-600'}`}>
-                            {String(i).padStart(2, '0')}
-                          </span>
+            <div className="relative bg-gradient-to-b from-gray-100 to-gray-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-2xl border border-gray-300 max-w-2xl mx-auto lg:mx-0 lg:ml-auto">
+
+              {/* Top Display Panel */}
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 mb-4 sm:mb-6 shadow-lg">
+                <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
+                  {/* QR Code */}
+                  <div className="bg-white rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-md">
+                    <div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-black rounded-lg relative overflow-hidden">
+                      <div className="absolute inset-1 grid grid-cols-5 gap-px">
+                        {[...Array(25)].map((_, i) => (
+                          <div
+                            key={i}
+                            className={`rounded-sm ${[0,1,2,3,4,5,9,10,14,15,16,20,21,22,23,24].includes(i) ? 'bg-white' : 'bg-black'}`}
+                          />
+                        ))}
+                      </div>
+                      <div className="absolute top-1 left-1 w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
                         </div>
                       </div>
-                    ))}
+                      <div className="absolute top-1 right-1 w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
+                        </div>
+                      </div>
+                      <div className="absolute bottom-1 left-1 w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
+                        </div>
+                      </div>
+                      <div className="absolute left-1 right-1 h-0.5 bg-orange-500" style={{ animation: 'scan-line 2s linear infinite', top: '50%' }} />
+                    </div>
                   </div>
-                </div>
 
-                {/* Status Bar */}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Đang hoạt động</span>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="font-bold text-green-600">Tất cả tủ online</span>
+                  {/* Logo */}
+                  <div className="flex-1 flex items-center justify-center">
+                    <img src="/LOGO-EBOX.png" alt="E-BOX" className="h-10 sm:h-14 md:h-20 w-auto" />
+                  </div>
+
+                  {/* Status */}
+                  <div className="text-right">
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-black text-orange-500">{availableCount}</div>
+                    <div className="text-gray-400 text-[10px] sm:text-xs">Tủ trống</div>
                   </div>
                 </div>
               </div>
 
-              {/* Floating notification */}
-              <div 
-                className="liquid-glass-v2 absolute -left-2 sm:-left-8 top-1/4 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xl hidden sm:block"
-                style={{ animation: 'float 6s ease-in-out infinite' }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-green-100">
-                    <svg className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div className="hidden sm:block">
-                    <div className="font-bold text-gray-800 text-xs sm:text-sm">Giao hàng thành công!</div>
-                    <div className="text-xs text-gray-500">Tủ #07 đã mở</div>
-                  </div>
+              {/* Locker Grid */}
+              <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                {lockers.map((locker) => {
+                  const colors = statusColors[locker.status];
+                  return (
+                    <div key={locker.id} className="relative">
+                      <div className="relative bg-white rounded-lg sm:rounded-xl border-2 border-gray-200 shadow-md overflow-hidden hover:border-orange-400 transition-all">
+                        {/* Door Handle */}
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-0.5 sm:w-1 h-4 sm:h-6 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full shadow-sm" />
+
+                        {/* Status LED */}
+                        <div className="absolute top-1 left-1">
+                          <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${colors.dot} ${locker.status === 'available' ? 'animate-pulse' : ''}`} />
+                        </div>
+
+                        {/* Locker Number */}
+                        <div className="h-12 sm:h-16 flex items-center justify-center">
+                          <span className="text-sm sm:text-lg font-black text-gray-700">
+                            {String(locker.id).padStart(2, '0')}
+                          </span>
+                        </div>
+
+                        {/* Status Label */}
+                        <div className={`text-center py-0.5 sm:py-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-wide ${colors.text} ${colors.bg}`}>
+                          {statusLabels[locker.status]}
+                        </div>
+
+                        {/* 3D Effect */}
+                        <div className="absolute inset-y-0 -right-0.5 sm:-right-1 w-0.5 sm:w-1 bg-gradient-to-r from-black/10 to-transparent rounded-r-lg" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-300 flex items-center justify-between">
+                <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-green-500" />
+                    <span className="hidden sm:inline">{availableCount} Trống</span>
+                    <span className="sm:hidden">{availableCount}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-red-500" />
+                    <span className="hidden sm:inline">{lockers.filter(l => l.status === 'occupied').length} Đã dùng</span>
+                    <span className="sm:hidden">{lockers.filter(l => l.status === 'occupied').length}</span>
+                  </span>
+                  <span className="hidden sm:flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-yellow-500" /> {lockers.filter(l => l.status === 'reserved').length} Đã đặt
+                  </span>
+                </div>
+                <div className="text-orange-500 text-[10px] sm:text-xs font-mono font-bold">
+                  E-BOX v2.0
                 </div>
               </div>
 
-              {/* Stats floating card */}
-              <div 
-                className="liquid-glass-v2 absolute -right-2 sm:-right-4 bottom-1/4 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xl hidden sm:block"
-                style={{ 
-                  animation: 'float-delayed 5s ease-in-out infinite',
-                  animationDelay: '1s'
-                }}
-              >
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl font-black" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>98%</div>
-                  <div className="text-xs text-gray-500">Uptime</div>
-                </div>
+              {/* Brand Logo Badge */}
+              <div className="absolute -bottom-2 sm:-bottom-3 left-1/2 -translate-x-1/2 bg-white rounded-full px-3 sm:px-4 py-0.5 sm:py-1 shadow-md border border-gray-200">
+                <span className="text-[10px] sm:text-xs font-bold text-gray-600">E-BOX</span>
               </div>
             </div>
           </div>

@@ -1,20 +1,75 @@
 import GooglePlayButton from './GooglePlayButton';
 import { GOOGLE_PLAY_URL } from '../lib/constants';
 
-export default function HeroSection() {
-  // Cột A: 14 ô (A01–A14), Cột B: 18 ô (B01–B18), Cột C: 18 ô (C01–C18)
-  const colA = Array.from({ length: 14 }, (_, i) => i + 1);
-  const colB = Array.from({ length: 18 }, (_, i) => i + 1);
-  const colC = Array.from({ length: 18 }, (_, i) => i + 1);
+interface LockerUnit {
+  id: number;
+  status: 'available' | 'occupied' | 'reserved';
+}
 
-  // Tủ bận ngẫu nhiên để trông "đang hoạt động"
-  const occupiedB = new Set([3, 7, 12, 15]);
-  const occupiedC = new Set([2, 5, 9, 14, 17]);
-  const reservedA = new Set([5, 9]);
+const colA: LockerUnit[] = Array.from({ length: 8 }, (_, i) => ({
+  id: i + 1,
+  status: ([2, 6].includes(i + 1) ? 'occupied' : [4].includes(i + 1) ? 'reserved' : 'available') as LockerUnit['status'],
+}));
+
+const colB: LockerUnit[] = Array.from({ length: 18 }, (_, i) => ({
+  id: i + 1,
+  status: ([3, 7, 11, 15].includes(i + 1) ? 'occupied' : [5].includes(i + 1) ? 'reserved' : 'available') as LockerUnit['status'],
+}));
+
+const colC: LockerUnit[] = Array.from({ length: 18 }, (_, i) => ({
+  id: i + 1,
+  status: ([2, 9, 14, 17].includes(i + 1) ? 'occupied' : [6].includes(i + 1) ? 'reserved' : 'available') as LockerUnit['status'],
+}));
+
+const statusColors = {
+  available: { bg: 'bg-green-50', text: 'text-green-600', dot: 'bg-green-500' },
+  occupied: { bg: 'bg-red-50', text: 'text-red-600', dot: 'bg-red-500' },
+  reserved: { bg: 'bg-yellow-50', text: 'text-yellow-600', dot: 'bg-yellow-500' },
+};
+const statusLabels = {
+  available: 'Sẵn',
+  occupied: 'Đang dùng',
+  reserved: 'Đã đặt',
+};
+
+// Compact locker door - same style as LockerSimulator but smaller
+function MiniLocker({ label, status }: { label: string; status: LockerUnit['status'] }) {
+  const colors = statusColors[status];
+  return (
+    <div className="group relative">
+      <div className={`relative bg-white rounded-md sm:rounded-lg border-2 shadow-sm overflow-hidden transition-all duration-300
+        ${status === 'available' ? 'border-gray-200 hover:border-orange-400' : 'border-gray-300'}`}>
+        {/* Door Handle (small) */}
+        <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-0.5 h-3 sm:h-4 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full" />
+        {/* Status LED */}
+        <div className="absolute top-1 left-1">
+          <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${colors.dot} ${status === 'available' ? 'animate-pulse' : ''}`} />
+        </div>
+        {/* Locker Number */}
+        <div className="h-7 sm:h-9 md:h-10 flex items-center justify-center">
+          <span className="text-[10px] sm:text-xs md:text-sm font-black text-gray-700">{label}</span>
+        </div>
+        {/* 3D Effect */}
+        <div className="absolute inset-y-0 -right-0.5 w-0.5 bg-gradient-to-r from-black/10 to-transparent rounded-r-md" />
+      </div>
+      {/* Status mini label */}
+      {status !== 'available' && (
+        <div className={`hidden lg:block text-center mt-0.5 text-[8px] font-bold uppercase ${colors.text}`}>
+          {statusLabels[status]}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function HeroSection() {
+  const availableCount =
+    colA.filter(l => l.status === 'available').length +
+    colB.filter(l => l.status === 'available').length +
+    colC.filter(l => l.status === 'available').length;
 
   return (
     <section className="relative min-h-screen flex items-center pt-28 sm:pt-32 md:pt-20 pb-16 overflow-hidden" style={{ backgroundColor: '#FFFBF7' }}>
-      {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 h-[700px] w-[700px] rounded-full bg-gradient-to-br from-orange-300/40 to-orange-500/20 blur-3xl" style={{ animation: 'float 6s ease-in-out infinite' }} />
         <div className="absolute -bottom-40 -left-40 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-orange-200/30 to-orange-400/20 blur-3xl" style={{ animation: 'float-delayed 5s ease-in-out infinite', animationDelay: '1s' }} />
@@ -29,7 +84,7 @@ export default function HeroSection() {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 w-full">
         <div className="grid items-center gap-10 lg:grid-cols-5 lg:gap-12 xl:gap-16">
-          {/* Left: Content - nhỏ hơn để nhường chỗ cho tủ */}
+          {/* Left: Content */}
           <div className="text-center lg:text-left order-2 lg:order-1 lg:col-span-2">
             <span className="inline-flex items-center gap-2 rounded-full border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100 px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-orange-600 shadow-lg shadow-orange-200/50">
               <span className="relative flex h-2 w-2">
@@ -56,10 +111,7 @@ export default function HeroSection() {
 
             <div className="mt-8 sm:mt-10 flex flex-col items-center gap-4 sm:flex-row lg:justify-start">
               <GooglePlayButton />
-              <a
-                href="#simulator"
-                className="glass-btn-secondary"
-              >
+              <a href="#simulator" className="glass-btn-secondary">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -105,182 +157,134 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right: REAL-WORLD style cabinet (matches photo) */}
+          {/* Right: White cabinet with mini lockers */}
           <div className="relative order-1 lg:order-2 lg:col-span-3">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-orange-600/20 blur-3xl transform scale-110 rounded-3xl" />
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-300/15 to-orange-500/15 blur-3xl transform scale-110 rounded-3xl" />
 
             <div className="relative mx-auto max-w-4xl">
-              {/* Top orange header strip */}
-              <div className="relative bg-gradient-to-b from-orange-500 to-orange-600 rounded-t-2xl sm:rounded-t-3xl px-6 sm:px-10 py-3 sm:py-4 shadow-lg flex items-center justify-center">
-                <span className="text-white text-sm sm:text-base md:text-lg font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase">
-                  IT Smart Locker
-                </span>
-                {/* Small LEDs */}
-                <div className="absolute left-4 sm:left-6 flex items-center gap-1.5">
-                  <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                  <div className="h-2 w-2 rounded-full bg-yellow-400" />
-                </div>
-                <div className="absolute right-4 sm:right-6 flex items-center gap-1.5">
-                  <div className="h-2 w-2 rounded-full bg-white/70" />
-                  <div className="h-2 w-2 rounded-full bg-white/40" />
+              {/* Top Display Panel - dark with QR + Logo + status */}
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 shadow-2xl border border-gray-700">
+                <div className="flex items-center gap-3 sm:gap-5 md:gap-6">
+                  {/* QR Code */}
+                  <div className="bg-white rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-md">
+                    <div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-black rounded-lg relative overflow-hidden">
+                      <div className="absolute inset-1 grid grid-cols-5 gap-px">
+                        {[...Array(25)].map((_, i) => (
+                          <div
+                            key={i}
+                            className={`rounded-sm ${[0,1,2,3,4,5,9,10,14,15,16,20,21,22,23,24].includes(i) ? 'bg-white' : 'bg-black'}`}
+                          />
+                        ))}
+                      </div>
+                      <div className="absolute top-1 left-1 w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
+                        </div>
+                      </div>
+                      <div className="absolute top-1 right-1 w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
+                        </div>
+                      </div>
+                      <div className="absolute bottom-1 left-1 w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
+                        </div>
+                      </div>
+                      <div className="absolute left-1 right-1 h-0.5 bg-orange-500" style={{ animation: 'scan-line 2s linear infinite', top: '50%' }} />
+                    </div>
+                  </div>
+
+                  {/* Logo */}
+                  <div className="flex-1 flex items-center justify-center">
+                    <img src="/LOGO-EBOX.png" alt="E-BOX" className="h-10 sm:h-14 md:h-20 w-auto" />
+                  </div>
+
+                  {/* Status */}
+                  <div className="text-right">
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-black text-orange-500">{availableCount}</div>
+                    <div className="text-gray-400 text-[10px] sm:text-xs">Tủ trống</div>
+                  </div>
                 </div>
               </div>
 
-              {/* Cabinet body */}
-              <div className="relative bg-gradient-to-b from-orange-500 via-orange-500 to-orange-600 p-2 sm:p-3 shadow-2xl rounded-b-2xl sm:rounded-b-3xl">
-
-                {/* Columns grid: B - LCD panel (with A column on its sides) - C */}
+              {/* Cabinet body - white mini lockers */}
+              <div className="bg-gradient-to-b from-gray-50 to-gray-100 rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 shadow-2xl border border-gray-200 mt-3 sm:mt-4">
                 <div className="grid grid-cols-12 gap-2 sm:gap-3">
-
-                  {/* Column B - 18 small lockers */}
-                  <div className="col-span-3 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg p-1.5 sm:p-2 space-y-1 shadow-inner">
-                    {colB.map((n) => {
-                      const occupied = occupiedB.has(n);
-                      return (
-                        <div
-                          key={n}
-                          className={`relative h-7 sm:h-9 md:h-11 rounded-sm flex items-center justify-center text-[10px] sm:text-xs md:text-sm font-semibold transition-all
-                            ${occupied
-                              ? 'bg-gradient-to-b from-gray-300 to-gray-400 text-gray-600 shadow-inner'
-                              : 'bg-gradient-to-b from-white to-gray-50 text-gray-700 shadow-sm hover:from-orange-50 hover:to-orange-100'
-                            }`}
-                        >
-                          <span className="opacity-70">B{n.toString().padStart(2, '0')}</span>
-                          {occupied && (
-                            <div className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500" />
-                          )}
-                        </div>
-                      );
-                    })}
+                  {/* Column B */}
+                  <div className="col-span-3 space-y-1 sm:space-y-1.5">
+                    {colB.map((l) => (
+                      <MiniLocker key={l.id} label={`B${l.id.toString().padStart(2, '0')}`} status={l.status} />
+                    ))}
                   </div>
 
-                  {/* Column A (left part) + LCD + Column A (right part) */}
-                  <div className="col-span-6 space-y-2 sm:space-y-3">
-                    {/* Top half: A01 - A09 (left) + LCD screen + A01 - A14 (right with offset positions) */}
-                    <div className="grid grid-cols-7 gap-2 sm:gap-3 h-full">
-                      {/* Left side of LCD: empty white column to align */}
-                      <div className="col-span-3 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg p-1.5 sm:p-2 shadow-inner">
-                        {/* Top A's on left side */}
-                        <div className="grid grid-cols-2 gap-1">
-                          {colA.slice(0, 8).map((n) => {
-                            const reserved = reservedA.has(n);
-                            return (
-                              <div
-                                key={n}
-                                className={`relative h-8 sm:h-11 md:h-14 rounded-sm flex items-center justify-center text-[10px] sm:text-xs font-semibold transition-all
-                                  ${reserved
-                                    ? 'bg-gradient-to-b from-yellow-100 to-yellow-200 text-yellow-800 shadow-inner'
-                                    : 'bg-gradient-to-b from-white to-gray-50 text-gray-700 shadow-sm hover:from-orange-50 hover:to-orange-100'
-                                  }`}
-                              >
-                                <span className="opacity-70">A{n.toString().padStart(2, '0')}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Center column: LCD screen + a few bottom A's */}
-                      <div className="col-span-1 flex flex-col gap-1.5 sm:gap-2">
-                        {/* LCD Screen */}
-                        <div className="flex-1 bg-gradient-to-br from-gray-900 to-black rounded-lg p-1.5 sm:p-2 shadow-2xl border-2 border-orange-400 relative overflow-hidden">
-                          <div className="absolute inset-1 bg-gradient-to-br from-orange-400 to-orange-600 rounded opacity-10" />
-                          <div className="relative h-full flex flex-col items-center justify-center text-center">
-                            <div className="text-white text-[8px] sm:text-[10px] font-bold tracking-wider">IT SMART</div>
-                            <div className="text-orange-400 text-[7px] sm:text-[9px] font-bold">LOCKER</div>
-                            <div className="mt-1 flex flex-col gap-1 items-center">
-                              <div className="h-1 w-8 sm:w-12 bg-orange-400 rounded animate-pulse" />
-                              <div className="h-1 w-6 sm:w-10 bg-white/60 rounded" />
-                              <div className="h-1 w-7 sm:w-11 bg-white/40 rounded" />
-                            </div>
-                            {/* Scan line */}
-                            <div className="absolute left-1 right-1 h-px bg-orange-400 opacity-80" style={{ animation: 'scan-line 3s linear infinite', top: '50%' }} />
-                          </div>
-                        </div>
-                        {/* Small bottom A's under LCD */}
-                        {colA.slice(12, 14).map((n) => (
-                          <div key={n} className="h-8 sm:h-11 md:h-14 bg-gradient-to-b from-white to-gray-50 rounded-sm flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-700 shadow-sm">
-                            <span className="opacity-70">A{n.toString().padStart(2, '0')}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Right side of LCD */}
-                      <div className="col-span-3 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg p-1.5 sm:p-2 shadow-inner">
-                        <div className="grid grid-cols-2 gap-1">
-                          {colA.slice(0, 8).map((n) => (
-                            <div
-                              key={`r-${n}`}
-                              className="relative h-8 sm:h-11 md:h-14 rounded-sm flex items-center justify-center text-[10px] sm:text-xs font-semibold bg-gradient-to-b from-white to-gray-50 text-gray-700 shadow-sm hover:from-orange-50 hover:to-orange-100 transition-all"
-                            >
-                              <span className="opacity-70">A{n.toString().padStart(2, '0')}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                  {/* Center: A column + LCD */}
+                  <div className="col-span-6 flex gap-2 sm:gap-3">
+                    {/* Left A column */}
+                    <div className="flex-1 grid grid-cols-2 gap-1 sm:gap-1.5">
+                      {colA.map((l) => (
+                        <MiniLocker key={l.id} label={`A${l.id.toString().padStart(2, '0')}`} status={l.status} />
+                      ))}
                     </div>
 
-                    {/* Bottom row: A15, A16, A17, A18 + special gray section */}
-                    <div className="grid grid-cols-7 gap-2 sm:gap-3">
-                      {/* Left bottom: A extra + gray */}
-                      <div className="col-span-3 bg-gradient-to-b from-gray-200 to-gray-300 rounded-lg p-1.5 sm:p-2 shadow-inner space-y-1">
-                        {[15, 16, 17, 18].map((n) => (
-                          <div key={n} className="relative h-7 sm:h-9 md:h-11 bg-gradient-to-b from-gray-100 to-gray-200 rounded-sm flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-700 shadow-inner">
-                            <span className="opacity-70">A{n.toString().padStart(2, '0')}</span>
-                            <div className="absolute inset-0 opacity-30" style={{
-                              backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)',
-                              backgroundSize: '4px 4px'
-                            }} />
-                          </div>
-                        ))}
+                    {/* LCD display */}
+                    <div className="w-12 sm:w-16 md:w-20 bg-gradient-to-br from-gray-900 to-black rounded-lg sm:rounded-xl p-1 sm:p-2 shadow-2xl border-2 border-orange-500 flex flex-col items-center justify-center relative overflow-hidden">
+                      <div className="absolute inset-1 bg-gradient-to-br from-orange-500/10 to-orange-600/10 rounded" />
+                      <div className="relative text-center">
+                        <div className="text-white text-[7px] sm:text-[9px] font-bold tracking-widest">IT</div>
+                        <div className="text-orange-400 text-[7px] sm:text-[9px] font-bold tracking-widest">SMART</div>
+                        <div className="text-orange-400 text-[7px] sm:text-[9px] font-bold tracking-widest">LOCKER</div>
+                        <div className="mt-1 sm:mt-2 flex flex-col gap-0.5 items-center">
+                          <div className="h-0.5 w-6 sm:w-10 bg-orange-400 rounded animate-pulse" />
+                          <div className="h-0.5 w-5 sm:w-8 bg-white/60 rounded" />
+                          <div className="h-0.5 w-4 sm:w-7 bg-white/40 rounded" />
+                        </div>
                       </div>
+                      <div className="absolute left-1 right-1 h-px bg-orange-400 opacity-80" style={{ animation: 'scan-line 3s linear infinite', top: '50%' }} />
+                    </div>
 
-                      {/* Center: empty / logo */}
-                      <div className="col-span-1 flex flex-col items-center justify-end">
-                        <div className="text-orange-300 text-[6px] sm:text-[8px] font-black tracking-widest">E-BOX</div>
-                      </div>
-
-                      {/* Right bottom: mirror */}
-                      <div className="col-span-3 bg-gradient-to-b from-gray-200 to-gray-300 rounded-lg p-1.5 sm:p-2 shadow-inner space-y-1">
-                        {[15, 16, 17, 18].map((n) => (
-                          <div key={`r-${n}`} className="relative h-7 sm:h-9 md:h-11 bg-gradient-to-b from-gray-100 to-gray-200 rounded-sm flex items-center justify-center text-[10px] sm:text-xs font-semibold text-gray-700 shadow-inner">
-                            <span className="opacity-70">A{n.toString().padStart(2, '0')}</span>
-                            <div className="absolute inset-0 opacity-30" style={{
-                              backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)',
-                              backgroundSize: '4px 4px'
-                            }} />
-                          </div>
-                        ))}
-                      </div>
+                    {/* Right A column (mirror) */}
+                    <div className="flex-1 grid grid-cols-2 gap-1 sm:gap-1.5">
+                      {colA.map((l) => (
+                        <MiniLocker key={`r-${l.id}`} label={`A${l.id.toString().padStart(2, '0')}`} status={l.status === 'occupied' ? 'available' : l.status === 'reserved' ? 'available' : 'available'} />
+                      ))}
                     </div>
                   </div>
 
-                  {/* Column C - 18 small lockers */}
-                  <div className="col-span-3 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg p-1.5 sm:p-2 space-y-1 shadow-inner">
-                    {colC.map((n) => {
-                      const occupied = occupiedC.has(n);
-                      return (
-                        <div
-                          key={n}
-                          className={`relative h-7 sm:h-9 md:h-11 rounded-sm flex items-center justify-center text-[10px] sm:text-xs md:text-sm font-semibold transition-all
-                            ${occupied
-                              ? 'bg-gradient-to-b from-gray-300 to-gray-400 text-gray-600 shadow-inner'
-                              : 'bg-gradient-to-b from-white to-gray-50 text-gray-700 shadow-sm hover:from-orange-50 hover:to-orange-100'
-                            }`}
-                        >
-                          <span className="opacity-70">C{n.toString().padStart(2, '0')}</span>
-                          {occupied && (
-                            <div className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500" />
-                          )}
-                        </div>
-                      );
-                    })}
+                  {/* Column C */}
+                  <div className="col-span-3 space-y-1 sm:space-y-1.5">
+                    {colC.map((l) => (
+                      <MiniLocker key={l.id} label={`C${l.id.toString().padStart(2, '0')}`} status={l.status} />
+                    ))}
                   </div>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-green-500" />
+                      <span className="font-semibold">{availableCount}</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-red-500" />
+                      <span className="font-semibold">
+                        {colA.filter(l => l.status === 'occupied').length + colB.filter(l => l.status === 'occupied').length + colC.filter(l => l.status === 'occupied').length}
+                      </span>
+                    </span>
+                    <span className="hidden sm:flex items-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                      <span className="font-semibold">
+                        {colA.filter(l => l.status === 'reserved').length + colB.filter(l => l.status === 'reserved').length + colC.filter(l => l.status === 'reserved').length}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="text-orange-500 text-[10px] sm:text-xs font-mono font-bold">E-BOX v2.0</div>
                 </div>
               </div>
 
-              {/* Base/floor shadow */}
-              <div className="h-3 sm:h-4 bg-gradient-to-b from-black/20 to-transparent blur-sm mx-2 sm:mx-6" />
+              {/* Floor shadow */}
+              <div className="h-2 sm:h-3 bg-gradient-to-b from-black/15 to-transparent blur-md mx-4 sm:mx-8 mt-1" />
             </div>
           </div>
         </div>
@@ -300,14 +304,6 @@ export default function HeroSection() {
           ))}
         </div>
       </div>
-
-      <style>{`
-        @keyframes scan-line {
-          0% { top: 10%; }
-          50% { top: 90%; }
-          100% { top: 10%; }
-        }
-      `}</style>
     </section>
   );
 }

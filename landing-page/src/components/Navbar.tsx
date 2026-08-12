@@ -103,10 +103,10 @@ export default function Navbar() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Mở menu"
           >
-            <div className="relative w-5 h-5">
-              <span className={`absolute left-0 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? 'top-2.5 rotate-45' : 'top-1'}`} />
-              <span className={`absolute left-0 top-2.5 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`} />
-              <span className={`absolute left-0 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? 'top-2.5 -rotate-45' : 'top-4'}`} />
+            <div className="relative w-5 h-5 flex items-center justify-center">
+              <span className={`absolute left-0 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? 'rotate-45' : '-translate-y-1.5'}`} />
+              <span className={`absolute left-0 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+              <span className={`absolute left-0 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? '-rotate-45' : 'translate-y-1.5'}`} />
             </div>
           </button>
         </div>

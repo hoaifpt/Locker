@@ -31,9 +31,9 @@ const statusLabels = {
 };
 
 const statusColors = {
-  available: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-400', dot: 'bg-emerald-400' },
-  occupied: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-400', dot: 'bg-red-400' },
-  reserved: { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-400', dot: 'bg-amber-400' },
+  available: { bg: 'bg-green-100', text: 'text-green-600', border: 'border-green-400', dot: 'bg-green-500' },
+  occupied: { bg: 'bg-red-100', text: 'text-red-600', border: 'border-red-400', dot: 'bg-red-500' },
+  reserved: { bg: 'bg-yellow-100', text: 'text-yellow-600', border: 'border-yellow-400', dot: 'bg-yellow-500' },
 };
 
 export default function LockerSimulator() {
@@ -76,7 +76,7 @@ export default function LockerSimulator() {
       setClosedLockerId(lockerId);
       setShowClosedNotification(true);
       setSelectedLocker(null);
-
+      
       setTimeout(() => setShowClosedNotification(false), 3000);
     }, 1000);
   }, []);
@@ -119,10 +119,10 @@ export default function LockerSimulator() {
           <h2 className="mt-4 sm:mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight">
             <span className="gradient-text">Trải Nghiệm</span>
             <br />
-            <span className="text-gray-900">Thiết Bị IoT Thông Minh</span>
+            <span className="text-gray-900">Tủ E-BOX Thông Minh</span>
           </h2>
           <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-gray-600 px-4 sm:px-0">
-            Kiosk thông minh kết nối IoT - chọn tủ, quét QR, mở tự động
+            Chọn tủ trên cabinet, sau đó quét QR hoặc nhập OTP để mở
           </p>
         </div>
 
@@ -137,312 +137,170 @@ export default function LockerSimulator() {
             />
           </div>
 
-          {/* Right: Smart IoT Kiosk */}
-          <div className="relative order-1 lg:order-2 flex justify-center lg:justify-start">
-            {/* Ambient Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/20 via-orange-400/20 to-purple-400/20 blur-3xl transform scale-110" />
+          {/* Right: Locker Cabinet - NEW WHITE DESIGN */}
+          <div className="relative order-1 lg:order-2">
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-400/10 to-orange-600/10 blur-3xl transform scale-110" />
 
-            {/* IoT Kiosk Device */}
-            <div className="relative" style={{ maxWidth: '380px' }}>
-
-              {/* ===== TOP: Touchscreen Display ===== */}
-              <div className="relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-t-3xl p-3 shadow-2xl border-t border-x border-slate-700">
-                {/* Screen Bezel */}
-                <div className="relative bg-black rounded-2xl p-2 shadow-inner">
-                  {/* Camera Notch */}
-                  <div className="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-1.5 bg-slate-800 rounded-full z-10 flex items-center justify-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
-                    <div className="w-1 h-1 rounded-full bg-slate-600" />
-                  </div>
-
-                  {/* Screen Content */}
-                  <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl overflow-hidden aspect-[4/3]">
-
-                    {/* Screen UI */}
-                    <div className="absolute inset-0 p-3 flex flex-col">
-                      {/* Status Bar */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span className="text-[8px] text-emerald-400 font-mono">ONLINE</span>
-                        </div>
-                        <div className="text-[8px] text-slate-400 font-mono">WiFi · 4G</div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[8px] text-slate-400 font-mono">86%</span>
-                          <div className="w-3 h-1.5 border border-slate-400 rounded-sm relative">
-                            <div className="absolute inset-0.5 bg-emerald-400 rounded-xs" style={{ width: '80%' }} />
-                          </div>
+            {/* Main Locker Cabinet */}
+            <div className="relative bg-gradient-to-b from-gray-100 to-gray-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl border border-gray-300 max-w-md mx-auto lg:mx-0">
+              
+              {/* Top Display Panel */}
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 shadow-lg">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  {/* QR Code Display */}
+                  <div className="bg-white rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-md">
+                    <div className="w-16 h-16 sm:w-24 sm:h-24 bg-black rounded-lg relative overflow-hidden">
+                      {/* QR pattern */}
+                      <div className="absolute inset-1 grid grid-cols-5 gap-px">
+                        {[...Array(25)].map((_, i) => (
+                          <div
+                            key={i}
+                            className={`rounded-sm ${[0,1,2,3,4,5,9,10,14,15,16,20,21,22,23,24].includes(i) ? 'bg-white' : 'bg-black'}`}
+                          />
+                        ))}
+                      </div>
+                      {/* QR corners */}
+                      <div className="absolute top-1 left-1 w-5 h-5 sm:w-7 sm:h-7 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
                         </div>
                       </div>
-
-                      {/* QR Code + Info Row */}
-                      <div className="flex gap-2 mb-2">
-                        {/* QR Scanner */}
-                        <div className="bg-white rounded-md p-1 shadow-lg relative">
-                          <div className="w-12 h-12 relative">
-                            <div className="absolute inset-0 grid grid-cols-4 gap-px">
-                              {[...Array(16)].map((_, i) => (
-                                <div
-                                  key={i}
-                                  className={`rounded-xs ${
-                                    [0, 1, 2, 3, 4, 5, 8, 9, 13, 14, 15].includes(i)
-                                      ? 'bg-black'
-                                      : 'bg-white'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <div className="absolute top-0 left-0 w-3 h-3 bg-black">
-                              <div className="absolute inset-0.5 bg-white">
-                                <div className="absolute inset-0.5 bg-black" />
-                              </div>
-                            </div>
-                            <div className="absolute top-0 right-0 w-3 h-3 bg-black">
-                              <div className="absolute inset-0.5 bg-white">
-                                <div className="absolute inset-0.5 bg-black" />
-                              </div>
-                            </div>
-                            <div className="absolute bottom-0 left-0 w-3 h-3 bg-black">
-                              <div className="absolute inset-0.5 bg-white">
-                                <div className="absolute inset-0.5 bg-black" />
-                              </div>
-                            </div>
-                            <div
-                              className="absolute left-0 right-0 h-0.5 bg-cyan-400 shadow-lg shadow-cyan-400/50"
-                              style={{ animation: 'scan-line 2s linear infinite', top: '50%' }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Center Info */}
-                        <div className="flex-1 flex flex-col items-center justify-center bg-slate-700/30 rounded-md px-1">
-                          <div className="text-[10px] font-bold text-white leading-none">E-BOX</div>
-                          <div className="text-[7px] text-orange-400 font-mono">SMART IoT</div>
-                          <div className="text-[6px] text-slate-400 font-mono mt-0.5">v2.0.1</div>
-                        </div>
-
-                        {/* Available Count */}
-                        <div className="bg-slate-700/30 rounded-md px-2 flex flex-col items-center justify-center">
-                          <div className="text-base font-black text-orange-400 leading-none">
-                            {availableLockers.length}
-                          </div>
-                          <div className="text-[6px] text-slate-400 font-mono">TRỐNG</div>
+                      <div className="absolute top-1 right-1 w-5 h-5 sm:w-7 sm:h-7 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
                         </div>
                       </div>
-
-                      {/* Mini Locker Grid */}
-                      <div className="grid grid-cols-6 gap-0.5 flex-1">
-                        {lockers.map((locker) => {
-                          const colors = statusColors[locker.status];
-                          const selected = isSelected(locker.id);
-                          return (
-                            <div
-                              key={locker.id}
-                              onClick={() => handleLockerClick(locker)}
-                              className={`
-                                relative aspect-square rounded-xs cursor-pointer transition-all
-                                ${colors.bg} ${colors.border} border
-                                ${selected ? 'ring-1 ring-orange-400 scale-110 z-10' : ''}
-                                ${locker.status === 'available' && !selected ? 'hover:scale-105' : ''}
-                              `}
-                            >
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className={`text-[8px] font-black ${colors.text}`}>
-                                  {String(locker.id).padStart(2, '0')}
-                                </span>
-                              </div>
-                              <div className={`absolute top-0.5 right-0.5 w-1 h-1 rounded-full ${colors.dot} ${locker.status === 'available' ? 'animate-pulse' : ''}`} />
-                            </div>
-                          );
-                        })}
+                      <div className="absolute bottom-1 left-1 w-5 h-5 sm:w-7 sm:h-7 bg-white rounded-sm">
+                        <div className="absolute inset-0.5 bg-black rounded-sm">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Touch Ripple Effect */}
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute top-1/2 left-1/2 w-20 h-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-400/30 animate-ping" />
+                      {/* Scan line animation */}
+                      <div className="absolute left-1 right-1 h-0.5 bg-orange-500" style={{ animation: 'scan-line 2s linear infinite', top: '50%' }} />
                     </div>
                   </div>
-                </div>
-
-                {/* IoT Indicator Lights */}
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-                  <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                  <div className="w-1 h-1 rounded-full bg-cyan-400" />
-                  <div className="w-1 h-1 rounded-full bg-orange-400 animate-pulse" />
-                </div>
-              </div>
-
-              {/* ===== MIDDLE: Sensor Strip ===== */}
-              <div className="relative bg-gradient-to-b from-slate-700 to-slate-800 px-4 py-2 border-x border-slate-600 flex items-center justify-between">
-                {/* Left sensors */}
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                    <span className="text-[6px] text-slate-400 font-mono mt-0.5">IR</span>
+                  
+                  {/* Info Panel */}
+                  <div className="flex-1 flex items-center justify-center">
+                    <img src="/LOGO-EBOX.png" alt="E-BOX" className="h-8 sm:h-10 w-auto" />
                   </div>
-                  <div className="w-4 h-4 rounded-full border border-slate-500 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                  </div>
-                </div>
 
-                {/* Brand Logo */}
-                <div className="flex items-center gap-1">
-                  <div className="w-4 h-4 rounded bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-                    <span className="text-[6px] font-black text-white">E</span>
-                  </div>
-                  <span className="text-[8px] font-bold text-white tracking-wider">E-BOX</span>
-                </div>
-
-                {/* Right sensors */}
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full border border-slate-500 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-[6px] text-slate-400 font-mono mt-0.5">RFID</span>
+                  {/* Status Display */}
+                  <div className="text-right">
+                    <div className="text-2xl sm:text-3xl font-black text-orange-500">{availableLockers.length}</div>
+                    <div className="text-gray-400 text-[10px] sm:text-xs">Tủ trống</div>
                   </div>
                 </div>
               </div>
 
-              {/* ===== BOTTOM: Locker Compartments ===== */}
-              <div className="relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-b-3xl p-3 shadow-2xl border-b border-x border-slate-700">
+              {/* Locker Grid - Responsive columns */}
+              <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                {lockers.map((locker) => {
+                  const colors = statusColors[locker.status];
+                  return (
+                    <div
+                      key={locker.id}
+                      className={`relative cursor-pointer group ${locker.status !== 'available' || locker.isOpen ? '' : ''}`}
+                      onClick={() => handleLockerClick(locker)}
+                    >
+                      {/* Selection Ring */}
+                      {isSelected(locker.id) && !locker.isOpen && (
+                        <div className="absolute -inset-1 rounded-lg sm:rounded-xl border-2 sm:border-4 border-orange-500 z-20 pointer-events-none" />
+                      )}
 
-                {/* Ventilation Grille */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 flex gap-0.5">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="w-3 h-0.5 bg-slate-600 rounded-full" />
-                  ))}
-                </div>
-
-                {/* Locker Grid - 4 columns x 3 rows */}
-                <div className="grid grid-cols-4 gap-1.5 mt-4">
-                  {lockers.map((locker) => {
-                    const colors = statusColors[locker.status];
-                    const selected = isSelected(locker.id);
-                    return (
+                      {/* Locker Door */}
                       <div
-                        key={locker.id}
-                        className="relative cursor-pointer group"
-                        onClick={() => handleLockerClick(locker)}
+                        className={`
+                          relative bg-white rounded-lg sm:rounded-xl border-2 shadow-md overflow-hidden
+                          transition-all duration-300
+                          ${locker.isOpen ? 'border-green-400 shadow-green-200' : 'border-gray-200 hover:border-orange-400'}
+                          ${isSelected(locker.id) && !locker.isOpen ? 'border-orange-500 shadow-orange-200 shadow-lg' : ''}
+                        `}
+                        style={{
+                          transform: locker.isOpening 
+                            ? 'perspective(200px) rotateY(-90deg)' 
+                            : locker.isClosing 
+                              ? 'perspective(200px) rotateY(90deg)' 
+                              : 'perspective(200px) rotateY(0deg)',
+                          transformOrigin: 'left center',
+                          transition: 'transform 1s ease-in-out',
+                        }}
                       >
-                        {/* Selection Ring */}
-                        {selected && !locker.isOpen && (
-                          <div className="absolute -inset-1 rounded-md border-2 border-orange-400 z-20 pointer-events-none animate-pulse" />
-                        )}
+                        {/* Door Handle */}
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-0.5 sm:w-1 h-4 sm:h-6 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full shadow-sm" />
 
-                        {/* Locker Door - Smart Design */}
-                        <div
-                          className={`
-                            relative bg-gradient-to-b from-slate-700 to-slate-800 rounded-md border overflow-hidden
-                            transition-all duration-300
-                            ${locker.isOpen ? 'border-emerald-400 shadow-lg shadow-emerald-400/30' : 'border-slate-600'}
-                            ${selected && !locker.isOpen ? 'border-orange-400 shadow-lg shadow-orange-400/30' : ''}
-                            ${locker.status === 'available' && !selected ? 'hover:border-cyan-400' : ''}
-                          `}
-                          style={{
-                            transform: locker.isOpening
-                              ? 'perspective(200px) rotateY(-90deg)'
-                              : locker.isClosing
-                                ? 'perspective(200px) rotateY(90deg)'
-                                : 'perspective(200px) rotateY(0deg)',
-                            transformOrigin: 'left center',
-                            transition: 'transform 1s ease-in-out',
-                          }}
-                        >
-                          {/* LED Strip Top */}
-                          <div className={`h-0.5 w-full ${colors.dot} ${locker.status === 'available' ? 'animate-pulse' : ''}`} />
-
-                          {/* Door Content */}
-                          {!locker.isOpen && (
-                            <div className="px-1 py-1.5">
-                              {/* Locker Number */}
-                              <div className="text-center">
-                                <span className={`text-[10px] sm:text-xs font-black ${selected ? 'text-orange-400' : colors.text}`}>
-                                  {String(locker.id).padStart(2, '0')}
-                                </span>
-                              </div>
-
-                              {/* Status Dot + Label */}
-                              <div className="flex items-center justify-center gap-0.5 mt-0.5">
-                                <div className={`w-1 h-1 rounded-full ${colors.dot}`} />
-                                <span className={`text-[6px] font-bold uppercase tracking-wider ${colors.text}`}>
-                                  {selected ? 'SEL' : locker.status === 'available' ? 'OK' : locker.status === 'occupied' ? 'USE' : 'RSV'}
-                                </span>
-                              </div>
-
-                              {/* Smart Lock Icon */}
-                              <div className="absolute bottom-0.5 right-0.5">
-                                <svg className="w-1.5 h-1.5 text-slate-500" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5 5 0 0010 2z" />
-                                </svg>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Locker Interior (when open) */}
-                          {locker.isOpen && (
-                            <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-black flex items-center justify-center">
-                              <div className="w-full h-full border border-emerald-400/30 m-1 rounded-sm flex items-center justify-center">
-                                <span className="text-emerald-400 text-[8px] font-mono">OPEN</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* 3D Side Shadow */}
-                          <div className="absolute inset-y-0 -right-0.5 w-0.5 bg-gradient-to-r from-black/40 to-transparent" />
-                        </div>
-
-                        {/* Close Button */}
+                        {/* Locker Interior (visible when open) */}
                         {locker.isOpen && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCloseLocker(locker.id);
-                            }}
-                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded px-1.5 py-0.5 font-bold text-[8px] shadow-lg hover:from-emerald-600 hover:to-emerald-700 active:scale-95 transition-all"
-                          >
-                            ĐÓNG
-                          </button>
+                          <div className="absolute inset-0 bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center">
+                            <span className="text-gray-400 text-[8px] sm:text-xs">Trống</span>
+                          </div>
                         )}
+
+                        {/* Door Content */}
+                        {!locker.isOpen && (
+                          <>
+                            {/* Status LED */}
+                            <div className="absolute top-1 left-1">
+                              <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${colors.dot} ${locker.status === 'available' ? 'animate-pulse' : ''}`} />
+                            </div>
+
+                            {/* Locker Number */}
+                            <div className="h-12 sm:h-16 flex items-center justify-center">
+                              <span className={`text-sm sm:text-lg font-black ${isSelected(locker.id) ? 'text-orange-500' : 'text-gray-700'}`}>
+                                {String(locker.id).padStart(2, '0')}
+                              </span>
+                            </div>
+
+                            {/* Status Label */}
+                            <div className={`text-center py-0.5 sm:py-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-wide ${colors.text} ${colors.bg}`}>
+                              {isSelected(locker.id) ? 'Đã chọn' : statusLabels[locker.status]}
+                            </div>
+                          </>
+                        )}
+
+                        {/* 3D Effect */}
+                        <div className="absolute inset-y-0 -right-0.5 sm:-right-1 w-0.5 sm:w-1 bg-gradient-to-r from-black/10 to-transparent rounded-r-lg" />
                       </div>
-                    );
-                  })}
-                </div>
 
-                {/* Bottom Status Bar */}
-                <div className="mt-3 pt-2 border-t border-slate-700 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-[8px] text-slate-400 font-mono">
-                    <div className="flex items-center gap-0.5">
-                      <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>{availableLockers.length}</span>
+                      {/* Close Button (shown when open) */}
+                      {locker.isOpen && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCloseLocker(locker.id);
+                          }}
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg sm:rounded-xl px-2 sm:px-4 py-1 sm:py-2 font-bold text-[10px] sm:text-sm shadow-lg hover:from-gray-700 hover:to-gray-800 active:scale-95 transition-all"
+                        >
+                          Đóng tủ
+                        </button>
+                      )}
                     </div>
-                    <div className="flex items-center gap-0.5">
-                      <div className="w-1 h-1 rounded-full bg-red-400" />
-                      <span>{lockers.filter(l => l.status === 'occupied').length}</span>
-                    </div>
-                  </div>
-                  <div className="text-[8px] text-orange-400 font-mono font-bold">
-                    IoT · 4G
-                  </div>
-                </div>
-
-                {/* Base Stand */}
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-2 bg-gradient-to-b from-slate-700 to-slate-900 rounded-b-lg" />
+                  );
+                })}
               </div>
 
-              {/* ===== Floating Status Badges ===== */}
-              <div className="absolute -top-3 -right-3 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-full px-2 py-0.5 shadow-lg shadow-emerald-400/30 flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[8px] font-bold">LIVE</span>
+              {/* Cabinet Footer */}
+              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-300 flex items-center justify-between">
+                <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-green-500" /> <span className="hidden sm:inline">{availableLockers.length} Trống</span><span className="sm:hidden">{availableLockers.length}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-red-500" /> <span className="hidden sm:inline">{lockers.filter(l => l.status === 'occupied').length} Đã dùng</span><span className="sm:hidden">{lockers.filter(l => l.status === 'occupied').length}</span>
+                  </span>
+                  <span className="hidden sm:flex items-center gap-1">
+                    <span className="h-2 w-2 rounded-full bg-yellow-500" /> {lockers.filter(l => l.status === 'reserved').length} Đã đặt
+                  </span>
+                </div>
+                <div className="text-orange-500 text-[10px] sm:text-xs font-mono font-bold">
+                  E-BOX v2.0
+                </div>
               </div>
 
-              <div className="absolute -bottom-3 -left-3 bg-gradient-to-br from-cyan-400 to-cyan-600 text-white rounded-full px-2 py-0.5 shadow-lg shadow-cyan-400/30 flex items-center gap-1">
-                <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                </svg>
-                <span className="text-[8px] font-bold">IoT</span>
+              {/* Brand Logo */}
+              <div className="absolute -bottom-2 sm:-bottom-3 left-1/2 -translate-x-1/2 bg-white rounded-full px-3 sm:px-4 py-0.5 sm:py-1 shadow-md border border-gray-200">
+                <span className="text-[10px] sm:text-xs font-bold text-gray-600">E-BOX</span>
               </div>
             </div>
           </div>

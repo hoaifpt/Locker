@@ -105,34 +105,34 @@ export default function Navbar() {
             aria-expanded={mobileMenuOpen}
           >
             <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
               fill="none"
               className="block shrink-0 overflow-visible"
             >
               <line
-                x1="3"
-                y1="6"
-                x2="17"
-                y2="6"
+                x1="4"
+                y1="8"
+                x2="20"
+                y2="8"
                 stroke="currentColor"
-                strokeWidth="1.75"
+                strokeWidth="2"
                 strokeLinecap="round"
                 className={`origin-center transition-transform duration-300 ease-out ${
-                  mobileMenuOpen ? 'rotate-45 translate-y-[5px]' : ''
+                  mobileMenuOpen ? 'rotate-45 translate-y-[4px]' : ''
                 }`}
               />
               <line
-                x1="3"
-                y1="14"
-                x2="17"
-                y2="14"
+                x1="4"
+                y1="16"
+                x2="20"
+                y2="16"
                 stroke="currentColor"
-                strokeWidth="1.75"
+                strokeWidth="2"
                 strokeLinecap="round"
                 className={`origin-center transition-transform duration-300 ease-out ${
-                  mobileMenuOpen ? '-rotate-45 -translate-y-[5px]' : ''
+                  mobileMenuOpen ? '-rotate-45 -translate-y-[4px]' : ''
                 }`}
               />
             </svg>

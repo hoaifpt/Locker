@@ -109,7 +109,8 @@ export default function Navbar() {
               height="24"
               viewBox="0 0 24 24"
               fill="none"
-              className="block shrink-0 overflow-visible"
+              className="block shrink-0 self-center"
+              style={{ width: 24, height: 24 }}
             >
               <line
                 x1="4"

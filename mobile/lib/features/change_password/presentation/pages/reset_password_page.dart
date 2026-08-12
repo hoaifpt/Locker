@@ -1,44 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/repositories/change_password_repository_impl.dart';
-import '../../domain/repositories/i_change_password_repository.dart';
-import '../../domain/usecases/change_password_usecase.dart';
-import '../controllers/change_password_cubit.dart';
-import '../controllers/change_password_state.dart';
+import '../controllers/forgot_password_cubit.dart';
+import '../controllers/forgot_password_state.dart';
 
-class ChangePasswordPage extends StatelessWidget {
-  const ChangePasswordPage({super.key});
+class ResetPasswordPage extends StatefulWidget {
+  const ResetPasswordPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ChangePasswordCubit(
-        changePasswordUseCase: ChangePasswordUseCase(
-          repository: ChangePasswordRepositoryImpl() as IChangePasswordRepository,
-        ),
-      )..resetState(),
-      child: const _ChangePasswordView(),
-    );
-  }
+  State<ResetPasswordPage> createState() => _ResetPasswordPageState();
 }
 
-class _ChangePasswordView extends StatefulWidget {
-  const _ChangePasswordView();
-
-  @override
-  State<_ChangePasswordView> createState() => _ChangePasswordViewState();
-}
-
-class _ChangePasswordViewState extends State<_ChangePasswordView> {
+class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
-  final _currentPasswordController = TextEditingController();
+  final _otpController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
-    _currentPasswordController.dispose();
+    _otpController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -46,10 +27,10 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      context.read<ChangePasswordCubit>().changePassword(
-        currentPassword: _currentPasswordController.text,
-        newPassword: _newPasswordController.text,
-      );
+      context.read<ForgotPasswordCubit>().resetPassword(
+            otp: _otpController.text.trim(),
+            newPassword: _newPasswordController.text,
+          );
     }
   }
 
@@ -61,14 +42,12 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF1A1C1C),
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF1A1C1C)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Đổi mật khẩu',
+          'Đặt lại mật khẩu',
           style: TextStyle(
             color: Color(0xFF1A1C1C),
             fontSize: 18,
@@ -78,16 +57,17 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
         ),
         centerTitle: true,
       ),
-      body: BlocListener<ChangePasswordCubit, ChangePasswordState>(
+      body: BlocListener<ForgotPasswordCubit, ForgotPasswordState>(
         listener: (context, state) {
           if (state.isSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Đổi mật khẩu thành công!'),
+                content: Text('Đặt lại mật khẩu thành công!'),
                 backgroundColor: Colors.green,
               ),
             );
-            Navigator.pop(context);
+            Navigator.of(context)
+                .pushNamedAndRemoveUntil('/change-password', (r) => false);
           } else if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -105,7 +85,7 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'Vui lòng nhập mật khẩu hiện tại và mật khẩu mới để thay đổi.',
+                  'Nhập mã OTP đã được gửi đến email của bạn và mật khẩu mới.',
                   style: TextStyle(
                     fontSize: 14,
                     color: Color(0xFF52443E),
@@ -114,21 +94,40 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
                 ),
                 const SizedBox(height: 32),
                 _buildTextField(
-                  label: 'Mật khẩu hiện tại',
-                  controller: _currentPasswordController,
-                  isObscure: true,
+                  label: 'Mã OTP',
+                  controller: _otpController,
+                  isObscure: false,
+                  keyboardType: TextInputType.number,
+                  prefixIcon: Icons.pin_outlined,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập mã OTP';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   label: 'Mật khẩu mới',
                   controller: _newPasswordController,
                   isObscure: true,
+                  prefixIcon: Icons.lock_outline,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập mật khẩu mới';
+                    }
+                    if (value.length < 8) {
+                      return 'Mật khẩu phải có ít nhất 8 ký tự';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   label: 'Xác nhận mật khẩu mới',
                   controller: _confirmPasswordController,
                   isObscure: true,
+                  prefixIcon: Icons.lock_outline,
                   validator: (value) {
                     if (value != _newPasswordController.text) {
                       return 'Mật khẩu xác nhận không khớp';
@@ -137,7 +136,7 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
                   },
                 ),
                 const SizedBox(height: 40),
-                BlocBuilder<ChangePasswordCubit, ChangePasswordState>(
+                BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
                   builder: (context, state) {
                     return ElevatedButton(
                       onPressed: state.isLoading ? null : _submit,
@@ -153,7 +152,7 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
                       child: state.isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
-                              'Xác nhận đổi mật khẩu',
+                              'Xác nhận đặt lại mật khẩu',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontFamily: 'Plus Jakarta Sans',
@@ -162,19 +161,6 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
                             ),
                     );
                   },
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/forgot-password'),
-                  child: const Text(
-                    'Quên mật khẩu?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFFEE8C2B),
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -188,6 +174,8 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
     required String label,
     required TextEditingController controller,
     required bool isObscure,
+    required IconData prefixIcon,
+    TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
     return Column(
@@ -206,8 +194,8 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
         TextFormField(
           controller: controller,
           obscureText: isObscure,
-          validator:
-              validator ??
+          keyboardType: keyboardType,
+          validator: validator ??
               (value) {
                 if (value == null || value.isEmpty) {
                   return 'Vui lòng nhập $label';
@@ -217,22 +205,23 @@ class _ChangePasswordViewState extends State<_ChangePasswordView> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
+            prefixIcon: Icon(prefixIcon, color: const Color(0xFFFFB79D)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0x19EE8C2B), width: 1),
+              borderSide:
+                  const BorderSide(color: Color(0x19EE8C2B), width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFEE8C2B), width: 1),
+              borderSide:
+                  const BorderSide(color: Color(0xFFEE8C2B), width: 1),
             ),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
+                horizontal: 16, vertical: 16),
           ),
         ),
       ],

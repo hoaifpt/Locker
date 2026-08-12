@@ -11,8 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Locker.Backend.Domain.Entities;
 using Resend;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
 
 namespace Locker.Backend.Infrastructure;
 
@@ -20,19 +18,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var firebaseKeyPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Firebase",
-            "firebase-admin.json");
-
-        if (FirebaseApp.DefaultInstance == null)
-        {
-            FirebaseApp.Create(new AppOptions
-            {
-                Credential = GoogleCredential.FromFile(firebaseKeyPath)
-            });
-        }
-
         services.Configure<MongoSettings>(configuration.GetSection("Mongo"));
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.Configure<ResendSettings>(configuration.GetSection("Resend"));
@@ -48,7 +33,6 @@ public static class DependencyInjection
         services.Configure<VnPaySettings>(configuration.GetSection("VnPay"));
 
         services.AddSingleton<MongoContext>();
-        services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
         services.AddScoped<ILockerRepository, LockerRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
@@ -99,7 +83,8 @@ public static class DependencyInjection
             }
         };
 
-        services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfig);
+        services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfig)
+            .AddDefaultTokenProviders();
 
         return services;
     }

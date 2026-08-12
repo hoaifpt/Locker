@@ -1,9 +1,12 @@
-import '../repositories/i_auth_repository.dart';
+import 'package:locker_mobile/features/auth/domain/repositories/i_auth_repository.dart';
+import 'package:locker_mobile/features/home/domain/entities/user.dart';
 
 class SignInWithGoogleUsecase {
-  final IAuthRepository _repo;
-  SignInWithGoogleUsecase(this._repo);
+  final IAuthRepository repository;
 
-  /// Trả về true nếu đăng nhập thành công
-  Future<bool> call() => _repo.signInWithGoogle();
+  SignInWithGoogleUsecase(this.repository);
+
+  Future<User> call() {
+    return repository.signInWithGoogle();
+  }
 }

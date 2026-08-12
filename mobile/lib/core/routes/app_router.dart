@@ -32,6 +32,9 @@ import '../../features/notifications/presentation/pages/notification_page.dart';
 import '../../features/security_privacy/presentation/pages/security_privacy_page.dart';
 import '../../features/personal_info/presentation/pages/personal_info_page.dart';
 import '../../features/change_password/presentation/pages/change_password_page.dart';
+import '../../features/change_password/presentation/pages/forgot_password_page.dart';
+import '../../features/change_password/presentation/pages/reset_password_page.dart';
+import '../../features/change_password/presentation/controllers/forgot_password_cubit.dart';
 
 class AppRouter {
   static const initialRoute = '/login';
@@ -99,5 +102,7 @@ class AppRouter {
     '/security-privacy': (context) => const SecurityPrivacyPage(),
     '/personal-info': (context) => const PersonalInfoPage(),
     '/change-password': (context) => const ChangePasswordPage(),
+    '/forgot-password': (context) => const ForgotPasswordPage(),
+    '/reset-password': (context) => const ResetPasswordPage(),
   };
 }

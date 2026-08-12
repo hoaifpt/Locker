@@ -6,7 +6,6 @@ import 'package:locker_mobile/features/notifications/domain/usecases/get_notific
 import 'package:locker_mobile/features/notifications/domain/usecases/mark_all_as_read_usecase.dart';
 import 'package:locker_mobile/features/notifications/domain/usecases/mark_as_read_usecase.dart';
 import 'package:locker_mobile/features/notifications/domain/usecases/register_device_usecase.dart';
-import 'package:locker_mobile/features/notifications/presentation/controllers/notification_cubit.dart';
 import 'package:locker_mobile/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/check_login_usecase.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/login_usecase.dart';
@@ -24,6 +23,7 @@ import 'package:locker_mobile/features/sign_up/domain/repositories/i_sign_up_rep
 import 'package:locker_mobile/features/sign_up/domain/usecases/sign_up_usecase.dart';
 import 'package:locker_mobile/features/sign_up/presentation/controllers/sign_up_cubit.dart';
 
+import '../../features/notifications/presentation/controllers/notification_cubit.dart';
 import 'package:locker_mobile/features/wallet/data/wallet_repository.dart';
 import 'package:locker_mobile/features/wallet/domain/repositories/i_wallet_repository.dart';
 import 'package:locker_mobile/features/wallet/domain/usecases/get_wallet_overview_usecase.dart';
@@ -58,7 +58,9 @@ void configureDependencies() {
   getIt.registerLazySingleton(() => LoginUsecase(getIt()));
   getIt.registerLazySingleton(() => LogoutUsecase(getIt()));
   getIt.registerLazySingleton(() => CheckLoginUsecase(getIt()));
-  getIt.registerLazySingleton(() => SignInWithGoogleUsecase(getIt()));
+  getIt.registerLazySingleton(
+    () => SignInWithGoogleUsecase(getIt<IAuthRepository>()),
+  );
   getIt.registerLazySingleton(
     () => ResendVerificationEmailUseCase(getIt<IAuthRepository>()),
   );
@@ -71,8 +73,9 @@ void configureDependencies() {
       loginUsecase: getIt(),
       logoutUsecase: getIt(),
       checkLoginUsecase: getIt(),
-      signInWithGoogleUsecase: getIt(),
       registerDeviceUsecase: getIt(),
+      signInWithGoogleUsecase: getIt(),
+      getUserProfileUsecase: getIt(),
     ),
   );
   getIt.registerFactory(

@@ -5,31 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/domain/usecases/forgot_password_usecase.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/domain/usecases/reset_password_usecase.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/presentation/controllers/forgot_password_cubit.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/presentation/controllers/forgot_password_state.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/presentation/pages/forgot_password_page.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/presentation/pages/reset_password_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Locker.Backend.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Locker.Backend.Application.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Validators/RequestValidators.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Validators/RequestValidators.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/DependencyInjection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/DependencyInjection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Locker.Backend.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Locker.Backend.Infrastructure.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/AuthController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Controllers/AuthController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend/Locker.Backend.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend/Locker.Backend.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/google-services.json" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/google-services.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/core/constants/api_endpoints.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/constants/api_endpoints.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/locker.sln" beforeDir="false" afterPath="$PROJECT_DIR$/locker.sln" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mobile/lib/core/constants/environment.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/constants/environment.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/core/routes/app_router.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/routes/app_router.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mobile/lib/core/routes/injection.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/routes/injection.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/data/auth_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/auth/data/auth_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/domain/usecases/verify_email_cubit.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/domain/usecases/verify_email_state.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/domain/repositories/i_auth_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/auth/domain/repositories/i_auth_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/domain/usecases/sign_in_with_google_usecase.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/auth/domain/usecases/sign_in_with_google_usecase.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/presentation/controllers/auth_cubit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/auth/presentation/controllers/auth_cubit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/presentation/controllers/auth_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/auth/presentation/controllers/auth_state.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mobile/lib/features/auth/presentation/pages/login_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/auth/presentation/pages/login_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/notifications/data/notification_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/notifications/data/notification_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/notifications/domain/repositories/i_notification_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/notifications/domain/repositories/i_notification_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/notifications/presentation/controllers/notification_cubit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/notifications/presentation/controllers/notification_cubit.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/notifications/presentation/pages/notification_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/notifications/presentation/pages/notification_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/change_password/data/repositories/change_password_repository_impl.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/data/repositories/change_password_repository_impl.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/change_password/domain/repositories/i_change_password_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/domain/repositories/i_change_password_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/lib/features/change_password/presentation/pages/change_password_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/change_password/presentation/pages/change_password_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/src/features/auth/pages/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/features/auth/pages/LoginPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/web/vite.config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

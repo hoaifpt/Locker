@@ -8,7 +8,7 @@ export default defineConfig({
         proxy: {
             // Chuyển tiếp tất cả các yêu cầu bắt đầu bằng '/api' đến server backend
             '/api': {
-                target: 'https://api.hoaitran.online',
+                target: 'http://localhost:5000',
                 changeOrigin: true,
             },
         },

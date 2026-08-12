@@ -105,12 +105,12 @@ public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequ
             .Matches("^[0-9]+$").WithMessage("MÃ£ OTP chá»‰ chá»©a chá»¯ sá»‘.");
 
         RuleFor(x => x.NewPassword)
-            .NotEmpty().WithMessage("Máº­t kháº©u má»›i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")
-            .MinimumLength(8).WithMessage("Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 8 kÃ½ tá»±.")
-            .Matches("[A-Z]").WithMessage("Máº­t kháº©u pháº£i chá»©a Ã­t nháº¥t má»™t chá»¯ hoa.")
-            .Matches("[a-z]").WithMessage("Máº­t kháº©u pháº£i chá»©a Ã­t nháº¥t má»™t chá»¯ thÆ°á»ng.")
-            .Matches("[0-9]").WithMessage("Máº­t kháº©u pháº£i chá»©a Ã­t nháº¥t má»™t chá»¯ sá»‘.")
-            .Matches("[^a-zA-Z0-9]").WithMessage("Máº­t kháº©u pháº£i chá»©a Ã­t nháº¥t má»™t kÃ½ tá»± Ä‘áº·c biá»‡t.");
+    .NotEmpty().WithMessage("Mật khẩu mới không được để trống.")
+    .MinimumLength(8).WithMessage("Mật khẩu phải có ít nhất 8 ký tự.")
+    .Matches("[A-Z]").WithMessage("Mật khẩu phải chứa ít nhất một chữ hoa.")
+    .Matches("[a-z]").WithMessage("Mật khẩu phải chứa ít nhất một chữ thường.")
+    .Matches("[0-9]").WithMessage("Mật khẩu phải chứa ít nhất một chữ số.")
+    .Matches("[^a-zA-Z0-9]").WithMessage("Mật khẩu phải chứa ít nhất một ký tự đặc biệt.");
     }
 }
 

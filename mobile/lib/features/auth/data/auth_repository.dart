@@ -1,6 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -8,6 +6,7 @@ import '../../../core/constants/api_endpoints.dart';
 import '../../../core/exceptions/app_exception.dart';
 import '../../../core/network/api_client.dart';
 import '../domain/repositories/i_auth_repository.dart';
+import '../../home/domain/entities/user.dart';
 
 class AuthRepository implements IAuthRepository {
   final ApiClient _apiClient = ApiClient();
@@ -39,71 +38,6 @@ class AuthRepository implements IAuthRepository {
       throw NetworkException(e.message ?? 'Lỗi mạng');
     } catch (e) {
       throw AppException('Lỗi đăng nhập: $e');
-    }
-  }
-
-  /// Đăng nhập với Google thông qua Firebase, sau đó trao đổi token với backend
-  @override
-  Future<bool> signInWithGoogle() async {
-    try {
-      // 1. Bắt đầu quy trình đăng nhập Google
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-      // Người dùng có thể hủy quy trình đăng nhập
-      if (googleUser == null) {
-        return false;
-      }
-
-      // 2. Lấy thông tin xác thực từ tài khoản Google
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      // 3. Tạo credential cho Firebase từ token của Google
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // 4. Đăng nhập vào Firebase với credential
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(
-        credential,
-      );
-      final firebaseUser = userCredential.user;
-
-      if (firebaseUser == null) {
-        throw AppException('Đăng nhập Firebase thất bại, không có người dùng.');
-      }
-
-      // 5. Lấy Firebase ID token để gửi về backend của bạn
-      final idToken = await firebaseUser.getIdToken();
-      if (idToken == null) {
-        throw AppException('Không thể lấy Firebase ID token.');
-      }
-
-      // 6. Gửi token đến backend để xác thực và nhận về JWT của hệ thống
-      final response = await _apiClient.client.post(
-        ApiEndpoints.authGoogleLogin, // Endpoint này cần được tạo ở backend
-        data: {'idToken': idToken},
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final access = data['token'] as String?;
-        final refresh = data['refreshToken'] as String?;
-
-        if (access != null && refresh != null) {
-          await _saveTokens(access, refresh);
-          return true;
-        }
-      }
-      return false;
-    } on FirebaseAuthException catch (e) {
-      throw AppException('Lỗi xác thực Firebase: ${e.message}');
-    } catch (e) {
-      // Đảm bảo đăng xuất khỏi Google nếu có lỗi xảy ra ở các bước sau
-      await GoogleSignIn().signOut();
-      await FirebaseAuth.instance.signOut();
-      throw AppException('Lỗi đăng nhập Google: $e');
     }
   }
 
@@ -190,5 +124,14 @@ class AuthRepository implements IAuthRepository {
     } catch (e) {
       throw AppException('Đã xảy ra lỗi không mong muốn: $e');
     }
+  }
+
+  @override
+  Future<User> signInWithGoogle() async {
+    // TODO: Implement Google Sign-In logic.
+    // This is a placeholder implementation.
+    // You should use a package like google_sign_in to get an ID token,
+    // send it to your backend, and the backend should return user info and tokens.
+    throw UnimplementedError('signInWithGoogle has not been implemented yet.');
   }
 }

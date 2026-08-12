@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
 import { GOOGLE_PLAY_URL } from '../lib/constants';
 
 const navLinks = [
@@ -104,39 +105,11 @@ export default function Navbar() {
             aria-label={mobileMenuOpen ? "Đóng menu" : "Mở menu"}
             aria-expanded={mobileMenuOpen}
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="block shrink-0 self-center"
-              style={{ width: 24, height: 24 }}
-            >
-              <line
-                x1="4"
-                y1="8"
-                x2="20"
-                y2="8"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className={`origin-center transition-transform duration-300 ease-out ${
-                  mobileMenuOpen ? 'rotate-45 translate-y-[4px]' : ''
-                }`}
-              />
-              <line
-                x1="4"
-                y1="16"
-                x2="20"
-                y2="16"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className={`origin-center transition-transform duration-300 ease-out ${
-                  mobileMenuOpen ? '-rotate-45 -translate-y-[4px]' : ''
-                }`}
-              />
-            </svg>
+            {mobileMenuOpen ? (
+              <X size={24} strokeWidth={2} />
+            ) : (
+              <Menu size={24} strokeWidth={2} />
+            )}
           </button>
         </div>
       </div>

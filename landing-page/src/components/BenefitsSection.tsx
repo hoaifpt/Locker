@@ -216,25 +216,6 @@ export default function BenefitsSection() {
               </div>
           </div>
         </div>
-
-        {/* Trust Badges */}
-        <div className="mt-12 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          {[
-            { icon: '🏆', label: 'Top 10 Startup', sublabel: 'FPT 2025' },
-            { icon: '⭐', label: '4.9/5 Rating', sublabel: 'App Store' },
-            { icon: '📱', label: '50K+ Downloads', sublabel: 'Toàn quốc' },
-            { icon: '🤝', label: '10+ Đối tác', sublabel: 'Vận chuyển' },
-          ].map((badge) => (
-            <div
-              key={badge.label}
-              className="liquid-card text-center p-4 sm:p-6"
-            >
-              <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">{badge.icon}</div>
-              <div className="font-bold text-gray-900 text-xs sm:text-base">{badge.label}</div>
-              <div className="text-xs text-gray-500">{badge.sublabel}</div>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

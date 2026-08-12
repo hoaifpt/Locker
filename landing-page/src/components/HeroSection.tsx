@@ -1,5 +1,4 @@
 import GooglePlayButton from './GooglePlayButton';
-import { GOOGLE_PLAY_URL } from '../lib/constants';
 
 export default function HeroSection() {
   // Generate 3 columns - keep it small and recognizable
@@ -229,21 +228,6 @@ export default function HeroSection() {
               <div className="h-2 sm:h-3 bg-gradient-to-b from-black/20 to-transparent blur-md mx-8 sm:mx-12 mt-1" />
             </div>
           </div>
-        </div>
-
-        {/* Bottom Stats */}
-        <div className="mt-12 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          {[
-            { value: '10K+', label: 'Sinh viên' },
-            { value: '500+', label: 'Tủ locker' },
-            { value: '50K+', label: 'Giao dịch' },
-            { value: '24/7', label: 'Hỗ trợ' },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-black" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{stat.value}</div>
-              <div className="text-xs sm:text-sm text-gray-500 font-medium">{stat.label}</div>
-            </div>
-          ))}
         </div>
       </div>
     </section>

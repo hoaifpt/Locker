@@ -53,11 +53,11 @@ export default function Navbar() {
             <img
               src="/LOGO-EBOX.png"
               alt="E-BOX Logo"
-              className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-12 md:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
             <div className="hidden sm:block">
-              <span className="text-lg md:text-xl font-black text-gray-800">E</span>
-              <span className="text-lg md:text-xl font-black gradient-text">-BOX</span>
+              <span className="text-xl md:text-2xl font-black text-gray-800">E</span>
+              <span className="text-xl md:text-2xl font-black gradient-text">-BOX</span>
             </div>
           </a>
 
@@ -80,31 +80,20 @@ export default function Navbar() {
               rel="noopener noreferrer"
               className="ml-2 md:ml-4 nav-button"
             >
-              <svg className="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="nav-chplay-g1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#00C9FF" />
-                    <stop offset="100%" stopColor="#0080FF" />
-                  </linearGradient>
-                  <linearGradient id="nav-chplay-g2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#FFEE00" />
-                    <stop offset="100%" stopColor="#FFA800" />
-                  </linearGradient>
-                  <linearGradient id="nav-chplay-g3" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#FF4D6D" />
-                    <stop offset="100%" stopColor="#FF1A4D" />
-                  </linearGradient>
-                  <linearGradient id="nav-chplay-g4" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#00E676" />
-                    <stop offset="100%" stopColor="#00A152" />
-                  </linearGradient>
-                </defs>
-                <path d="M3.609 1.814L13.792 12 3.61 22.186a1 1 0 01-.61-.916V2.73a1 1 0 01.609-.916z" fill="url(#nav-chplay-g1)" />
-                <path d="M13.792 12L3.609 1.814c.197-.132.443-.196.685-.196.243 0 .485.063.682.184l10.13 5.788L13.792 12z" fill="url(#nav-chplay-g4)" />
-                <path d="M13.792 12L3.609 22.186c.197.13.44.195.682.195.243 0 .487-.066.682-.195l10.13-5.787L13.792 12z" fill="url(#nav-chplay-g3)" />
-                <path d="M20.16 10.13l-2.873-1.643L15.106 12l2.182 3.513 2.873-1.643a1.487 1.487 0 000-2.737z" fill="url(#nav-chplay-g2)" />
+              {/* Android Robot Icon */}
+              <svg className="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 24 24" fill="#3DDC84" xmlns="http://www.w3.org/2000/svg">
+                {/* Antenna left */}
+                <path d="M7 3L9.5 7" stroke="#3DDC84" strokeWidth="1.8" strokeLinecap="round"/>
+                {/* Antenna right */}
+                <path d="M17 3L14.5 7" stroke="#3DDC84" strokeWidth="1.8" strokeLinecap="round"/>
+                {/* Head - half circle */}
+                <path d="M2.5 15.5C2.5 9.7 6.7 5 12 5C17.3 5 21.5 9.7 21.5 15.5V21H2.5V15.5Z" fill="#3DDC84"/>
+                {/* Left eye */}
+                <circle cx="8.5" cy="12.5" r="1.4" fill="#FFFFFF"/>
+                {/* Right eye */}
+                <circle cx="15.5" cy="12.5" r="1.4" fill="#FFFFFF"/>
               </svg>
-              <span className="hidden lg:inline text-sm font-semibold">Tải App</span>
+              <span className="hidden lg:inline text-sm font-semibold">Tải APK</span>
             </a>
           </nav>
 
@@ -148,31 +137,20 @@ export default function Navbar() {
                 rel="noopener noreferrer"
                 className="nav-button w-full justify-center"
               >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="mobile-chplay-g1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#00C9FF" />
-                      <stop offset="100%" stopColor="#0080FF" />
-                    </linearGradient>
-                    <linearGradient id="mobile-chplay-g2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FFEE00" />
-                      <stop offset="100%" stopColor="#FFA800" />
-                    </linearGradient>
-                    <linearGradient id="mobile-chplay-g3" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FF4D6D" />
-                      <stop offset="100%" stopColor="#FF1A4D" />
-                    </linearGradient>
-                    <linearGradient id="mobile-chplay-g4" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#00E676" />
-                      <stop offset="100%" stopColor="#00A152" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M3.609 1.814L13.792 12 3.61 22.186a1 1 0 01-.61-.916V2.73a1 1 0 01.609-.916z" fill="url(#mobile-chplay-g1)" />
-                  <path d="M13.792 12L3.609 1.814c.197-.132.443-.196.685-.196.243 0 .485.063.682.184l10.13 5.788L13.792 12z" fill="url(#mobile-chplay-g4)" />
-                  <path d="M13.792 12L3.609 22.186c.197.13.44.195.682.195.243 0 .487-.066.682-.195l10.13-5.787L13.792 12z" fill="url(#mobile-chplay-g3)" />
-                  <path d="M20.16 10.13l-2.873-1.643L15.106 12l2.182 3.513 2.873-1.643a1.487 1.487 0 000-2.737z" fill="url(#mobile-chplay-g2)" />
+                {/* Android Robot Icon */}
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#3DDC84" xmlns="http://www.w3.org/2000/svg">
+                  {/* Antenna left */}
+                  <path d="M7 3L9.5 7" stroke="#3DDC84" strokeWidth="1.8" strokeLinecap="round"/>
+                  {/* Antenna right */}
+                  <path d="M17 3L14.5 7" stroke="#3DDC84" strokeWidth="1.8" strokeLinecap="round"/>
+                  {/* Head - half circle */}
+                  <path d="M2.5 15.5C2.5 9.7 6.7 5 12 5C17.3 5 21.5 9.7 21.5 15.5V21H2.5V15.5Z" fill="#3DDC84"/>
+                  {/* Left eye */}
+                  <circle cx="8.5" cy="12.5" r="1.4" fill="#FFFFFF"/>
+                  {/* Right eye */}
+                  <circle cx="15.5" cy="12.5" r="1.4" fill="#FFFFFF"/>
                 </svg>
-                <span>Tải Ứng Dụng</span>
+                <span>Tải APK</span>
               </a>
             </div>
           </div>

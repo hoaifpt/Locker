@@ -62,46 +62,46 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative bg-gray-900 pt-20 pb-10 overflow-hidden">
+    <footer className="relative bg-gray-900 pt-16 sm:pt-20 pb-8 sm:pb-10 overflow-hidden">
       {/* Gradient border top */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-red-500" />
+      <div className="absolute top-0 left-0 right-0 h-0.5 sm:h-1 bg-gradient-to-r from-orange-500 via-orange-600 to-red-500" />
       
       {/* Background pattern */}
       <div className="absolute inset-0 grid-bg-dark opacity-20" />
       
       {/* Glow effect */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-orange-500/10 blur-[150px]" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[800px] h-[200px] sm:h-[300px] bg-orange-500/10 blur-[150px]" />
 
-      <div className="relative mx-auto max-w-7xl px-6">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Footer Content */}
-        <div className="grid gap-12 lg:grid-cols-5">
+        <div className="grid gap-10 lg:grid-cols-5">
           {/* Brand Column */}
           <div className="lg:col-span-2">
             {/* Logo */}
-            <a href="#" className="flex items-center gap-3 mb-6">
+            <a href="#" className="flex items-center gap-2 sm:gap-3 mb-6">
               <img
                 src="/LOGO-EBOX.png"
                 alt="E-BOX Logo"
-                className="h-16 w-auto object-contain"
+                className="h-12 sm:h-16 w-auto object-contain"
               />
               <div>
-                <span className="text-2xl font-black text-white">E</span>
-                <span className="text-2xl font-black gradient-text">-BOX</span>
+                <span className="text-xl sm:text-2xl font-black text-white">E</span>
+                <span className="text-xl sm:text-2xl font-black gradient-text">-BOX</span>
               </div>
             </a>
             
-            <p className="text-gray-400 leading-relaxed max-w-md mb-8">
+            <p className="text-gray-400 leading-relaxed max-w-md mb-6 sm:mb-8 text-sm sm:text-base">
               E-BOX là giải pháp tủ locker thông minh dành cho sinh viên FPT University. 
               Giúp bạn gửi nhận hàng, lưu trữ đồ cá nhân tiện lợi và an toàn 24/7.
             </p>
 
             {/* Social Links */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
-                  className="liquid-button-dark flex h-10 w-10 items-center justify-center rounded-xl text-gray-400 transition-all duration-300 hover:text-white"
+                  className="liquid-button-dark flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl text-gray-400 transition-all duration-300 hover:text-white"
                   aria-label={social.label}
                 >
                   {social.icon}
@@ -115,15 +115,15 @@ export default function Footer() {
             <div className="grid gap-8 sm:grid-cols-3">
               {/* Product */}
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-wider text-white mb-4">
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white mb-4">
                   Sản phẩm
                 </h4>
-                <ul className="space-y-3">
+                <ul className="space-y-2 sm:space-y-3">
                   {footerLinks.product.map((link) => (
                     <li key={link.label}>
                       <a
                         href={link.href}
-                        className="text-gray-400 transition-colors hover:text-orange-400"
+                        className="text-gray-400 transition-colors hover:text-orange-400 text-sm"
                       >
                         {link.label}
                       </a>
@@ -134,15 +134,15 @@ export default function Footer() {
 
               {/* Company */}
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-wider text-white mb-4">
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white mb-4">
                   Công ty
                 </h4>
-                <ul className="space-y-3">
+                <ul className="space-y-2 sm:space-y-3">
                   {footerLinks.company.map((link) => (
                     <li key={link.label}>
                       <a
                         href={link.href}
-                        className="text-gray-400 transition-colors hover:text-orange-400"
+                        className="text-gray-400 transition-colors hover:text-orange-400 text-sm"
                       >
                         {link.label}
                       </a>
@@ -153,15 +153,15 @@ export default function Footer() {
 
               {/* Support */}
               <div>
-                <h4 className="text-sm font-bold uppercase tracking-wider text-white mb-4">
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white mb-4">
                   Hỗ trợ
                 </h4>
-                <ul className="space-y-3">
+                <ul className="space-y-2 sm:space-y-3">
                   {footerLinks.support.map((link) => (
                     <li key={link.label}>
                       <a
                         href={link.href}
-                        className="text-gray-400 transition-colors hover:text-orange-400"
+                        className="text-gray-400 transition-colors hover:text-orange-400 text-sm"
                       >
                         {link.label}
                       </a>
@@ -174,14 +174,14 @@ export default function Footer() {
         </div>
 
         {/* Download App Banner */}
-        <div className="liquid-glass-accent mt-16 p-8 rounded-3xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        <div className="liquid-glass-accent mt-12 sm:mt-16 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
+            <div className="text-center md:text-left">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                 Tải ứng dụng E-BOX
               </h3>
-              <p className="text-gray-600">
-                Trải nghiệm ngay hôm nay trên iOS và Android
+              <p className="text-gray-600 text-sm sm:text-base">
+                Trải nghiệm ngay hôm nay trên Android
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -191,45 +191,16 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="glass-btn-google"
               >
-                <svg className="h-8 w-8 flex-shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="footer-chplay-g1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#00C9FF" />
-                      <stop offset="100%" stopColor="#0080FF" />
-                    </linearGradient>
-                    <linearGradient id="footer-chplay-g2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FFEE00" />
-                      <stop offset="100%" stopColor="#FFA800" />
-                    </linearGradient>
-                    <linearGradient id="footer-chplay-g3" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#FF4D6D" />
-                      <stop offset="100%" stopColor="#FF1A4D" />
-                    </linearGradient>
-                    <linearGradient id="footer-chplay-g4" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#00E676" />
-                      <stop offset="100%" stopColor="#00A152" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M3.609 1.814L13.792 12 3.61 22.186a1 1 0 01-.61-.916V2.73a1 1 0 01.609-.916z" fill="url(#footer-chplay-g1)" />
-                  <path d="M13.792 12L3.609 1.814c.197-.132.443-.196.685-.196.243 0 .485.063.682.184l10.13 5.788L13.792 12z" fill="url(#footer-chplay-g4)" />
-                  <path d="M13.792 12L3.609 22.186c.197.13.44.195.682.195.243 0 .487-.066.682-.195l10.13-5.787L13.792 12z" fill="url(#footer-chplay-g3)" />
-                  <path d="M20.16 10.13l-2.873-1.643L15.106 12l2.182 3.513 2.873-1.643a1.487 1.487 0 000-2.737z" fill="url(#footer-chplay-g2)" />
+                <svg className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0" viewBox="0 0 24 24" fill="#3DDC84" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 3L9.5 7" stroke="#3DDC84" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M17 3L14.5 7" stroke="#3DDC84" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M2.5 15.5C2.5 9.7 6.7 5 12 5C17.3 5 21.5 9.7 21.5 15.5V21H2.5V15.5Z" fill="#3DDC84"/>
+                  <circle cx="8.5" cy="12.5" r="1.4" fill="#FFFFFF"/>
+                  <circle cx="15.5" cy="12.5" r="1.4" fill="#FFFFFF"/>
                 </svg>
                 <div className="text-left">
-                  <div className="text-[10px] font-medium uppercase tracking-wider opacity-90">Get it on</div>
-                  <div className="text-base font-bold">Google Play</div>
-                </div>
-              </a>
-              <a
-                href="#"
-                className="glass-btn-apple"
-              >
-                <svg className="h-8 w-7 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                </svg>
-                <div className="text-left">
-                  <div className="text-[10px] text-gray-300">Download on the</div>
-                  <div className="text-base font-bold text-white">App Store</div>
+                  <div className="text-[8px] sm:text-[10px] font-medium uppercase tracking-wider opacity-90">Tải về</div>
+                  <div className="text-sm sm:text-base font-bold">APK Android</div>
                 </div>
               </a>
             </div>
@@ -237,12 +208,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-gray-500 text-sm">
+        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-800">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+            <div className="text-gray-500 text-xs sm:text-sm">
               © {new Date().getFullYear()} E-BOX. All rights reserved. Developed by SWP391 Team.
             </div>
-            <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-4 text-xs sm:text-sm flex-wrap justify-center">
               <a href="#" className="text-gray-500 hover:text-orange-400 transition-colors">
                 Chính sách bảo mật
               </a>

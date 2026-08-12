@@ -34,7 +34,7 @@ export default function HeroSection() {
             </span>
 
             {/* Main Heading */}
-            <h1 className="mt-8 text-5xl sm:text-6xl lg:text-7xl font-black leading-tight tracking-tight">
+            <h1 className="mt-8 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight tracking-tight">
               <span className="block text-gray-900">CHỦ ĐỘNG</span>
               <span className="block" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>MỌI LÚC</span>
               <span className="block text-gray-900">TIỆN LỢI</span>
@@ -43,7 +43,7 @@ export default function HeroSection() {
             </h1>
 
             {/* Subheading */}
-            <p className="mx-auto mt-8 max-w-xl text-lg sm:text-xl leading-relaxed text-gray-600 lg:mx-0">
+            <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-base sm:text-lg md:text-xl leading-relaxed text-gray-600 lg:mx-0">
               <span className="font-semibold text-gray-800">E-BOX</span> mang đến giải pháp gửi nhận hàng, 
               lưu trữ đồ cá nhân và đặt đồ ăn 
               <span className="font-semibold text-orange-500"> tiện lợi dành cho sinh viên </span>
@@ -66,37 +66,37 @@ export default function HeroSection() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 lg:justify-start">
+            <div className="mt-10 sm:mt-12 flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:justify-start">
               <div className="glass-trust-badge">
                 <div className="trust-icon trust-icon-green">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
                 <div>
-                  <div className="font-bold text-gray-800">Bảo mật</div>
-                  <div className="text-xs text-gray-500">256-bit AES</div>
+                  <div className="font-bold text-gray-800 text-xs sm:text-sm">Bảo mật</div>
+                  <div className="text-[10px] sm:text-xs text-gray-500">256-bit AES</div>
                 </div>
               </div>
               <div className="glass-trust-badge">
                 <div className="trust-icon trust-icon-blue">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
                 <div>
-                  <div className="font-bold text-gray-800">Tốc độ</div>
-                  <div className="text-xs text-gray-500">Phản hồi &lt;1s</div>
+                  <div className="font-bold text-gray-800 text-xs sm:text-sm">Tốc độ</div>
+                  <div className="text-[10px] sm:text-xs text-gray-500">Phản hồi &lt;1s</div>
                 </div>
               </div>
-              <div className="glass-trust-badge">
+              <div className="glass-trust-badge hidden sm:flex">
                 <div className="trust-icon trust-icon-purple">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <div className="font-bold text-gray-800">Hỗ trợ</div>
+                  <div className="font-bold text-gray-800 text-sm">Hỗ trợ</div>
                   <div className="text-xs text-gray-500">24/7</div>
                 </div>
               </div>
@@ -166,17 +166,17 @@ export default function HeroSection() {
 
               {/* Floating notification */}
               <div 
-                className="liquid-glass-v2 absolute -left-8 top-1/4 rounded-2xl p-4 shadow-xl"
+                className="liquid-glass-v2 absolute -left-2 sm:-left-8 top-1/4 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xl hidden sm:block"
                 style={{ animation: 'float 6s ease-in-out infinite' }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-                    <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-green-100">
+                    <svg className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <div>
-                    <div className="font-bold text-gray-800 text-sm">Giao hàng thành công!</div>
+                  <div className="hidden sm:block">
+                    <div className="font-bold text-gray-800 text-xs sm:text-sm">Giao hàng thành công!</div>
                     <div className="text-xs text-gray-500">Tủ #07 đã mở</div>
                   </div>
                 </div>
@@ -184,14 +184,14 @@ export default function HeroSection() {
 
               {/* Stats floating card */}
               <div 
-                className="liquid-glass-v2 absolute -right-4 bottom-1/4 rounded-2xl p-4 shadow-xl"
+                className="liquid-glass-v2 absolute -right-2 sm:-right-4 bottom-1/4 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xl hidden sm:block"
                 style={{ 
                   animation: 'float-delayed 5s ease-in-out infinite',
                   animationDelay: '1s'
                 }}
               >
                 <div className="text-center">
-                  <div className="text-2xl font-black" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>98%</div>
+                  <div className="text-xl sm:text-2xl font-black" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>98%</div>
                   <div className="text-xs text-gray-500">Uptime</div>
                 </div>
               </div>
@@ -200,7 +200,7 @@ export default function HeroSection() {
         </div>
 
         {/* Bottom Stats Bar */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="mt-16 sm:mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {[
             { value: '10K+', label: 'Sinh viên' },
             { value: '500+', label: 'Tủ locker' },
@@ -208,8 +208,8 @@ export default function HeroSection() {
             { value: '24/7', label: 'Hỗ trợ' },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="text-3xl font-black" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{stat.value}</div>
-              <div className="text-sm text-gray-500 font-medium">{stat.label}</div>
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-black" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{stat.value}</div>
+              <div className="text-xs sm:text-sm text-gray-500 font-medium">{stat.label}</div>
             </div>
           ))}
         </div>

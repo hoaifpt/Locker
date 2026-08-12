@@ -25,9 +25,9 @@ const initialLockers: LockerUnit[] = [
 ];
 
 const statusLabels = {
-  available: 'Sáºµn sÃ ng',
-  occupied: 'Äang dÃ¹ng',
-  reserved: 'ÄÃ£ Äáº·t',
+  available: 'Sẵn sàng',
+  occupied: 'Đang dùng',
+  reserved: 'Đã đặt',
 };
 
 const statusColors = {
@@ -76,7 +76,7 @@ export default function LockerSimulator() {
       setClosedLockerId(lockerId);
       setShowClosedNotification(true);
       setSelectedLocker(null);
-      
+
       setTimeout(() => setShowClosedNotification(false), 3000);
     }, 1000);
   }, []);
@@ -100,8 +100,8 @@ export default function LockerSimulator() {
               </svg>
             </div>
             <div>
-              <p className="font-bold text-sm sm:text-base">Tá»§ #{closedLockerId} ÄÃ£ ÄÃ³ng!</p>
-              <p className="text-xs text-gray-400 hidden sm:block">Sáºµn sÃ ng cho ngÆ°á»i tiáº¿p theo</p>
+              <p className="font-bold text-sm sm:text-base">Tủ #{closedLockerId} đã đóng!</p>
+              <p className="text-xs text-gray-400 hidden sm:block">Sẵn sàng cho người tiếp theo</p>
             </div>
           </div>
         </div>
@@ -117,12 +117,12 @@ export default function LockerSimulator() {
             Live Demo
           </span>
           <h2 className="mt-4 sm:mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight">
-            <span className="gradient-text">Tráº£i Nghiá»m</span>
+            <span className="gradient-text">Trải Nghiệm</span>
             <br />
-            <span className="text-gray-900">Tá»§ E-BOX ThÃ´ng Minh</span>
+            <span className="text-gray-900">Tủ E-BOX Thông Minh</span>
           </h2>
           <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-gray-600 px-4 sm:px-0">
-            Chá»n tá»§ trÃªn cabinet, sau ÄÃ³ quÃ©t QR hoáº·c nháº­p OTP Äá» má»
+            Chọn tủ trên cabinet, sau đó quét QR hoặc nhập OTP để mở
           </p>
         </div>
 
@@ -143,14 +143,14 @@ export default function LockerSimulator() {
             <div className="absolute inset-0 bg-gradient-to-br from-orange-400/10 to-orange-600/10 blur-3xl transform scale-110" />
 
             {/* Main Locker Cabinet */}
-            <div className="relative bg-gradient-to-b from-gray-100 to-gray-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-300 max-w-2xl mx-auto lg:mx-0">
-              
+            <div className="relative bg-gradient-to-b from-gray-100 to-gray-200 rounded-2xl sm:rounded-3xl p-8 sm:p-10 shadow-2xl border border-gray-300 max-w-4xl w-full mx-auto lg:mx-0">
+
               {/* Top Display Panel */}
-              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 shadow-lg">
-                <div className="flex items-center gap-3 sm:gap-4">
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl sm:rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8 shadow-lg">
+                <div className="flex items-center gap-4 sm:gap-6">
                   {/* QR Code Display */}
-                  <div className="bg-white rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-md">
-                    <div className="w-16 h-16 sm:w-24 sm:h-24 bg-black rounded-lg relative overflow-hidden">
+                  <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-2.5 shadow-md">
+                    <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-black rounded-lg relative overflow-hidden">
                       {/* QR pattern */}
                       <div className="absolute inset-1 grid grid-cols-5 gap-px">
                         {[...Array(25)].map((_, i) => (
@@ -161,17 +161,17 @@ export default function LockerSimulator() {
                         ))}
                       </div>
                       {/* QR corners */}
-                      <div className="absolute top-1 left-1 w-5 h-5 sm:w-7 sm:h-7 bg-white rounded-sm">
+                      <div className="absolute top-1 left-1 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-white rounded-sm">
                         <div className="absolute inset-0.5 bg-black rounded-sm">
                           <div className="absolute inset-0.5 bg-white rounded-sm" />
                         </div>
                       </div>
-                      <div className="absolute top-1 right-1 w-5 h-5 sm:w-7 sm:h-7 bg-white rounded-sm">
+                      <div className="absolute top-1 right-1 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-white rounded-sm">
                         <div className="absolute inset-0.5 bg-black rounded-sm">
                           <div className="absolute inset-0.5 bg-white rounded-sm" />
                         </div>
                       </div>
-                      <div className="absolute bottom-1 left-1 w-5 h-5 sm:w-7 sm:h-7 bg-white rounded-sm">
+                      <div className="absolute bottom-1 left-1 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-white rounded-sm">
                         <div className="absolute inset-0.5 bg-black rounded-sm">
                           <div className="absolute inset-0.5 bg-white rounded-sm" />
                         </div>
@@ -180,22 +180,22 @@ export default function LockerSimulator() {
                       <div className="absolute left-1 right-1 h-0.5 bg-orange-500" style={{ animation: 'scan-line 2s linear infinite', top: '50%' }} />
                     </div>
                   </div>
-                  
+
                   {/* Info Panel */}
                   <div className="flex-1 flex items-center justify-center">
-                    <img src="/LOGO-EBOX.png" alt="E-BOX" className="h-12 sm:h-16 md:h-20 w-auto" />
+                    <img src="/LOGO-EBOX.png" alt="E-BOX" className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto" />
                   </div>
 
                   {/* Status Display */}
                   <div className="text-right">
-                    <div className="text-2xl sm:text-3xl font-black text-orange-500">{availableLockers.length}</div>
-                    <div className="text-gray-400 text-[10px] sm:text-xs">Tá»§ trá»ng</div>
+                    <div className="text-3xl sm:text-4xl md:text-5xl font-black text-orange-500">{availableLockers.length}</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Tủ trống</div>
                   </div>
                 </div>
               </div>
 
               {/* Locker Grid - Responsive columns */}
-              <div className="grid grid-cols-4 gap-2 sm:gap-3">
+              <div className="grid grid-cols-4 gap-3 sm:gap-4">
                 {lockers.map((locker) => {
                   const colors = statusColors[locker.status];
                   return (
@@ -218,22 +218,22 @@ export default function LockerSimulator() {
                           ${isSelected(locker.id) && !locker.isOpen ? 'border-orange-500 shadow-orange-200 shadow-lg' : ''}
                         `}
                         style={{
-                          transform: locker.isOpening 
-                            ? 'perspective(200px) rotateY(-90deg)' 
-                            : locker.isClosing 
-                              ? 'perspective(200px) rotateY(90deg)' 
+                          transform: locker.isOpening
+                            ? 'perspective(200px) rotateY(-90deg)'
+                            : locker.isClosing
+                              ? 'perspective(200px) rotateY(90deg)'
                               : 'perspective(200px) rotateY(0deg)',
                           transformOrigin: 'left center',
                           transition: 'transform 1s ease-in-out',
                         }}
                       >
                         {/* Door Handle */}
-                        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-0.5 sm:w-1 h-4 sm:h-6 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full shadow-sm" />
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-1 sm:w-1.5 h-6 sm:h-8 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full shadow-sm" />
 
                         {/* Locker Interior (visible when open) */}
                         {locker.isOpen && (
                           <div className="absolute inset-0 bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400 text-[8px] sm:text-xs">Trá»ng</span>
+                            <span className="text-gray-400 text-[10px] sm:text-xs">Trống</span>
                           </div>
                         )}
 
@@ -242,19 +242,19 @@ export default function LockerSimulator() {
                           <>
                             {/* Status LED */}
                             <div className="absolute top-1 left-1">
-                              <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${colors.dot} ${locker.status === 'available' ? 'animate-pulse' : ''}`} />
+                              <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${colors.dot} ${locker.status === 'available' ? 'animate-pulse' : ''}`} />
                             </div>
 
                             {/* Locker Number */}
-                            <div className="h-12 sm:h-16 flex items-center justify-center">
-                              <span className={`text-sm sm:text-lg font-black ${isSelected(locker.id) ? 'text-orange-500' : 'text-gray-700'}`}>
+                            <div className="h-16 sm:h-20 flex items-center justify-center">
+                              <span className={`text-base sm:text-xl md:text-2xl font-black ${isSelected(locker.id) ? 'text-orange-500' : 'text-gray-700'}`}>
                                 {String(locker.id).padStart(2, '0')}
                               </span>
                             </div>
 
                             {/* Status Label */}
-                            <div className={`text-center py-0.5 sm:py-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-wide ${colors.text} ${colors.bg}`}>
-                              {isSelected(locker.id) ? 'ÄÃ£ chá»n' : statusLabels[locker.status]}
+                            <div className={`text-center py-1 sm:py-1.5 text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wide ${colors.text} ${colors.bg}`}>
+                              {isSelected(locker.id) ? 'Đã chọn' : statusLabels[locker.status]}
                             </div>
                           </>
                         )}
@@ -270,9 +270,9 @@ export default function LockerSimulator() {
                             e.stopPropagation();
                             handleCloseLocker(locker.id);
                           }}
-                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg sm:rounded-xl px-2 sm:px-4 py-1 sm:py-2 font-bold text-[10px] sm:text-sm shadow-lg hover:from-gray-700 hover:to-gray-800 active:scale-95 transition-all"
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg sm:rounded-xl px-3 sm:px-5 py-1.5 sm:py-2.5 font-bold text-xs sm:text-sm shadow-lg hover:from-gray-700 hover:to-gray-800 active:scale-95 transition-all"
                         >
-                          ÄÃ³ng tá»§
+                          Đóng tủ
                         </button>
                       )}
                     </div>
@@ -281,26 +281,26 @@ export default function LockerSimulator() {
               </div>
 
               {/* Cabinet Footer */}
-              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-300 flex items-center justify-between">
-                <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-green-500" /> <span className="hidden sm:inline">{availableLockers.length} Trá»ng</span><span className="sm:hidden">{availableLockers.length}</span>
+              <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-300 flex items-center justify-between">
+                <div className="flex items-center gap-3 sm:gap-5 text-xs sm:text-sm text-gray-500">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-green-500" /> <span className="hidden sm:inline">{availableLockers.length} Trống</span><span className="sm:hidden">{availableLockers.length}</span>
                   </span>
-                  <span className="flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-red-500" /> <span className="hidden sm:inline">{lockers.filter(l => l.status === 'occupied').length} ÄÃ£ dÃ¹ng</span><span className="sm:hidden">{lockers.filter(l => l.status === 'occupied').length}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-red-500" /> <span className="hidden sm:inline">{lockers.filter(l => l.status === 'occupied').length} Đã dùng</span><span className="sm:hidden">{lockers.filter(l => l.status === 'occupied').length}</span>
                   </span>
-                  <span className="hidden sm:flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-yellow-500" /> {lockers.filter(l => l.status === 'reserved').length} ÄÃ£ Äáº·t
+                  <span className="hidden sm:flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" /> {lockers.filter(l => l.status === 'reserved').length} Đã đặt
                   </span>
                 </div>
-                <div className="text-orange-500 text-[10px] sm:text-xs font-mono font-bold">
+                <div className="text-orange-500 text-xs sm:text-sm font-mono font-bold">
                   E-BOX v2.0
                 </div>
               </div>
 
               {/* Brand Logo */}
-              <div className="absolute -bottom-2 sm:-bottom-3 left-1/2 -translate-x-1/2 bg-white rounded-full px-3 sm:px-4 py-0.5 sm:py-1 shadow-md border border-gray-200">
-                <span className="text-[10px] sm:text-xs font-bold text-gray-600">E-BOX</span>
+              <div className="absolute -bottom-2 sm:-bottom-3 left-1/2 -translate-x-1/2 bg-white rounded-full px-4 sm:px-5 py-1 sm:py-1.5 shadow-md border border-gray-200">
+                <span className="text-xs sm:text-sm font-bold text-gray-600">E-BOX</span>
               </div>
             </div>
           </div>
@@ -310,24 +310,24 @@ export default function LockerSimulator() {
         <div className="mt-12 sm:mt-16 text-center">
           <div className="inline-flex flex-wrap justify-center gap-3 sm:gap-6 bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl px-4 sm:px-8 py-3 sm:py-4 shadow-lg">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-orange-500 text-white text-[10px] sm:text-xs font-bold">1</span>
-              <span className="hidden sm:inline">Chá»n tá»§ trá»ng</span>
-              <span className="sm:hidden">Chá»n tá»§</span>
+              <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500 text-white text-xs sm:text-sm font-bold">1</span>
+              <span className="hidden sm:inline">Chọn tủ trống</span>
+              <span className="sm:hidden">Chọn tủ</span>
             </div>
             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-orange-500 text-white text-[10px] sm:text-xs font-bold">2</span>
-              <span className="hidden sm:inline">QuÃ©t QR hoáº·c nháº­p OTP</span>
-              <span className="sm:hidden">QuÃ©t QR/OTP</span>
+              <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500 text-white text-xs sm:text-sm font-bold">2</span>
+              <span className="hidden sm:inline">Quét QR hoặc nhập OTP</span>
+              <span className="sm:hidden">Quét QR/OTP</span>
             </div>
             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-500 text-white text-[10px] sm:text-xs font-bold">3</span>
-              <span className="hidden sm:inline">Tá»§ tá»± Äá»ng má»</span>
-              <span className="sm:hidden">Tá»§ má»</span>
+              <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-green-500 text-white text-xs sm:text-sm font-bold">3</span>
+              <span className="hidden sm:inline">Tủ tự động mở</span>
+              <span className="sm:hidden">Tủ mở</span>
             </div>
             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-              <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 text-white text-[10px] sm:text-xs font-bold">4</span>
-              <span className="hidden sm:inline">ÄÃ³ng tá»§ khi láº¥y xong</span>
-              <span className="sm:hidden">ÄÃ³ng tá»§</span>
+              <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white text-xs sm:text-sm font-bold">4</span>
+              <span className="hidden sm:inline">Đóng tủ khi lấy xong</span>
+              <span className="sm:hidden">Đóng tủ</span>
             </div>
           </div>
         </div>

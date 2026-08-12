@@ -109,7 +109,7 @@ export default function Navbar() {
               height="20"
               viewBox="0 0 20 20"
               fill="none"
-              className="overflow-visible"
+              className="block shrink-0 overflow-visible"
             >
               <line
                 x1="3"

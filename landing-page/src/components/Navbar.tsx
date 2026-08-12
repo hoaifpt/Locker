@@ -101,13 +101,41 @@ export default function Navbar() {
           <button
             className="menu-button md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Mở menu"
+            aria-label={mobileMenuOpen ? "Đóng menu" : "Mở menu"}
+            aria-expanded={mobileMenuOpen}
           >
-            <div className="relative w-5 h-5 flex items-center justify-center">
-              <span className={`absolute left-0 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? 'rotate-45' : '-translate-y-1.5'}`} />
-              <span className={`absolute left-0 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`} />
-              <span className={`absolute left-0 h-0.5 w-5 bg-current transition-all duration-300 ${mobileMenuOpen ? '-rotate-45' : 'translate-y-1.5'}`} />
-            </div>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              className="overflow-visible"
+            >
+              <line
+                x1="3"
+                y1="6"
+                x2="17"
+                y2="6"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                className={`origin-center transition-transform duration-300 ease-out ${
+                  mobileMenuOpen ? 'rotate-45 translate-y-[5px]' : ''
+                }`}
+              />
+              <line
+                x1="3"
+                y1="14"
+                x2="17"
+                y2="14"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                className={`origin-center transition-transform duration-300 ease-out ${
+                  mobileMenuOpen ? '-rotate-45 -translate-y-[5px]' : ''
+                }`}
+              />
+            </svg>
           </button>
         </div>
       </div>

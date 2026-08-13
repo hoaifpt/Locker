@@ -3,7 +3,7 @@ import { AlertCircle, ChevronDown, LoaderCircle, RotateCcw, Send, X } from 'luci
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '../../../context/ToastContext';
-import { getMyFeedback, upsertMyFeedback } from '../api/feedbackApi';
+import { upsertMyFeedback } from '../api/feedbackApi';
 import { FEEDBACK_TOPIC_LABELS, FeedbackTopic } from '../types';
 import type { FeedbackTopic as FeedbackTopicValue } from '../types';
 import StarRating from './StarRating';
@@ -44,12 +44,11 @@ export default function FeedbackModal({ onClose }: FeedbackModalProps) {
     setLoadError('');
 
     try {
-      const existing = await getMyFeedback();
       if (requestId !== loadRequestIdRef.current) return;
 
-      setRating(existing?.rating ?? 0);
-      setTopic(existing?.topic ?? FeedbackTopic.General);
-      setContent(existing?.content ?? '');
+      setRating(0);
+      setTopic(FeedbackTopic.General);
+      setContent('');
       setValidationError('');
       setSubmitError('');
       setLoadState('ready');

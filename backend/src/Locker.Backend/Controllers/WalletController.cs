@@ -151,63 +151,39 @@ public class WalletController : ControllerBase
     [HttpPost("top-up/sepay/ipn")]
     [AllowAnonymous]
     public async Task<IActionResult> SepayIpn(
-     [FromBody] SepayIpnRequest request,
-     CancellationToken cancellationToken)
+        [FromBody] SepayIpnRequest request,
+        CancellationToken cancellationToken)
     {
-        Console.WriteLine("========== SEPAY IPN START ==========");
-
-        Console.WriteLine($"NotificationType: {request.NotificationType}");
-        Console.WriteLine($"Timestamp: {request.Timestamp}");
-
-        Console.WriteLine("----- ORDER -----");
-        Console.WriteLine($"OrderId: {request.Order?.OrderId}");
-        Console.WriteLine($"OrderStatus: {request.Order?.OrderStatus}");
-        Console.WriteLine($"OrderAmount: {request.Order?.OrderAmount}");
-        Console.WriteLine($"InvoiceNumber: {request.Order?.OrderInvoiceNumber}");
-        Console.WriteLine($"OrderDescription: {request.Order?.OrderDescription}");
-
-        Console.WriteLine("----- TRANSACTION -----");
-        Console.WriteLine($"TransactionId: {request.Transaction?.TransactionId}");
-        Console.WriteLine($"TransactionStatus: {request.Transaction?.TransactionStatus}");
-        Console.WriteLine($"TransactionAmount: {request.Transaction?.TransactionAmount}");
-        Console.WriteLine($"TransactionDate: {request.Transaction?.TransactionDate}");
-        Console.WriteLine($"PaymentMethod: {request.Transaction?.PaymentMethod}");
-
-        Console.WriteLine("====================================");
-
         var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
-
         if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
-            Console.WriteLine("SEPAY IPN SECRET INVALID");
-            Console.WriteLine("========== SEPAY IPN END ==========");
-
             return Unauthorized(new
             {
                 success = false,
-                message = "Invalid SePay secret key."
+                message = "Invalid SePay IPN secret"
             });
         }
-
-        Console.WriteLine("SEPAY IPN SECRET VALID");
 
         var result = await _sender.Send(
             new SepayProcessIpnCommand(request),
             cancellationToken);
 
-        Console.WriteLine(
-            $"SEPAY HANDLER RESULT: Success={result.Success}, " +
-            $"Message={result.Message}, " +
-            $"PaymentId={result.PaymentId}");
-
-        Console.WriteLine("========== SEPAY IPN END ==========");
-
         if (!result.Success)
         {
-            return BadRequest(result);
+            return BadRequest(new
+            {
+                success = false,
+                message = result.Message,
+                paymentId = result.PaymentId
+            });
         }
 
-        return Ok(result);
+        return Ok(new
+        {
+            success = true,
+            message = result.Message,
+            paymentId = result.PaymentId
+        });
     }
 
     private string GetClientIpAddress()

@@ -3,28 +3,80 @@ import { motion } from 'framer-motion';
 import { Wallet, Plus, Send as SendIcon, ArrowUpRight, ArrowDownLeft, ShieldCheck, Clock, CreditCard, ChevronRight } from 'lucide-react';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { getWalletTransactionsByUser, getWalletBalance, SeedWalletTransaction } from '../../../mocks/seed';
+import { apiFetch } from '../../../lib/api';
 import { useToast } from '../../../context/ToastContext';
 
+interface WalletOverview {
+  balance: number;
+  recentTransactionsCount: number;
+}
+
+interface WalletTransaction {
+  id: string;
+  amount: number;
+  type: number | string;
+  status: number | string;
+  description?: string;
+  createdAt: string;
+}
+
+const TRANSACTION_TYPE_LABELS = ['Nạp tiền', 'Chuyển khoản', 'Thanh toán', 'Hoàn tiền'];
+const TRANSACTION_STATUS_LABELS = ['Đang xử lý', 'Hoàn thành', 'Thất bại'];
+
 export default function WalletPage() {
-  const userId = localStorage.getItem('userId') ?? 'u-001';
   const { show: showToast } = useToast();
   const [balance, setBalance] = useState(0);
-  const [transactions, setTransactions] = useState<SeedWalletTransaction[]>([]);
+  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTopup, setShowTopup] = useState(false);
   const [topupAmount, setTopupAmount] = useState('100000');
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    // NOTE: This should be replaced with real API calls to fetch balance and transactions.
-    // The page will automatically refresh data after returning from the payment gateway.
-    setTimeout(() => {
-      setBalance(getWalletBalance(userId));
-      setTransactions(getWalletTransactionsByUser(userId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-      setLoading(false);
-    }, 300);
-  }, [userId]);
+    let active = true;
+
+    const loadWallet = async () => {
+      try {
+        const [overviewResponse, transactionsResponse] = await Promise.all([
+          apiFetch('/wallet/overview'),
+          apiFetch('/wallet/transactions'),
+        ]);
+
+        if (!overviewResponse.ok || !transactionsResponse.ok) {
+          throw new Error('Không thể tải thông tin ví.');
+        }
+
+        const [overview, walletTransactions] = await Promise.all([
+          overviewResponse.json() as Promise<WalletOverview>,
+          transactionsResponse.json() as Promise<WalletTransaction[]>,
+        ]);
+
+        if (!active) return;
+        setBalance(overview.balance);
+        setTransactions(walletTransactions.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        ));
+      } catch (error) {
+        if (!active) return;
+        const message = error instanceof Error ? error.message : 'Không thể tải thông tin ví.';
+        showToast(message, 'error');
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void loadWallet();
+    };
+
+    void loadWallet();
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+
+    return () => {
+      active = false;
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, []);
 
   const handleSepayTopup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +87,9 @@ export default function WalletPage() {
     setProcessing(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`https://api.hoaitran.online/api/wallet/top-up/sepay/init`, {
+      const response = await apiFetch('/wallet/top-up/sepay/init', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ amount: Number(topupAmount) }),
+        data: { amount: Number(topupAmount) },
       });
 
       if (!response.ok) {
@@ -99,8 +149,18 @@ export default function WalletPage() {
   };
 
   const getIcon = (type: string, amount: number) => {
-    if (type === 'TopUp' || amount > 0) return <ArrowDownLeft size={16} className="text-green-500" />;
+    if (type === 'TopUp' || type === '0' || amount > 0) return <ArrowDownLeft size={16} className="text-green-500" />;
     return <ArrowUpRight size={16} className="text-red-500" />;
+  };
+
+  const getTransactionTypeLabel = (type: number | string) => {
+    if (typeof type === 'number') return TRANSACTION_TYPE_LABELS[type] ?? String(type);
+    return type;
+  };
+
+  const getTransactionStatusLabel = (status: number | string) => {
+    if (typeof status === 'number') return TRANSACTION_STATUS_LABELS[status] ?? String(status);
+    return status;
   };
 
   return (
@@ -172,10 +232,10 @@ export default function WalletPage() {
                 <div key={tx.id} className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md">
                   <div className="flex items-center gap-3">
                     <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${tx.amount > 0 ? 'bg-green-100' : 'bg-red-100'}`}>
-                      {getIcon(tx.type, tx.amount)}
+                      {getIcon(String(tx.type), tx.amount)}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{tx.description ?? tx.type}</p>
+                      <p className="font-semibold text-gray-900">{tx.description ?? getTransactionTypeLabel(tx.type)}</p>
                       <p className="text-xs text-gray-400">{new Date(tx.createdAt).toLocaleString('vi-VN')}</p>
                     </div>
                   </div>
@@ -183,7 +243,7 @@ export default function WalletPage() {
                     <p className={`font-bold ${tx.amount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
                       {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('vi-VN')}đ
                     </p>
-                    <span className="text-[10px] font-semibold uppercase text-gray-400">{tx.status}</span>
+                    <span className="text-[10px] font-semibold uppercase text-gray-400">{getTransactionStatusLabel(tx.status)}</span>
                   </div>
                 </div>
               ))}

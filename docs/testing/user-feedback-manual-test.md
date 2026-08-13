@@ -6,20 +6,20 @@
 
 | Trường | Giá trị |
 | --- | --- |
-| Người thực hiện | ____________________ |
-| Môi trường / URL | ____________________ |
+| Vai trò người thực hiện | ____________________ |
+| Bí danh môi trường đã phê duyệt | ____________________ |
 | Ngày giờ bắt đầu (ICT) | ____________________ |
 | Ngày giờ kết thúc (ICT) | ____________________ |
 | Commit SHA tham chiếu | ____________________ |
 | Phiên bản backend / web | ____________________ |
 | Trạng thái tổng thể | Chưa chạy |
-| Thư mục bằng chứng đã được phê duyệt | ____________________ |
+| Mã tham chiếu bằng chứng không định danh | ____________________ |
 
 ## Nguyên tắc bảo mật bằng chứng
 
-- Không ghi mật khẩu, token, email, cookie, chuỗi kết nối, ảnh chụp chứa dữ liệu nhạy cảm, hoặc thông tin định danh cá nhân vào tài liệu này hay repository.
+- Không ghi feedback ID, giá trị user ID, tên người thực hiện/người dùng, email, URL trực tiếp, mật khẩu, token, cookie, chuỗi kết nối, ảnh chụp chứa dữ liệu nhạy cảm, hoặc thông tin định danh cá nhân vào tài liệu này hay repository.
 - Chỉ dùng nhãn tài khoản `user-01` đến `user-10`; không thay thế nhãn bằng dữ liệu thật.
-- Đính kèm tên tệp ảnh chụp hoặc mã tham chiếu trong kho bằng chứng được phê duyệt. Không commit bằng chứng có dữ liệu cá nhân.
+- Chỉ ghi mã tham chiếu bằng chứng không định danh trong kho bằng chứng được phê duyệt. Không commit bằng chứng có dữ liệu cá nhân.
 - Nếu một bước không thể thực hiện, giữ `Trạng thái` là `Chưa chạy` và mô tả lý do trong ô `Actual`; không suy diễn kết quả.
 
 ## Điều kiện tiên quyết
@@ -51,14 +51,14 @@ Pop-Location
 
 ## 2. Vòng đời feedback của một người dùng
 
-Đăng nhập bằng `user-01`; ghi lại ID feedback ở dạng tham chiếu nội bộ không nhạy cảm nếu chính sách cho phép.
+Đăng nhập bằng `user-01`. Không ghi feedback ID hoặc giá trị user ID vào checklist hay bằng chứng được commit.
 
 | Ca kiểm tra | Expected | Actual | Trạng thái | Bằng chứng |
 | --- | --- | --- | --- | --- |
 | Tuyến authenticated | Nút E-box/feedback xuất hiện ở các tuyến yêu cầu đăng nhập đã thiết kế. |  | Chưa chạy |  |
 | Tuyến public/anonymous | Nút không xuất hiện ở các tuyến public hoặc khi chưa đăng nhập. |  | Chưa chạy |  |
-| Gửi lần đầu | Tạo feedback thành công; phản hồi chứa một feedback ID. |  | Chưa chạy |  |
-| Gửi/cập nhật lần sau | Cập nhật feedback của chính `user-01`; feedback ID không đổi. |  | Chưa chạy |  |
+| Gửi lần đầu | Tạo feedback thành công. |  | Chưa chạy |  |
+| Gửi/cập nhật lần sau | Cập nhật feedback của chính `user-01`; chỉ còn một feedback của người dùng này. |  | Chưa chạy |  |
 | MongoDB của `user-01` | Có đúng một document feedback theo `userId` của tài khoản này. |  | Chưa chạy |  |
 | Backend không khả dụng | Giao diện báo lỗi phù hợp, không báo thành công giả. |  | Chưa chạy |  |
 | Thử lại sau khi backend hoạt động | Có thể gửi/cập nhật thành công theo hành vi dự kiến. |  | Chưa chạy |  |
@@ -82,20 +82,20 @@ Dùng Swagger hoặc API client trên backend đang chạy. Ghi status quan sát
 
 Thực hiện thao tác qua E-box UI bằng 10 tài khoản thật. Chỉ điền nhãn, rating, topic và thời điểm; không điền email, mật khẩu hay token.
 
-| Tài khoản | Rating | Topic | Thời điểm gửi (ICT) | Feedback ID tham chiếu | Trạng thái | Bằng chứng |
-| --- | --- | --- | --- | --- | --- | --- |
-| user-01 |  |  |  |  | Chưa chạy |  |
-| user-02 |  |  |  |  | Chưa chạy |  |
-| user-03 |  |  |  |  | Chưa chạy |  |
-| user-04 |  |  |  |  | Chưa chạy |  |
-| user-05 |  |  |  |  | Chưa chạy |  |
-| user-06 |  |  |  |  | Chưa chạy |  |
-| user-07 |  |  |  |  | Chưa chạy |  |
-| user-08 |  |  |  |  | Chưa chạy |  |
-| user-09 |  |  |  |  | Chưa chạy |  |
-| user-10 |  |  |  |  | Chưa chạy |  |
+| Tài khoản | Rating | Topic | Thời điểm gửi (ICT) | Trạng thái | Bằng chứng |
+| --- | --- | --- | --- | --- | --- |
+| user-01 |  |  |  | Chưa chạy |  |
+| user-02 |  |  |  | Chưa chạy |  |
+| user-03 |  |  |  | Chưa chạy |  |
+| user-04 |  |  |  | Chưa chạy |  |
+| user-05 |  |  |  | Chưa chạy |  |
+| user-06 |  |  |  | Chưa chạy |  |
+| user-07 |  |  |  | Chưa chạy |  |
+| user-08 |  |  |  | Chưa chạy |  |
+| user-09 |  |  |  | Chưa chạy |  |
+| user-10 |  |  |  | Chưa chạy |  |
 
-Trong Mongo shell, chạy truy vấn sau trên database/môi trường đã được phê duyệt:
+Trong **mongosh** hoặc tab **Aggregations** của MongoDB Compass, chạy truy vấn sau trên database/môi trường đã được phê duyệt. Đây là tên trường kỹ thuật trong truy vấn; không ghi giá trị `userId` thực vào tài liệu.
 
 ```javascript
 db.feedbacks.aggregate([
@@ -111,7 +111,7 @@ db.feedbacks.aggregate([
 
 ## 5. Kiểm tra MongoDB index và tính duy nhất
 
-Chạy các lệnh chỉ-đọc sau trong Mongo shell trên môi trường đã được phê duyệt. Ghi tên/index key quan sát được, không ghi URI kết nối.
+Trong **mongosh** hoặc MongoDB Compass (mục **Indexes** và tab **Aggregations**), chạy các thao tác chỉ-đọc sau trên môi trường đã được phê duyệt. Không ghi URI kết nối hoặc giá trị user ID.
 
 ```javascript
 db.feedbacks.getIndexes()
@@ -121,9 +121,9 @@ db.feedbacks.aggregate([
 ])
 ```
 
-| Kiểm tra | Expected | Actual | Trạng thái | Bằng chứng |
+| Kiểm tra | Expected | Observed index / Actual | Trạng thái | Bằng chứng |
 | --- | --- | --- | --- | --- |
-| Index collection feedbacks | Index hỗ trợ ràng buộc/hành vi một feedback trên một `userId` theo thiết kế triển khai. |  | Chưa chạy |  |
+| Index collection feedbacks | Có index với key chính xác `{ userId: 1 }` và thuộc tính `unique: true`. |  | Chưa chạy |  |
 | Aggregate user trùng | Không có dòng `userId` với `count > 1` sau bộ dữ liệu nghiệm thu. |  | Chưa chạy |  |
 
 ## 6. Bất biến moderation
@@ -132,9 +132,9 @@ Chọn một review thật đã được phê duyệt để kiểm tra; chỉ d�
 
 | Ca kiểm tra | Expected | Actual | Trạng thái | Bằng chứng |
 | --- | --- | --- | --- | --- |
-| Hide review | Review biến mất khỏi phần review công khai trên trang chủ. |  | Chưa chạy |  |
-| Progress sau hide | Admin progress không thay đổi. |  | Chưa chạy |  |
-| Owner cập nhật review đang hidden | Review vẫn hidden sau khi chủ sở hữu cập nhật. |  | Chưa chạy |  |
+| Baseline progress | Ghi giá trị `x/10` trước hide. |  | Chưa chạy |  |
+| Hide review và progress | Review biến mất khỏi phần công khai; progress sau hide bằng baseline `x/10`. |  | Chưa chạy |  |
+| Owner cập nhật review đang hidden và progress | Review vẫn hidden; progress sau cập nhật bằng baseline `x/10`. |  | Chưa chạy |  |
 | Show review | Review xuất hiện lại ở phần công khai. |  | Chưa chạy |  |
 
 ## 7. Filters, pagination, CSV, responsive và accessibility
@@ -147,12 +147,21 @@ Chọn một review thật đã được phê duyệt để kiểm tra; chỉ d�
 | Previous pagination | Không chuyển vượt trang đầu; dữ liệu trang trước đúng. |  | Chưa chạy |  |
 | Next pagination | Không chuyển vượt trang cuối; dữ liệu trang sau đúng. |  | Chưa chạy |  |
 | CSV theo filter | Số dòng CSV khớp số bản ghi của filter đang áp dụng (trừ header). |  | Chưa chạy |  |
+| UTF-8 BOM CSV | Ba byte đầu của tệp CSV là `EF BB BF`. |  | Chưa chạy |  |
 | Tiếng Việt trong Excel | Văn bản tiếng Việt hiển thị đúng khi mở CSV bằng Excel. |  | Chưa chạy |  |
 | Formula injection | Nội dung bắt đầu bằng `=`, `+`, `-` hoặc `@` hiển thị là text trong Excel, không được thực thi như công thức. |  | Chưa chạy |  |
 | Desktop | Giao diện dashboard/public review không vỡ tại viewport desktop đã chọn. |  | Chưa chạy |  |
 | Mobile | Giao diện sử dụng được, không che nút/chức năng tại viewport mobile đã chọn. |  | Chưa chạy |  |
 | Keyboard | Điều hướng bàn phím tới các control chính theo thứ tự hợp lý, focus nhận biết được. |  | Chưa chạy |  |
 | Screen reader/semantics | Nhãn, tên control và thông báo lỗi/trạng thái có thể nhận biết bằng công cụ trợ năng đã chọn. |  | Chưa chạy |  |
+
+Để kiểm tra UTF-8 BOM, dùng lệnh chỉ-đọc sau trong Windows PowerShell hoặc PowerShell 7. Thay thế đường dẫn cục bộ bằng tệp CSV đã xuất; không ghi đường dẫn đó vào checklist.
+
+```powershell
+$csvPath = 'C:\approved-evidence\export.csv'
+$bytes = [System.IO.File]::ReadAllBytes($csvPath)
+'{0:X2} {1:X2} {2:X2}' -f $bytes[0], $bytes[1], $bytes[2]
+```
 
 ## 8. Kiểm tra repository trước khi commit biên bản đã điền
 

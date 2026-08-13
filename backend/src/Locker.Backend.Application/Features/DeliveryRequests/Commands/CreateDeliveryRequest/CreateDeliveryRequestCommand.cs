@@ -23,20 +23,20 @@ public class CreateDeliveryRequestCommandHandler : IRequestHandler<CreateDeliver
     private readonly IDeliveryRequestRepository _repository;
     private readonly ILockerEventRepository _lockerEventRepository;
     private readonly ILockerRepository _lockerRepository;
-    private readonly INotificationRepository _notificationRepository;
+    private readonly IRealtimeNotificationService _notificationService;
     private readonly IIdentityService _identityService;
 
     public CreateDeliveryRequestCommandHandler(
         IDeliveryRequestRepository repository,
         ILockerEventRepository lockerEventRepository,
         ILockerRepository lockerRepository,
-        INotificationRepository notificationRepository,
+        IRealtimeNotificationService notificationService,
         IIdentityService identityService)
     {
         _repository = repository;
         _lockerEventRepository = lockerEventRepository;
         _lockerRepository = lockerRepository;
-        _notificationRepository = notificationRepository;
+        _notificationService = notificationService;
         _identityService = identityService;
     }
 
@@ -73,14 +73,11 @@ public class CreateDeliveryRequestCommandHandler : IRequestHandler<CreateDeliver
         var receiver = await _identityService.FindByPhoneNumberAsync(request.ReceiverPhone);
         if (receiver != null)
         {
-            await _notificationRepository.CreateAsync(new Notification
-            {
-                UserId = receiver.Id,
-                Title = "Kiện hàng mới",
-                Message = $"Bạn có một kiện hàng mới từ {request.SenderName} tại tủ {item.LockerId}",
-                IsRead = false,
-                CreatedAt = DateTime.UtcNow
-            }, cancellationToken);
+            await _notificationService.NotifyUserAsync(
+                receiver.Id,
+                "Kiện hàng mới",
+                $"Bạn có một kiện hàng mới từ {request.SenderName} tại tủ {item.LockerId}",
+                cancellationToken);
         }
 
         return new DeliveryRequestDto

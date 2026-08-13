@@ -16,7 +16,6 @@ using Locker.Backend.Application.Features.Wallet.Queries.GetTransactions;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using MediatR;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -151,16 +150,64 @@ public class WalletController : ControllerBase
 
     [HttpPost("top-up/sepay/ipn")]
     [AllowAnonymous]
-    public IActionResult SepayIpn([FromBody] JsonElement body)
+    public async Task<IActionResult> SepayIpn(
+     [FromBody] SepayIpnRequest request,
+     CancellationToken cancellationToken)
     {
-        Console.WriteLine("========== SEPAY RAW BODY ==========");
-        Console.WriteLine(body.ToString());
+        Console.WriteLine("========== SEPAY IPN START ==========");
+
+        Console.WriteLine($"NotificationType: {request.NotificationType}");
+        Console.WriteLine($"Timestamp: {request.Timestamp}");
+
+        Console.WriteLine("----- ORDER -----");
+        Console.WriteLine($"OrderId: {request.Order?.OrderId}");
+        Console.WriteLine($"OrderStatus: {request.Order?.OrderStatus}");
+        Console.WriteLine($"OrderAmount: {request.Order?.OrderAmount}");
+        Console.WriteLine($"InvoiceNumber: {request.Order?.OrderInvoiceNumber}");
+        Console.WriteLine($"OrderDescription: {request.Order?.OrderDescription}");
+
+        Console.WriteLine("----- TRANSACTION -----");
+        Console.WriteLine($"TransactionId: {request.Transaction?.TransactionId}");
+        Console.WriteLine($"TransactionStatus: {request.Transaction?.TransactionStatus}");
+        Console.WriteLine($"TransactionAmount: {request.Transaction?.TransactionAmount}");
+        Console.WriteLine($"TransactionDate: {request.Transaction?.TransactionDate}");
+        Console.WriteLine($"PaymentMethod: {request.Transaction?.PaymentMethod}");
+
         Console.WriteLine("====================================");
 
-        return Ok(new
+        var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
+
+        if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
-            success = true
-        });
+            Console.WriteLine("SEPAY IPN SECRET INVALID");
+            Console.WriteLine("========== SEPAY IPN END ==========");
+
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Invalid SePay secret key."
+            });
+        }
+
+        Console.WriteLine("SEPAY IPN SECRET VALID");
+
+        var result = await _sender.Send(
+            new SepayProcessIpnCommand(request),
+            cancellationToken);
+
+        Console.WriteLine(
+            $"SEPAY HANDLER RESULT: Success={result.Success}, " +
+            $"Message={result.Message}, " +
+            $"PaymentId={result.PaymentId}");
+
+        Console.WriteLine("========== SEPAY IPN END ==========");
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
     }
 
     private string GetClientIpAddress()

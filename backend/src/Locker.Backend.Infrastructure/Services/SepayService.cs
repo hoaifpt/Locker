@@ -54,15 +54,32 @@ public class SepayService : ISepayService
 
         var fields = new Dictionary<string, string>
         {
-            ["order_amount"] = decimal.Truncate(amount).ToString("0", CultureInfo.InvariantCulture),
+            ["order_amount"] =
+         decimal.Truncate(amount)
+             .ToString("0", CultureInfo.InvariantCulture),
+
             ["merchant"] = merchantId,
+
             ["currency"] = "VND",
+
             ["operation"] = "PURCHASE",
-            ["order_description"] = $"Nap tien vi Locker {paymentId:N}",
-            ["order_invoice_number"] = CreateTopUpInvoiceNumber(paymentId),
-            ["customer_id"] = userId.ToString("N"),
+
+            ["order_description"] =
+         $"Nap tien vi Locker {paymentId:N}",
+
+            ["order_invoice_number"] =
+         CreateTopUpInvoiceNumber(paymentId),
+
+            ["customer_id"] =
+         userId.ToString("N"),
+
+            ["payment_method"] =
+         paymentMethod ?? "BANK_TRANSFER",
+
             ["success_url"] = _settings.SuccessUrl,
+
             ["error_url"] = _settings.ErrorUrl,
+
             ["cancel_url"] = _settings.CancelUrl
         };
 

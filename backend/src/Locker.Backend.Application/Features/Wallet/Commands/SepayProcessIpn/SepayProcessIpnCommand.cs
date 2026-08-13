@@ -7,11 +7,18 @@ using MediatR;
 
 namespace Locker.Backend.Application.Features.Wallet.Commands.SepayProcessIpn;
 
-public record SepayProcessIpnCommand(SepayIpnRequest Request) : IRequest<SepayProcessIpnResponse>;
+public record SepayProcessIpnCommand(
+    SepayIpnRequest Request
+) : IRequest<SepayProcessIpnResponse>;
 
-public record SepayProcessIpnResponse(bool Success, string Message, Guid? PaymentId = null);
+public record SepayProcessIpnResponse(
+    bool Success,
+    string Message,
+    Guid? PaymentId = null
+);
 
-public class SepayProcessIpnCommandHandler : IRequestHandler<SepayProcessIpnCommand, SepayProcessIpnResponse>
+public class SepayProcessIpnCommandHandler
+    : IRequestHandler<SepayProcessIpnCommand, SepayProcessIpnResponse>
 {
     private readonly IPaymentRepository _paymentRepository;
     private readonly IWalletTransactionRepository _walletTransactionRepository;
@@ -24,108 +31,237 @@ public class SepayProcessIpnCommandHandler : IRequestHandler<SepayProcessIpnComm
         _walletTransactionRepository = walletTransactionRepository;
     }
 
-    public async Task<SepayProcessIpnResponse> Handle(SepayProcessIpnCommand request, CancellationToken cancellationToken)
+    public async Task<SepayProcessIpnResponse> Handle(
+        SepayProcessIpnCommand request,
+        CancellationToken cancellationToken)
     {
         var ipn = request.Request;
 
         Console.WriteLine("========== SEPAY HANDLER ==========");
-        Console.WriteLine($"NotificationType: {ipn.NotificationType}");
-        Console.WriteLine($"InvoiceNumber: {ipn.Order?.OrderInvoiceNumber}");
-        Console.WriteLine($"OrderStatus: {ipn.Order?.OrderStatus}");
-        Console.WriteLine($"OrderAmount: {ipn.Order?.OrderAmount}");
-        Console.WriteLine($"TransactionStatus: {ipn.Transaction?.TransactionStatus}");
-        Console.WriteLine($"TransactionAmount: {ipn.Transaction?.TransactionAmount}");
-        Console.WriteLine($"TransactionId: {ipn.Transaction?.TransactionId}");
-        Console.WriteLine($"TransactionDate: {ipn.Transaction?.TransactionDate}");
+
+        Console.WriteLine(
+            $"NotificationType: {ipn.NotificationType}");
+
+        Console.WriteLine(
+            $"InvoiceNumber: {ipn.Order?.OrderInvoiceNumber}");
+
+        Console.WriteLine(
+            $"OrderStatus: {ipn.Order?.OrderStatus}");
+
+        Console.WriteLine(
+            $"OrderAmount: {ipn.Order?.OrderAmount}");
+
+        Console.WriteLine(
+            $"TransactionStatus: {ipn.Transaction?.TransactionStatus}");
+
+        Console.WriteLine(
+            $"TransactionAmount: {ipn.Transaction?.TransactionAmount}");
+
+        Console.WriteLine(
+            $"TransactionId: {ipn.Transaction?.TransactionId}");
+
+        Console.WriteLine(
+            $"TransactionDate: {ipn.Transaction?.TransactionDate}");
+
         Console.WriteLine("==================================");
 
-
-        if (!IsPaidNotification(ipn))
+        // 1. Chỉ xử lý ORDER_PAID
+        if (!string.Equals(
+                ipn.NotificationType,
+                "ORDER_PAID",
+                StringComparison.OrdinalIgnoreCase))
         {
-            return new SepayProcessIpnResponse(true, "IPN ignored because it is not a paid notification.");
+            return new SepayProcessIpnResponse(
+                true,
+                $"Ignored notification type: {ipn.NotificationType}");
         }
 
-        if (!TryParseTopUpInvoiceNumber(ipn.Order.OrderInvoiceNumber, out var paymentId))
+        // 2. Order phải CAPTURED
+        if (!string.Equals(
+                ipn.Order?.OrderStatus,
+                "CAPTURED",
+                StringComparison.OrdinalIgnoreCase))
         {
-            return new SepayProcessIpnResponse(false, "Invalid order invoice number.");
+            return new SepayProcessIpnResponse(
+                true,
+                $"Order is not CAPTURED. Status={ipn.Order?.OrderStatus}");
         }
 
-        var payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken);
+        // 3. Transaction phải APPROVED
+        if (!string.Equals(
+                ipn.Transaction?.TransactionStatus,
+                "APPROVED",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return new SepayProcessIpnResponse(
+                true,
+                $"Transaction is not APPROVED. Status={ipn.Transaction?.TransactionStatus}");
+        }
+
+        // 4. Parse invoice number
+        if (!TryParseTopUpInvoiceNumber(
+                ipn.Order.OrderInvoiceNumber,
+                out var paymentId))
+        {
+            return new SepayProcessIpnResponse(
+                false,
+                $"Invalid invoice number: {ipn.Order.OrderInvoiceNumber}");
+        }
+
+        Console.WriteLine(
+            $"PaymentId extracted: {paymentId}");
+
+        // 5. Tìm Payment
+        var payment = await _paymentRepository.GetByIdAsync(
+            paymentId,
+            cancellationToken);
+
         if (payment == null)
         {
-            return new SepayProcessIpnResponse(false, "Payment not found.", paymentId);
+            return new SepayProcessIpnResponse(
+                false,
+                $"Payment not found: {paymentId}",
+                paymentId);
         }
 
-        if (payment.Method != "sepay")
+        Console.WriteLine(
+            $"Payment found: Id={payment.Id}, " +
+            $"Amount={payment.Amount}, " +
+            $"Status={payment.Status}");
+
+        // 6. Kiểm tra method
+        if (!string.Equals(
+                payment.Method,
+                "sepay",
+                StringComparison.OrdinalIgnoreCase))
         {
-            return new SepayProcessIpnResponse(false, "Payment method mismatch.", paymentId);
+            return new SepayProcessIpnResponse(
+                false,
+                $"Payment method mismatch: {payment.Method}",
+                paymentId);
         }
 
-        if (!IsSameAmount(payment.Amount, ipn.Order.OrderAmount, ipn.Transaction.TransactionAmount))
+        // 7. Kiểm tra amount
+        if (!IsSameAmount(
+                payment.Amount,
+                ipn.Order.OrderAmount,
+                ipn.Transaction.TransactionAmount))
         {
-            return new SepayProcessIpnResponse(false, "Payment amount mismatch.", paymentId);
+            return new SepayProcessIpnResponse(
+                false,
+                $"Payment amount mismatch. " +
+                $"Expected={payment.Amount}, " +
+                $"Order={ipn.Order.OrderAmount}, " +
+                $"Transaction={ipn.Transaction.TransactionAmount}",
+                paymentId);
         }
 
+        // 8. Chống xử lý trùng
         if (payment.Status == PaymentStatus.Completed)
         {
-            return new SepayProcessIpnResponse(true, "Payment already processed.", paymentId);
+            return new SepayProcessIpnResponse(
+                true,
+                "Payment already processed.",
+                paymentId);
         }
 
         if (payment.Status != PaymentStatus.Pending)
         {
-            return new SepayProcessIpnResponse(false, "Payment is not pending.", paymentId);
+            return new SepayProcessIpnResponse(
+                false,
+                $"Payment is not pending. Status={payment.Status}",
+                paymentId);
         }
 
-        var gatewayTransactionId = FirstNotEmpty(ipn.Transaction.TransactionId, ipn.Transaction.Id, ipn.Order.OrderId);
-        var existingWalletTransaction = await _walletTransactionRepository.FindOneAsync(
-            x => x.ReferenceId == payment.Id.ToString() && x.Type == TransactionType.TopUp,
+        // 9. Kiểm tra WalletTransaction
+        var existingWalletTransaction =
+            await _walletTransactionRepository.FindOneAsync(
+                x =>
+                    x.ReferenceId == payment.Id.ToString()
+                    && x.Type == TransactionType.TopUp,
+                cancellationToken);
+
+        // 10. Transaction ID của SePay
+        var gatewayTransactionId =
+            FirstNotEmpty(
+                ipn.Transaction.TransactionId,
+                ipn.Transaction.Id,
+                ipn.Order.OrderId);
+
+        // 11. Update Payment
+        payment.Status = PaymentStatus.Completed;
+
+        payment.TransactionId = gatewayTransactionId;
+
+        payment.PaidAt =
+            ParseSepayDate(ipn.Transaction.TransactionDate)
+            ?? DateTime.UtcNow;
+
+        await _paymentRepository.UpdateAsync(
+            payment,
             cancellationToken);
 
-        payment.Status = PaymentStatus.Completed;
-        payment.TransactionId = gatewayTransactionId;
-        payment.PaidAt = ParseSepayDate(ipn.Transaction.TransactionDate) ?? DateTime.UtcNow;
-        await _paymentRepository.UpdateAsync(payment, cancellationToken);
-
+        // 12. Tạo WalletTransaction
         if (existingWalletTransaction == null)
         {
             var walletTransaction = new WalletTransaction
             {
                 UserId = payment.UserId,
+
                 Amount = payment.Amount,
+
                 Type = TransactionType.TopUp,
+
                 Status = TransactionStatus.Completed,
-                Description = $"Nap tien vi qua SePay. Ma GD: {gatewayTransactionId}",
+
+                Description =
+                    $"Nap tien vi qua SePay. " +
+                    $"Ma GD: {gatewayTransactionId}",
+
                 ReferenceId = payment.Id.ToString(),
-                CreatedAt = payment.PaidAt ?? DateTime.UtcNow,
+
+                CreatedAt =
+                    payment.PaidAt ?? DateTime.UtcNow,
+
                 UpdatedAt = DateTime.UtcNow
             };
 
-            await _walletTransactionRepository.CreateAsync(walletTransaction, cancellationToken);
+            await _walletTransactionRepository.CreateAsync(
+                walletTransaction,
+                cancellationToken);
         }
 
-        return new SepayProcessIpnResponse(true, "Payment updated.", paymentId);
+        Console.WriteLine(
+            $"SEPAY PAYMENT COMPLETED: " +
+            $"PaymentId={payment.Id}, " +
+            $"TransactionId={gatewayTransactionId}");
+
+        return new SepayProcessIpnResponse(
+            true,
+            "Payment updated successfully.",
+            paymentId);
     }
 
-    private static bool IsPaidNotification(SepayIpnRequest ipn)
-    {
-        return string.Equals(ipn.NotificationType, "ORDER_PAID", StringComparison.OrdinalIgnoreCase)
-            && string.Equals(ipn.Order.OrderStatus, "CAPTURED", StringComparison.OrdinalIgnoreCase)
-            && string.Equals(ipn.Transaction.TransactionStatus, "APPROVED", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsSameAmount(decimal expectedAmount, params string[] amountValues)
+    private static bool IsSameAmount(
+        decimal expectedAmount,
+        params string[] amountValues)
     {
         foreach (var amountValue in amountValues)
         {
             if (string.IsNullOrWhiteSpace(amountValue))
-            {
                 continue;
-            }
 
-            if (decimal.TryParse(amountValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed) &&
-                decimal.Round(parsed, 0) == decimal.Round(expectedAmount, 0))
+            if (decimal.TryParse(
+                    amountValue,
+                    NumberStyles.Number,
+                    CultureInfo.InvariantCulture,
+                    out var parsed))
             {
-                return true;
+                if (decimal.Round(parsed, 0) ==
+                    decimal.Round(expectedAmount, 0))
+                {
+                    return true;
+                }
             }
         }
 
@@ -134,6 +270,9 @@ public class SepayProcessIpnCommandHandler : IRequestHandler<SepayProcessIpnComm
 
     private static DateTime? ParseSepayDate(string? value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
         if (DateTime.TryParseExact(
                 value,
                 "yyyy-MM-dd HH:mm:ss",
@@ -149,20 +288,30 @@ public class SepayProcessIpnCommandHandler : IRequestHandler<SepayProcessIpnComm
 
     private static string FirstNotEmpty(params string[] values)
     {
-        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? Guid.NewGuid().ToString("N");
+        return values.FirstOrDefault(
+                   value => !string.IsNullOrWhiteSpace(value))
+               ?? Guid.NewGuid().ToString("N");
     }
 
-    private static bool TryParseTopUpInvoiceNumber(string? invoiceNumber, out Guid paymentId)
+    private static bool TryParseTopUpInvoiceNumber(
+        string? invoiceNumber,
+        out Guid paymentId)
     {
         paymentId = Guid.Empty;
+
         const string prefix = "TOPUP_";
 
-        if (string.IsNullOrWhiteSpace(invoiceNumber) ||
-            !invoiceNumber.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-        {
+        if (string.IsNullOrWhiteSpace(invoiceNumber))
             return false;
-        }
 
-        return Guid.TryParseExact(invoiceNumber[prefix.Length..], "N", out paymentId);
+        if (!invoiceNumber.StartsWith(
+                prefix,
+                StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return Guid.TryParseExact(
+            invoiceNumber[prefix.Length..],
+            "N",
+            out paymentId);
     }
 }

@@ -1,12 +1,6 @@
-namespace Locker.Backend.Application.Models;
-
 using System.Text.Json.Serialization;
 
-public record SepayCheckoutData(
-    string CheckoutUrl,
-    IReadOnlyDictionary<string, string> Fields,
-    string SignedString,
-    string Signature);
+namespace Locker.Backend.Application.Models;
 
 public class SepayIpnRequest
 {
@@ -23,7 +17,7 @@ public class SepayIpnRequest
     public SepayIpnTransaction Transaction { get; set; } = new();
 
     [JsonPropertyName("customer")]
-    public SepayIpnCustomer Customer { get; set; } = new();
+    public SepayIpnCustomer? Customer { get; set; }
 }
 
 public class SepayIpnOrder

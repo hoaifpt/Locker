@@ -10,6 +10,7 @@ public class Payment : BaseEntity
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     public string Method { get; set; } = string.Empty;
     public string? TransactionId { get; set; }
+    public string? SepayCode { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? PaidAt { get; set; }
 }

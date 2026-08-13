@@ -5,6 +5,22 @@
 
 const API_BASE = '/api';
 
+/**
+ * Endpoints without /api prefix - use with api helper (api.ts)
+ * The api helper automatically prepends API_BASE_URL (/api)
+ */
+export const authEndpoints = {
+  verifyEmail: '/auth/verify-email',
+  login: '/auth/login',
+  register: '/auth/register',
+  resendVerification: '/auth/resend-verification',
+  refresh: '/auth/refresh',
+  logout: '/auth/logout',
+  logoutAll: '/auth/logout-all',
+  forgotPassword: '/auth/forgot-password',
+  resetPassword: '/auth/reset-password',
+};
+
 export const API_ENDPOINTS = {
   auth: {
     login: `${API_BASE}/auth/login`,

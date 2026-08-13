@@ -22,3 +22,8 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
 
     return fetch(`${API_BASE_URL}${endpoint}`, config);
 }
+
+export const api = {
+    get: (url: string) => apiFetch(url),
+    post: (url: string, data?: Record<string, unknown>) => apiFetch(url, { method: 'POST', data }),
+};

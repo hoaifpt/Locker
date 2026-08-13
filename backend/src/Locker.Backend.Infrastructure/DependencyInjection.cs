@@ -60,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentifierValidator, IdentifierValidator>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IVnPayService, VnPayService>();
+        services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
 
         services.AddHostedService<OverdueOrderBackgroundService>();
 
@@ -87,8 +88,7 @@ public static class DependencyInjection
             }
         };
 
-        services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfig)
-            .AddDefaultTokenProviders();
+        services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfig);
 
         return services;
     }

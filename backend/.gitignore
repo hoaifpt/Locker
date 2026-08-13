@@ -5,5 +5,4 @@ target/
 *.log
 .env
 appsettings.Production.json
-appsettings.Development.json
 src/Locker.Backend/Firebase/firebase-admin.json

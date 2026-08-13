@@ -154,31 +154,15 @@ public class WalletController : ControllerBase
     [FromBody] SepayIpnRequest request,
     CancellationToken cancellationToken)
     {
+        Request.EnableBuffering();
+        using var reader = new System.IO.StreamReader(Request.Body, System.Text.Encoding.UTF8, leaveOpen: true);
+        var rawBody = await reader.ReadToEndAsync();
+        Request.Body.Position = 0;
+        Console.WriteLine($"[RAW SEPAY PAYLOAD]: {rawBody}");
+        // ----------------------------------------
+
         Console.WriteLine("========== SEPAY IPN START ==========");
-
-        Console.WriteLine(
-            $"NotificationType: {request.NotificationType}"
-        );
-
-        Console.WriteLine(
-            $"OrderStatus: {request.Order?.OrderStatus}"
-        );
-
-        Console.WriteLine(
-            $"TransactionStatus: {request.Transaction?.TransactionStatus}"
-        );
-
-        Console.WriteLine(
-            $"OrderInvoiceNumber: {request.Order?.OrderInvoiceNumber}"
-        );
-
-        Console.WriteLine(
-            $"OrderAmount: {request.Order?.OrderAmount}"
-        );
-
-        Console.WriteLine(
-            $"TransactionAmount: {request.Transaction?.TransactionAmount}"
-        );
+        Console.WriteLine("========== SEPAY IPN START ==========");
 
         var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
 
@@ -226,6 +210,8 @@ public class WalletController : ControllerBase
             message = result.Message,
             paymentId = result.PaymentId
         });
+
+
     }
 
     private string GetClientIpAddress()

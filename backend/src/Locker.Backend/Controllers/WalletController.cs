@@ -154,43 +154,61 @@ public class WalletController : ControllerBase
     [FromBody] SepayIpnRequest request,
     CancellationToken cancellationToken)
     {
-        var authorization = Request.Headers["Authorization"].FirstOrDefault();
+        Console.WriteLine("========== SEPAY IPN START ==========");
 
-        if (string.IsNullOrWhiteSpace(authorization))
+        Console.WriteLine(
+            $"NotificationType: {request.NotificationType}"
+        );
+
+        Console.WriteLine(
+            $"OrderStatus: {request.Order?.OrderStatus}"
+        );
+
+        Console.WriteLine(
+            $"TransactionStatus: {request.Transaction?.TransactionStatus}"
+        );
+
+        Console.WriteLine(
+            $"OrderInvoiceNumber: {request.Order?.OrderInvoiceNumber}"
+        );
+
+        Console.WriteLine(
+            $"OrderAmount: {request.Order?.OrderAmount}"
+        );
+
+        Console.WriteLine(
+            $"TransactionAmount: {request.Transaction?.TransactionAmount}"
+        );
+
+        var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
+
+        Console.WriteLine(
+            $"X-Secret-Key exists: {!string.IsNullOrWhiteSpace(providedSecret)}"
+        );
+
+        if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
+            Console.WriteLine("SEPAY IPN SECRET INVALID");
+
             return Unauthorized(new
             {
                 success = false,
-                message = "Missing Authorization header"
+                message = "Invalid SePay IPN secret"
             });
         }
 
-        const string prefix = "Apikey ";
-
-        if (!authorization.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-        {
-            return Unauthorized(new
-            {
-                success = false,
-                message = "Invalid Authorization scheme"
-            });
-        }
-
-        var providedApiKey = authorization[prefix.Length..].Trim();
-
-        if (!_sepayService.IsValidIpnApiKey(providedApiKey))
-        {
-            return Unauthorized(new
-            {
-                success = false,
-                message = "Invalid SePay API key"
-            });
-        }
+        Console.WriteLine("SEPAY IPN SECRET VALID");
 
         var result = await _sender.Send(
             new SepayProcessIpnCommand(request),
             cancellationToken
         );
+
+        Console.WriteLine(
+            $"SEPAY HANDLER RESULT: Success={result.Success}, Message={result.Message}, PaymentId={result.PaymentId}"
+        );
+
+        Console.WriteLine("========== SEPAY IPN END ==========");
 
         if (!result.Success)
         {

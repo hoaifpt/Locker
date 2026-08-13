@@ -10,8 +10,7 @@
 | Bí danh môi trường đã phê duyệt | ____________________ |
 | Ngày giờ bắt đầu (ICT) | ____________________ |
 | Ngày giờ kết thúc (ICT) | ____________________ |
-| Commit SHA tham chiếu | ____________________ |
-| Phiên bản backend / web | ____________________ |
+| Mã đợt kiểm thử được phê duyệt | ____________________ |
 | Trạng thái tổng thể | Chưa chạy |
 | Mã tham chiếu bằng chứng không định danh | ____________________ |
 
@@ -95,7 +94,9 @@ Thực hiện thao tác qua E-box UI bằng 10 tài khoản thật. Chỉ điề
 | user-09 |  |  |  | Chưa chạy |  |
 | user-10 |  |  |  | Chưa chạy |  |
 
-Trong **mongosh** hoặc tab **Aggregations** của MongoDB Compass, chạy truy vấn sau trên database/môi trường đã được phê duyệt. Đây là tên trường kỹ thuật trong truy vấn; không ghi giá trị `userId` thực vào tài liệu.
+### Mongosh
+
+Chỉ trong **mongosh**, chạy biểu thức sau trên database/môi trường đã được phê duyệt. Đây là tên trường kỹ thuật trong truy vấn; không ghi giá trị `userId` thực vào tài liệu.
 
 ```javascript
 db.feedbacks.aggregate([
@@ -104,6 +105,10 @@ db.feedbacks.aggregate([
 ])
 ```
 
+### MongoDB Compass
+
+Chọn collection **feedbacks**, mở tab **Aggregations**, rồi dán **chỉ các stage document hoặc mảng pipeline** từ nội dung trong khối mongosh ở trên. Không dán biểu thức shell `db.feedbacks.aggregate(...)` vào Compass.
+
 | Kiểm tra | Expected | Actual | Trạng thái | Bằng chứng |
 | --- | --- | --- | --- | --- |
 | Tổng hợp distinct users | `distinctUsers >= 10` và `duplicateUsers = 0`. |  | Chưa chạy |  |
@@ -111,7 +116,9 @@ db.feedbacks.aggregate([
 
 ## 5. Kiểm tra MongoDB index và tính duy nhất
 
-Trong **mongosh** hoặc MongoDB Compass (mục **Indexes** và tab **Aggregations**), chạy các thao tác chỉ-đọc sau trên môi trường đã được phê duyệt. Không ghi URI kết nối hoặc giá trị user ID.
+### Mongosh
+
+Chỉ trong **mongosh**, chạy các biểu thức chỉ-đọc sau trên môi trường đã được phê duyệt. Không ghi URI kết nối hoặc giá trị user ID.
 
 ```javascript
 db.feedbacks.getIndexes()
@@ -120,6 +127,10 @@ db.feedbacks.aggregate([
   { $match: { count: { $gt: 1 } } }
 ])
 ```
+
+### MongoDB Compass
+
+Chọn collection **feedbacks**. Để xem index, mở tab **Indexes** và kiểm tra key `{ userId: 1 }` cùng thuộc tính `unique: true`. Để chạy aggregate, mở tab **Aggregations** và chỉ dán các stage document hoặc mảng pipeline từ khối mongosh; không dán `db.feedbacks.getIndexes()` hoặc `db.feedbacks.aggregate(...)` vào Compass.
 
 | Kiểm tra | Expected | Observed index / Actual | Trạng thái | Bằng chứng |
 | --- | --- | --- | --- | --- |

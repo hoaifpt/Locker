@@ -123,6 +123,24 @@ export default function AdminFeedbackPage() {
     try {
       const response = await getAdminFeedback(query);
       if (isMountedRef.current && requestId === requestIdRef.current) {
+        const maximumPage = Math.max(response.page.totalPages, 1);
+        const requestedPage = query.page ?? 1;
+
+        if (requestedPage > maximumPage) {
+          setFilters((current) => {
+            const isCurrentQuery =
+              current.page === query.page &&
+              current.pageSize === query.pageSize &&
+              current.rating === query.rating &&
+              current.topic === query.topic &&
+              current.visibility === query.visibility &&
+              current.search === query.search;
+
+            return isCurrentQuery ? { ...current, page: maximumPage } : current;
+          });
+          return;
+        }
+
         setFeedback(response);
       }
     } catch (error) {

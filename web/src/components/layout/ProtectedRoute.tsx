@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
+import FeedbackButton from '../../features/feedback/components/FeedbackButton';
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
@@ -17,5 +18,10 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <FeedbackButton />
+    </>
+  );
 }

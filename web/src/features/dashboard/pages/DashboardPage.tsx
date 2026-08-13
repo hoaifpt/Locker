@@ -4,6 +4,7 @@ import { Package, MapPin, Clock, ChevronRight, TrendingUp, Truck, BarChart3, Use
 import { Link } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
+import { apiFetch } from '../../../lib/api';
 import { getMockUserDashboard, getMockShipperDashboard, SEED_USERS, SEED_ORDERS, SEED_BOOKINGS, SEED_PAYMENTS } from '../../../mocks/seed';
 
 export default function DashboardPage() {
@@ -18,9 +19,33 @@ export default function DashboardPage() {
 /* ─── USER DASHBOARD ────────────────────────────────────── */
 function UserDashboard({ userId }: { userId: string }) {
   const [data, setData] = useState<ReturnType<typeof getMockUserDashboard> | null>(null);
+  const [displayName, setDisplayName] = useState(
+    () => localStorage.getItem('username') ?? 'Người dùng',
+  );
 
   useEffect(() => {
-    setTimeout(() => setData(getMockUserDashboard(userId)), 300);
+    let isActive = true;
+    const timer = window.setTimeout(() => {
+      if (isActive) setData(getMockUserDashboard(userId));
+    }, 300);
+
+    apiFetch('/users/me')
+      .then(async (response) => {
+        if (!response.ok) return;
+        const profile = await response.json() as { fullName?: string | null; username?: string };
+        if (!isActive) return;
+
+        const name = profile.fullName?.trim() || profile.username?.trim();
+        if (name) setDisplayName(name);
+      })
+      .catch(() => {
+        // Keep the authenticated username already shown as a safe fallback.
+      });
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timer);
+    };
   }, [userId]);
 
   if (!data) return <LoadingSkeleton />;
@@ -31,7 +56,7 @@ function UserDashboard({ userId }: { userId: string }) {
       <main className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
         {/* Greeting */}
         <motion.div initial={hidden} animate={visible} transition={trans(0)} className="mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">{data.user.fullName}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Xin chào, {displayName}!</h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
             <MapPin size={13} className="text-orange-400" /> {data.user.location}
           </p>

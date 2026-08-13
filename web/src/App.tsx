@@ -1,13 +1,18 @@
 import { BrowserRouter } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
+import { ThemeProvider } from './context/ThemeContext';
+import RouteThemeToggle from './components/ui/RouteThemeToggle';
 import AppRoutes from './routes';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ToastProvider>
-        <AppRoutes />
-      </ToastProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <ToastProvider>
+          <RouteThemeToggle />
+          <AppRoutes />
+        </ToastProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }

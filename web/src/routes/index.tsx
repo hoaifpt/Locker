@@ -48,6 +48,9 @@ import FoodOrderDetailPage from '../features/food/pages/FoodOrderDetailPage';
 // Profile
 import ProfilePage from '../features/profile/pages/ProfilePage';
 
+// Feedback
+import AdminFeedbackPage from '../features/feedback/pages/AdminFeedbackPage';
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -103,7 +106,7 @@ export default function AppRoutes() {
 
       {/* Admin Only Routes */}
       <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
-        {/* Placeholder for future admin-only routes */}
+        <Route path="/admin/feedbacks" element={<AdminFeedbackPage />} />
       </Route>
     </Routes>
   );

@@ -1,26 +1,32 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
-type FetchOptions = RequestInit & {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data?: Record<string, any>;
+export type FetchOptions = RequestInit & {
+    data?: unknown;
 };
 
-export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
+export async function apiFetch(endpoint: string, options: FetchOptions = {}): Promise<Response> {
     const { data, headers: customHeaders, ...restOptions } = options;
 
-    const headers = {
-        'Content-Type': 'application/json',
-        ...customHeaders,
-    };
+    const headers = new Headers(customHeaders);
+    if (!headers.has('Content-Type') && data !== undefined) {
+        headers.set('Content-Type', 'application/json');
+    }
+
+    const token = localStorage.getItem('token');
+    if (token && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${token}`);
+    }
 
     const config: RequestInit = {
         ...restOptions,
         headers,
     };
 
-    if (data) config.body = JSON.stringify(data);
+    if (data !== undefined) config.body = JSON.stringify(data);
 
-    return fetch(`${API_BASE_URL}${endpoint}`, config);
+    const baseUrl = API_BASE_URL.replace(/\/$/, '');
+    const relativeEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return fetch(`${baseUrl}${relativeEndpoint}`, config);
 }
 
 export const api = {

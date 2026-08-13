@@ -151,25 +151,29 @@ public class WalletController : ControllerBase
     [HttpPost("top-up/sepay/ipn")]
     [AllowAnonymous]
     public async Task<IActionResult> SepayIpn(
-    [FromBody] SepayIpnRequest request,
-    CancellationToken cancellationToken)
+     [FromBody] SepayIpnRequest request,
+     CancellationToken cancellationToken)
     {
-        Request.EnableBuffering();
-        using var reader = new System.IO.StreamReader(Request.Body, System.Text.Encoding.UTF8, leaveOpen: true);
-        var rawBody = await reader.ReadToEndAsync();
-        Request.Body.Position = 0;
-        Console.WriteLine($"[RAW SEPAY PAYLOAD]: {rawBody}");
-        // ----------------------------------------
-
-        Console.WriteLine("========== SEPAY IPN START ==========");
-        Console.WriteLine("========== SEPAY IPN START ==========");
-
+        // 1. Trích xuất Secret Key từ X-Secret-Key HOẶC Authorization Header
         var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
 
-        Console.WriteLine(
-            $"X-Secret-Key exists: {!string.IsNullOrWhiteSpace(providedSecret)}"
-        );
+        if (string.IsNullOrWhiteSpace(providedSecret))
+        {
+            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(authHeader))
+            {
+                // Tách bỏ tiền tố "Bearer " hoặc "Apikey " nếu SePay có đính kèm
+                providedSecret = authHeader
+                    .Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase)
+                    .Replace("Apikey ", "", StringComparison.OrdinalIgnoreCase)
+                    .Trim();
+            }
+        }
 
+        Console.WriteLine("========== SEPAY IPN START ==========");
+        Console.WriteLine($"Extracted Secret Key: '{providedSecret}'");
+
+        // 2. Xác thực Secret Key
         if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
             Console.WriteLine("SEPAY IPN SECRET INVALID");
@@ -181,17 +185,15 @@ public class WalletController : ControllerBase
             });
         }
 
-        Console.WriteLine("SEPAY IPN SECRET VALID");
+        Console.WriteLine("SEPAY IPN SECRET VALID -> Processing Order...");
 
+        // 3. Xử lý logic cộng tiền
         var result = await _sender.Send(
             new SepayProcessIpnCommand(request),
             cancellationToken
         );
 
-        Console.WriteLine(
-            $"SEPAY HANDLER RESULT: Success={result.Success}, Message={result.Message}, PaymentId={result.PaymentId}"
-        );
-
+        Console.WriteLine($"SEPAY HANDLER RESULT: Success={result.Success}, Message={result.Message}, PaymentId={result.PaymentId}");
         Console.WriteLine("========== SEPAY IPN END ==========");
 
         if (!result.Success)
@@ -210,8 +212,6 @@ public class WalletController : ControllerBase
             message = result.Message,
             paymentId = result.PaymentId
         });
-
-
     }
 
     private string GetClientIpAddress()

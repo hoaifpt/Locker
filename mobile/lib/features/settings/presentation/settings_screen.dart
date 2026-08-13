@@ -21,11 +21,16 @@ class SettingsScreen extends StatelessWidget {
                 Expanded(
                   child: switch (state) {
                     SettingsLoading() => const Center(
-                        child: CircularProgressIndicator(
-                            color: Color(0xFFFF7E5F))),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFFF7E5F),
+                      ),
+                    ),
                     SettingsError(:final message) => Center(
-                        child: Text(message,
-                            style: const TextStyle(color: Colors.red))),
+                      child: Text(
+                        message,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
                     SettingsLoaded() => _buildBody(context, state),
                     _ => const SizedBox.shrink(),
                   },
@@ -53,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildPreferencesCard(context, state),
                 const SizedBox(height: 24),
-                _buildSupportCard(),
+                _buildSupportCard(context),
                 const SizedBox(height: 24),
                 _buildLogoutButton(context),
                 const SizedBox(height: 16),
@@ -93,8 +98,11 @@ class SettingsScreen extends StatelessWidget {
         children: [
           _circleButton(
             onTap: () => Navigator.pop(context),
-            child: const Icon(Icons.arrow_back_ios_rounded,
-                size: 18, color: Color(0xFF334155)),
+            child: const Icon(
+              Icons.arrow_back_ios_rounded,
+              size: 18,
+              color: Color(0xFF334155),
+            ),
           ),
           const Text(
             'Settings',
@@ -106,8 +114,11 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           _circleButton(
-            child: const Icon(Icons.notifications_none_rounded,
-                size: 20, color: Color(0xFF334155)),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              size: 20,
+              color: Color(0xFF334155),
+            ),
           ),
         ],
       ),
@@ -169,7 +180,9 @@ class SettingsScreen extends StatelessWidget {
                         height: 128,
                         decoration: BoxDecoration(
                           border: Border.all(
-                              color: const Color(0xFFFF7E5F), width: 3),
+                            color: const Color(0xFFFF7E5F),
+                            width: 3,
+                          ),
                           borderRadius: BorderRadius.circular(9999),
                           boxShadow: const [
                             BoxShadow(
@@ -216,8 +229,11 @@ class SettingsScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.camera_alt_rounded,
-                            size: 16, color: Color(0xFFFF7E5F)),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          size: 16,
+                          color: Color(0xFFFF7E5F),
+                        ),
                       ),
                     ),
                   ],
@@ -248,25 +264,32 @@ class SettingsScreen extends StatelessWidget {
             right: 0,
             child: Center(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                      colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)]),
+                    colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)],
+                  ),
                   border: Border.all(color: const Color(0x7FFED7AA)),
                   borderRadius: BorderRadius.circular(9999),
                   boxShadow: const [
                     BoxShadow(
-                        color: Color(0x0C000000),
-                        blurRadius: 2,
-                        offset: Offset(0, 1)),
+                      color: Color(0x0C000000),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
                   ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded,
-                        size: 16, color: Color(0xFFE06C50)),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 16,
+                      color: Color(0xFFE06C50),
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Loyalty Member • ${profile.loyaltyPoints} Points',
@@ -347,23 +370,46 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSupportCard() {
+  Widget _buildSupportCard(BuildContext context) {
     return _settingsGroup(
       label: 'SUPPORT',
-      child: _settingRow(
-        icon: Icons.help_outline_rounded,
-        iconBg: const Color(0xFFCCFBF1),
-        iconColor: const Color(0xFF0D9488),
-        label: 'Help Center',
+      child: Column(
+        children: [
+          _settingRow(
+            icon: Icons.help_outline_rounded,
+            iconBg: const Color(0xFFCCFBF1),
+            iconColor: const Color(0xFF0D9488),
+            label: 'Help Center',
+          ),
+          _divider(),
+          _settingRow(
+            icon: Icons.rate_review_outlined,
+            iconBg: const Color(0xFFFFEDD5),
+            iconColor: const Color(0xFFEA580C),
+            label: 'Gửi feedback',
+            onTap: () async {
+              final submitted = await Navigator.of(
+                context,
+              ).pushNamed('/feedback');
+              if (context.mounted && submitted == true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Cảm ơn bạn đã gửi feedback!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
       ),
     );
   }
 
   Widget _avatarFallback() => Container(
-        color: const Color(0xFFFFEDD5),
-        child: const Icon(Icons.person_rounded,
-            size: 64, color: Color(0xFFFF7E5F)),
-      );
+    color: const Color(0xFFFFEDD5),
+    child: const Icon(Icons.person_rounded, size: 64, color: Color(0xFFFF7E5F)),
+  );
 
   Widget _buildLogoutButton(BuildContext context) {
     return GestureDetector(
@@ -379,10 +425,11 @@ class SettingsScreen extends StatelessWidget {
           ),
           shadows: const [
             BoxShadow(
-                color: Color(0x0C000000),
-                blurRadius: 20,
-                offset: Offset(0, 4),
-                spreadRadius: -2),
+              color: Color(0x0C000000),
+              blurRadius: 20,
+              offset: Offset(0, 4),
+              spreadRadius: -2,
+            ),
           ],
         ),
         child: const Row(
@@ -436,10 +483,11 @@ class SettingsScreen extends StatelessWidget {
             ),
             shadows: const [
               BoxShadow(
-                  color: Color(0x0C000000),
-                  blurRadius: 20,
-                  offset: Offset(0, 4),
-                  spreadRadius: -2),
+                color: Color(0x0C000000),
+                blurRadius: 20,
+                offset: Offset(0, 4),
+                spreadRadius: -2,
+              ),
             ],
           ),
           child: child,
@@ -474,8 +522,11 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                color: Color(0xFFB0BEC5), size: 22),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFFB0BEC5),
+              size: 22,
+            ),
           ],
         ),
       ),
@@ -514,8 +565,9 @@ class SettingsScreen extends StatelessWidget {
               width: 48,
               height: 28,
               decoration: BoxDecoration(
-                color:
-                    value ? const Color(0xFFFF6B6B) : const Color(0xFFE2E8F0),
+                color: value
+                    ? const Color(0xFFFF6B6B)
+                    : const Color(0xFFE2E8F0),
                 borderRadius: BorderRadius.circular(9999),
               ),
               child: Stack(
@@ -533,9 +585,10 @@ class SettingsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(9999),
                         boxShadow: const [
                           BoxShadow(
-                              color: Color(0x0C000000),
-                              blurRadius: 2,
-                              offset: Offset(0, 1)),
+                            color: Color(0x0C000000),
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                          ),
                         ],
                       ),
                     ),
@@ -549,13 +602,18 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _iconBox(
-      {required IconData icon, required Color bg, required Color color}) {
+  Widget _iconBox({
+    required IconData icon,
+    required Color bg,
+    required Color color,
+  }) {
     return Container(
       width: 40,
       height: 40,
-      decoration:
-          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Icon(icon, color: color, size: 20),
     );
   }
@@ -571,7 +629,10 @@ class SettingsScreen extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-                color: Color(0x0C000000), blurRadius: 2, offset: Offset(0, 1)),
+              color: Color(0x0C000000),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+            ),
           ],
         ),
         child: Center(child: child),
@@ -580,9 +641,9 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _divider() => const Divider(
-        height: 1,
-        indent: 20,
-        endIndent: 20,
-        color: Color(0xFFF1F5F9),
-      );
+    height: 1,
+    indent: 20,
+    endIndent: 20,
+    color: Color(0xFFF1F5F9),
+  );
 }

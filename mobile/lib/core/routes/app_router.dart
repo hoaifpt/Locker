@@ -36,6 +36,7 @@ import '../../features/change_password/presentation/pages/change_password_page.d
 import '../../features/change_password/presentation/pages/forgot_password_page.dart';
 import '../../features/change_password/presentation/pages/reset_password_page.dart';
 import '../../features/change_password/presentation/controllers/forgot_password_cubit.dart';
+import '../../features/feedback/presentation/pages/feedback_page.dart';
 
 // Create a single instance to share between forgot and reset password pages
 final _forgotPasswordCubit = getIt<ForgotPasswordCubit>();
@@ -102,6 +103,7 @@ class AppRouter {
     '/qr-scanner': (context) => const QrScannerPage(),
     '/scan-history': (context) => const ScanHistoryPage(),
     '/settings': (context) => const SettingsPage(),
+    '/feedback': (context) => const FeedbackPage(),
     '/notifications': (context) => const NotificationPage(),
     '/security-privacy': (context) => const SecurityPrivacyPage(),
     '/personal-info': (context) => const PersonalInfoPage(),

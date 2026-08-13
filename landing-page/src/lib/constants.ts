@@ -1,5 +1,5 @@
-// Google Play Store URL - thay thế bằng link CH Play thật khi có
-export const GOOGLE_PLAY_URL = 'https://drive.usercontent.google.com/download?id=1c4KC9CdLyVYM5AKK9t58t2ktfrUuKcGO&export=download&authuser=0&confirm=t&uuid=ec367cc4-1190-4ab3-9346-a0daf749747a&at=AFYLz4OwYaKNQ7k0pF-aBregdHSD%3A1786520041137';
+// Google Play Store URL
+export const GOOGLE_PLAY_URL = 'https://drive.usercontent.google.com/download?id=1RS3aaH23jjqrAUR8DJF_ExLBpMdSKQbr&export=download&authuser=0&confirm=t&uuid=8d4f1336-8bab-4fd2-8a78-cfcd3d6694e4&at=AFYLz4MmK2FvA0tA361OhbvQgfQ0:1786592125612';
 
 export const APP_NAME = 'E-BOX';
 export const APP_TAGLINE = 'CHỦ ĐỘNG MỌI LÚC – TIỆN LỢI MỌI NƠI';

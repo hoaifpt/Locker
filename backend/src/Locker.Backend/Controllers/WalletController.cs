@@ -7,11 +7,14 @@ using Locker.Backend.Application.Features.Wallet.Commands.TopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.Transfer;
 using Locker.Backend.Application.Features.Wallet.Commands.VnPayInitTopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.SepayProcessReturn;
+using Locker.Backend.Application.Features.Wallet.Commands.SepayProcessIpn;
 using Locker.Backend.Application.Features.Wallet.Commands.SepayInitTopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.VnPayProcessReturn;
 using Locker.Backend.Application.Features.Wallet.Queries.GetBalance;
 using Locker.Backend.Application.Features.Wallet.Queries.GetOverview;
 using Locker.Backend.Application.Features.Wallet.Queries.GetTransactions;
+using Locker.Backend.Application.Interfaces;
+using Locker.Backend.Application.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,10 +27,12 @@ namespace Locker.Backend.Controllers;
 public class WalletController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly ISepayService _sepayService;
 
-    public WalletController(ISender sender)
+    public WalletController(ISender sender, ISepayService sepayService)
     {
         _sender = sender;
+        _sepayService = sepayService;
     }
 
     [HttpGet("overview")]
@@ -141,6 +146,25 @@ public class WalletController : ControllerBase
 
         // Trả về kết quả thành công để client (WebView trong mobile app) có thể bắt và xử lý
         return Ok(result);
+    }
+
+    [HttpPost("top-up/sepay/ipn")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SepayIpn([FromBody] SepayIpnRequest request, CancellationToken cancellationToken)
+    {
+        var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
+        if (!_sepayService.IsValidIpnSecret(providedSecret))
+        {
+            return Unauthorized(new { success = false, message = "Invalid SePay IPN secret" });
+        }
+
+        var result = await _sender.Send(new SepayProcessIpnCommand(request), cancellationToken);
+        if (!result.Success)
+        {
+            return BadRequest(new { success = false, message = result.Message, paymentId = result.PaymentId });
+        }
+
+        return Ok(new { success = true, message = result.Message, paymentId = result.PaymentId });
     }
 
     private string GetClientIpAddress()

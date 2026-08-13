@@ -32,4 +32,5 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}): Pr
 export const api = {
     get: (url: string) => apiFetch(url),
     post: (url: string, data?: Record<string, unknown>) => apiFetch(url, { method: 'POST', data }),
+    put: (url: string, data?: Record<string, unknown>) => apiFetch(url, { method: 'PUT', data }),
 };

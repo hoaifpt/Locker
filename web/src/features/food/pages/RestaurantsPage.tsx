@@ -4,30 +4,52 @@ import { Store, Search, Star, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { SEED_RESTAURANTS, SeedRestaurant } from '../../../mocks/seed';
+import { apiFetch } from '../../../lib/api';
+import { useToast } from '../../../context/ToastContext';
+
+type Restaurant = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  imageUrl: string;
+  rating: number;
+  latitude: number;
+  longitude: number;
+};
 
 export default function RestaurantsPage() {
-  const [restaurants, setRestaurants] = useState<SeedRestaurant[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const { show: showToast } = useToast();
 
   useEffect(() => {
-    // Simulate API fetch
-    setTimeout(() => {
-      setRestaurants(SEED_RESTAURANTS);
-      setLoading(false);
-    }, 400);
-  }, []);
+    const fetchRestaurants = async () => {
+      setLoading(true);
+      try {
+        const response = await apiFetch('/restaurants');
+        if (!response.ok) throw new Error('Không thể tải danh sách nhà hàng.');
+        const data = (await response.json()) as Restaurant[];
+        setRestaurants(data);
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRestaurants();
+  }, [showToast]);
 
-  const filteredRestaurants = restaurants.filter(r => 
-    r.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredRestaurants = restaurants.filter(r =>
+    r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     r.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased">
       <AppHeader />
-      
+
       <main className="mx-auto max-w-5xl px-4 py-10 lg:px-8">
         <motion.div initial={hidden} animate={visible} transition={trans(0)} className="mb-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-orange-600">
@@ -39,7 +61,7 @@ export default function RestaurantsPage() {
           <p className="mt-2 text-sm text-gray-500">
             Đặt món ngon từ các nhà hàng yêu thích và nhận ngay tại tủ khóa E-Box của bạn.
           </p>
-          
+
           {/* Current Location Banner */}
           <div className="mt-6 flex items-center justify-between rounded-2xl bg-orange-500/10 px-4 py-3 border border-orange-500/20 max-w-fit">
             <div className="flex items-center gap-2">
@@ -92,16 +114,16 @@ export default function RestaurantsPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredRestaurants.map((restaurant, index) => (
-              <motion.div 
-                key={restaurant.id} 
-                initial={hidden} 
-                animate={visible} 
+              <motion.div
+                key={restaurant.id}
+                initial={hidden}
+                animate={visible}
                 transition={trans(0.1 + index * 0.05)}
               >
                 <Link to={`/food/${restaurant.id}`} className="group block overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md hover:border-orange-200">
                   <div className="relative h-48 overflow-hidden bg-gray-100">
-                    <img 
-                      src={restaurant.imageUrl} 
+                    <img
+                      src={restaurant.imageUrl}
                       alt={restaurant.name}
                       className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                     />
@@ -113,14 +135,11 @@ export default function RestaurantsPage() {
                   <div className="p-5">
                     <h3 className="font-bold text-lg text-gray-900 transition group-hover:text-orange-500 line-clamp-1">{restaurant.name}</h3>
                     <p className="mt-1 text-sm text-gray-500 line-clamp-1">{restaurant.description}</p>
-                    
+
                     <div className="mt-4 flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs text-gray-400">
                         <MapPin size={14} className="text-gray-400" />
                         <span className="line-clamp-1">{restaurant.address}</span>
-                      </div>
-                      <div className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-bold text-gray-600 whitespace-nowrap">
-                        {restaurant.distanceKm} km
                       </div>
                     </div>
                   </div>

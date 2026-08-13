@@ -4,25 +4,74 @@ import { Store, ArrowLeft, Star, MapPin, Plus, Minus, ShoppingBag, ChevronRight 
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { getRestaurantById, getMenuByRestaurant, SeedRestaurant, SeedMenuItem } from '../../../mocks/seed';
+import { apiFetch } from '../../../lib/api';
+import { useToast } from '../../../context/ToastContext';
+
+type Restaurant = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  imageUrl: string;
+  rating: number;
+  latitude: number;
+  longitude: number;
+};
+
+type MenuItem = {
+  id: string;
+  restaurantId: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+  isAvailable: boolean;
+};
 
 export default function RestaurantDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [restaurant, setRestaurant] = useState<SeedRestaurant | null>(null);
-  const [menu, setMenu] = useState<SeedMenuItem[]>([]);
+  const { show: showToast } = useToast();
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [menu, setMenu] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Cart state: { [menuItemId]: quantity }
   const [cart, setCart] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    setTimeout(() => {
-      setRestaurant(getRestaurantById(id ?? '') ?? null);
-      setMenu(getMenuByRestaurant(id ?? ''));
+    if (!id) {
       setLoading(false);
-    }, 400);
-  }, [id]);
+      return;
+    }
+
+    const fetchDetails = async () => {
+      setLoading(true);
+      try {
+        const [restaurantResponse, menuResponse] = await Promise.all([
+          apiFetch(`/restaurants/${id}`),
+          apiFetch(`/restaurants/${id}/menu`),
+        ]);
+
+        if (!restaurantResponse.ok) throw new Error('Không thể tải thông tin nhà hàng.');
+        if (!menuResponse.ok) throw new Error('Không thể tải thực đơn.');
+
+        const restaurantData = (await restaurantResponse.json()) as Restaurant;
+        const menuData = (await menuResponse.json()) as MenuItem[];
+
+        setRestaurant(restaurantData);
+        setMenu(menuData);
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+        navigate('/food', { replace: true });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetails();
+  }, [id, navigate, showToast]);
 
   const updateCart = (itemId: string, delta: number) => {
     setCart(prev => {
@@ -42,7 +91,7 @@ export default function RestaurantDetailPage() {
   }, 0);
 
   const handleCheckout = () => {
-    if (totalItems === 0) return;
+    if (totalItems === 0 || !restaurant) return;
     const cartItems = Object.entries(cart).map(([itemId, qty]) => {
       const item = menu.find(m => m.id === itemId)!;
       return { ...item, quantity: qty };
@@ -67,11 +116,11 @@ export default function RestaurantDetailPage() {
   return (
     <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased pb-32">
       <AppHeader />
-      
+
       {/* Restaurant Banner */}
       <div className="relative h-64 md:h-80 w-full overflow-hidden bg-gray-900">
-        <img 
-          src={restaurant.imageUrl} 
+        <img
+          src={restaurant.imageUrl}
           alt={restaurant.name}
           className="h-full w-full object-cover opacity-60"
         />
@@ -90,7 +139,7 @@ export default function RestaurantDetailPage() {
             </div>
             <div className="flex flex-col gap-2 text-sm text-gray-200">
               <span className="flex items-center gap-1.5 bg-black/30 rounded-xl px-3 py-1.5 backdrop-blur-sm">
-                <Star size={14} className="text-yellow-400 fill-yellow-400" /> {restaurant.rating} (500+ đánh giá)
+                <Star size={14} className="text-yellow-400 fill-yellow-400" /> {restaurant.rating.toFixed(1)}
               </span>
               <span className="flex items-center gap-1.5 bg-black/30 rounded-xl px-3 py-1.5 backdrop-blur-sm">
                 <MapPin size={14} /> {restaurant.address}
@@ -121,10 +170,10 @@ export default function RestaurantDetailPage() {
                         </div>
                         <div className="flex items-center justify-between mt-2">
                           <span className="font-semibold text-orange-600">{item.price.toLocaleString('vi-VN')}đ</span>
-                          
+
                           {/* Add to cart controls */}
                           <div className="flex items-center gap-3 rounded-full bg-gray-50 p-1 border border-gray-100 shadow-inner">
-                            <button 
+                            <button
                               onClick={() => updateCart(item.id, -1)}
                               className={`flex h-7 w-7 items-center justify-center rounded-full transition ${cart[item.id] ? 'bg-white text-gray-700 shadow-sm hover:bg-gray-200' : 'text-gray-300'}`}
                               disabled={!cart[item.id]}
@@ -134,7 +183,7 @@ export default function RestaurantDetailPage() {
                             <span className="w-4 text-center text-sm font-semibold text-gray-900">
                               {cart[item.id] || 0}
                             </span>
-                            <button 
+                            <button
                               onClick={() => updateCart(item.id, 1)}
                               className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition hover:bg-orange-600"
                             >
@@ -155,7 +204,7 @@ export default function RestaurantDetailPage() {
       {/* Floating Cart Bar */}
       <AnimatePresence>
         {totalItems > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
@@ -174,8 +223,8 @@ export default function RestaurantDetailPage() {
                   <p className="text-lg font-bold text-gray-900">{totalPrice.toLocaleString('vi-VN')}đ</p>
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={handleCheckout}
                 className="flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3.5 font-semibold text-white shadow-md shadow-orange-200 transition hover:bg-orange-600 active:scale-95"
               >

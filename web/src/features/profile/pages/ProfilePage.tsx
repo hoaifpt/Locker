@@ -3,10 +3,19 @@ import { motion } from 'framer-motion';
 import { User, Mail, Phone, Lock, Eye, EyeOff, Save, ChevronRight } from 'lucide-react';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { getUserById, SeedUser as UserProfile } from '../../../mocks/seed';
+import { apiFetch } from '../../../lib/api';
+import { useToast } from '../../../context/ToastContext';
 
-// Simulated logged-in user — set by login page, replace with real token when backend is ready
-const CURRENT_USER_ID = localStorage.getItem('userId') ?? 'u-001';
+type UserProfile = {
+  id: string;
+  username: string;
+  email: string;
+  fullName: string | null;
+  phoneNumber: string | null;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+};
 
 type Tab = 'profile' | 'password';
 
@@ -14,6 +23,7 @@ export default function ProfilePage() {
   const [tab, setTab] = useState<Tab>('profile');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const { show: showToast } = useToast();
 
   // Profile form
   const [email, setEmail] = useState('');
@@ -30,36 +40,78 @@ export default function ProfilePage() {
   const [pwSaved, setPwSaved] = useState(false);
 
   useEffect(() => {
-    // Seed data — swap for GET /api/users/me when backend is ready
-    setTimeout(() => {
-      const u = getUserById(CURRENT_USER_ID) ?? null;
-      setUser(u);
-      setEmail(u?.email ?? '');
-      setFullName(u?.fullName ?? '');
-      setLoading(false);
-    }, 300);
-  }, []);
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const response = await apiFetch('/users/me');
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Token không hợp lệ hoặc đã hết hạn, đăng xuất người dùng.
+            showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+            localStorage.removeItem('token'); // Giả sử token được lưu với key 'token'
+            window.location.href = '/login'; // Chuyển hướng về trang đăng nhập
+            return;
+          }
+          throw new Error('Không thể tải thông tin người dùng.');
+        }
+        const userData = (await response.json()) as UserProfile;
+        setUser(userData);
+        setEmail(userData.email ?? '');
+        setFullName(userData.fullName ?? '');
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [showToast]);
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileSaving(true);
-    // TODO: PUT /api/users/me { email, fullName }
-    await new Promise((r) => setTimeout(r, 800));
-    setProfileSaving(false);
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 3000);
+    try {
+      const response = await apiFetch('/users/me', {
+        method: 'PUT',
+        data: { email, fullName },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Cập nhật thất bại.');
+      }
+      setProfileSaved(true);
+      showToast('Cập nhật thông tin thành công!', 'success');
+      setTimeout(() => setProfileSaved(false), 3000);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const handlePasswordSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwSaving(true);
-    // TODO: POST /api/users/me/change-password { currentPassword, newPassword }
-    await new Promise((r) => setTimeout(r, 800));
-    setPwSaving(false);
-    setPwSaved(true);
-    setCurrentPassword('');
-    setNewPassword('');
-    setTimeout(() => setPwSaved(false), 3000);
+    try {
+      const response = await apiFetch('/users/me/change-password', {
+        method: 'POST',
+        data: { currentPassword, newPassword },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Đổi mật khẩu thất bại.');
+      }
+      setPwSaved(true);
+      showToast('Đổi mật khẩu thành công!', 'success');
+      setCurrentPassword('');
+      setNewPassword('');
+      setTimeout(() => setPwSaved(false), 3000);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+    } finally {
+      setPwSaving(false);
+    }
   };
 
   if (loading) return (
@@ -109,11 +161,10 @@ export default function ProfilePage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${
-                tab === t
+              className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${tab === t
                   ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
                   : 'border border-gray-200 bg-white text-gray-600 hover:border-orange-300 hover:text-orange-500'
-              }`}
+                }`}
             >
               {t === 'profile' ? 'Thông tin cá nhân' : 'Đổi mật khẩu'}
             </button>

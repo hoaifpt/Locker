@@ -11,6 +11,7 @@ using FluentValidation.AspNetCore;
 using Locker.Backend.Application;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Infrastructure;
+using Locker.Backend.Infrastructure.Notifications;
 using Locker.Backend.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -157,6 +158,19 @@ builder.Services.AddAuthentication(options =>
     };
     options.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/hubs/notifications", StringComparison.OrdinalIgnoreCase))
+            {
+                var accessToken = context.Request.Query["access_token"].ToString();
+                if (!string.IsNullOrWhiteSpace(accessToken))
+                {
+                    context.Token = accessToken;
+                }
+            }
+
+            return Task.CompletedTask;
+        },
         OnTokenValidated = async context =>
         {
             var jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
@@ -189,6 +203,8 @@ builder.Services.AddAuthentication(options =>
         }
     };
 });
+
+builder.Services.AddSignalR();
 
 builder.Services.AddAuthorization();
 
@@ -226,6 +242,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers().RequireRateLimiting("api");
+
+app.MapHub<NotificationHub>("/hubs/notifications")
+    .RequireAuthorization()
+    .RequireRateLimiting("api");
 
 var seedEnabled = builder.Configuration.GetValue<bool>("Seed:Enabled", false);
 if (seedEnabled)

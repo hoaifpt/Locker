@@ -21,4 +21,5 @@ public class MongoSettings
     public string DeliveryRequestsCollection { get; set; } = "delivery_requests";
     public string SendReceiveOrdersCollection { get; set; } = "send_receive_orders";
     public string LockerEventsCollection { get; set; } = "locker_events";
+    public string FeedbacksCollection { get; set; } = "feedbacks";
 }

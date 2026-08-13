@@ -132,5 +132,17 @@ public class MongoContext
             new CreateIndexModel<LockerEvent>(Builders<LockerEvent>.IndexKeys.Ascending(x => x.LockerId).Ascending(x => x.SlotIndex)),
             new CreateIndexModel<LockerEvent>(Builders<LockerEvent>.IndexKeys.Ascending(x => x.CreatedAt))
         });
+
+        var feedbacks = Database.GetCollection<Feedback>(Settings.FeedbacksCollection);
+        feedbacks.Indexes.CreateMany(new[]
+        {
+            new CreateIndexModel<Feedback>(
+                Builders<Feedback>.IndexKeys.Ascending(x => x.UserId),
+                new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<Feedback>(
+                Builders<Feedback>.IndexKeys.Ascending(x => x.IsVisible).Descending(x => x.UpdatedAt)),
+            new CreateIndexModel<Feedback>(
+                Builders<Feedback>.IndexKeys.Ascending(x => x.Rating).Ascending(x => x.Topic))
+        });
     }
 }

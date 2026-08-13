@@ -49,6 +49,7 @@ public static class DependencyInjection
         services.AddScoped<IDeliveryRequestRepository, DeliveryRequestRepository>();
         services.AddScoped<ISendReceiveOrderRepository, SendReceiveOrderRepository>();
         services.AddScoped<ILockerEventRepository, LockerEventRepository>();
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();

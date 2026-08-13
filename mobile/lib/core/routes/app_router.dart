@@ -11,9 +11,9 @@ import '../../features/food_order/presentation/pages/food_cart_payment_page.dart
 import '../../features/wallet/presentation/pages/top_up_page.dart';
 import '../../features/menu/presentation/pages/menu_page.dart';
 import '../../features/payment_success/domain/entities/payment_success_info.dart';
+import '../../features/payment_success/presentation/pages/payment_success_page.dart';
 import '../../features/payment_failed/domain/entities/payment_failed_info.dart';
-import '../../features/payment_result/domain/entities/payment_result.dart';
-import '../../features/payment_result/presentation/pages/payment_result_page.dart';
+import '../../features/payment_failed/presentation/pages/payment_failed_page.dart';
 import '../../features/photo_confirmation/presentation/pages/photo_confirmation_page.dart';
 import '../../features/send_success/domain/entities/send_success_info.dart';
 import '../../features/send_success/presentation/pages/send_success_page.dart';
@@ -71,54 +71,13 @@ class AppRouter {
       initialData:
           ModalRoute.of(context)?.settings.arguments as FoodCartPaymentArgs?,
     ),
-    '/payment-success': (context) {
-      final request =
-          ModalRoute.of(context)?.settings.arguments as PaymentSuccessRequest?;
-      return PaymentResultPage(
-        request: PaymentResultRequest(
-          status: PaymentResultStatus.success,
-          amount: request?.paidAmount ?? 0,
-          referenceCode:
-              request?.transactionId ??
-              request?.orderCode ??
-              'Không có mã giao dịch',
-          orderCode: request?.orderCode,
-          paymentMethod: request?.paymentMethod,
-          lockerHub: request?.lockerHub,
-        ),
-      );
-    },
-    '/payment-failed': (context) {
-      final request =
-          ModalRoute.of(context)?.settings.arguments as PaymentFailedRequest?;
-      return PaymentResultPage(
-        request: PaymentResultRequest(
-          status: PaymentResultStatus.failed,
-          amount: request?.amount ?? 0,
-          referenceCode: request?.referenceCode ?? 'Chưa tạo mã giao dịch',
-          paymentMethod: request?.paymentMethod,
-          lockerHub: request?.lockerHub,
-          message: request?.reason,
-        ),
-      );
-    },
-    '/payment-cancelled': (context) => PaymentResultPage(
-      request: _paymentResultRequest(
-        context,
-        fallbackStatus: PaymentResultStatus.cancelled,
-      ),
+    '/payment-success': (context) => PaymentSuccessPage(
+      request:
+          ModalRoute.of(context)?.settings.arguments as PaymentSuccessRequest?,
     ),
-    '/payment-expired': (context) => PaymentResultPage(
-      request: _paymentResultRequest(
-        context,
-        fallbackStatus: PaymentResultStatus.expired,
-      ),
-    ),
-    '/payment-pending': (context) => PaymentResultPage(
-      request: _paymentResultRequest(
-        context,
-        fallbackStatus: PaymentResultStatus.pending,
-      ),
+    '/payment-failed': (context) => PaymentFailedPage(
+      request:
+          ModalRoute.of(context)?.settings.arguments as PaymentFailedRequest?,
     ),
     '/send-success': (context) => SendSuccessPage(
       request:
@@ -158,18 +117,4 @@ class AppRouter {
       child: const ResetPasswordPage(),
     ),
   };
-
-  static PaymentResultRequest _paymentResultRequest(
-    BuildContext context, {
-    required PaymentResultStatus fallbackStatus,
-  }) {
-    final arguments = ModalRoute.of(context)?.settings.arguments;
-    if (arguments is PaymentResultRequest) return arguments;
-
-    return PaymentResultRequest(
-      status: fallbackStatus,
-      amount: 0,
-      referenceCode: 'Chưa có mã giao dịch',
-    );
-  }
 }

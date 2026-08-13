@@ -49,6 +49,7 @@ public class MongoContext
         Database = mongoClient.GetDatabase(Settings.DatabaseName);
 
         TryEnsureIndexes(logger);
+        EnsureFeedbackIndexes();
     }
 
     public IMongoDatabase Database { get; }
@@ -133,6 +134,10 @@ public class MongoContext
             new CreateIndexModel<LockerEvent>(Builders<LockerEvent>.IndexKeys.Ascending(x => x.CreatedAt))
         });
 
+    }
+
+    private void EnsureFeedbackIndexes()
+    {
         var feedbacks = Database.GetCollection<Feedback>(Settings.FeedbacksCollection);
         feedbacks.Indexes.CreateMany(new[]
         {

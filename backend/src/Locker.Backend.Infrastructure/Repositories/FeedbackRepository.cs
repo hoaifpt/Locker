@@ -5,6 +5,7 @@ using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
 using Locker.Backend.Infrastructure.Mongo;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Locker.Backend.Infrastructure.Repositories;
@@ -62,30 +63,78 @@ public class FeedbackRepository : IFeedbackRepository
 
     public async Task<FeedbackSummaryDto> GetSummaryAsync(FeedbackFilter filter, CancellationToken cancellationToken)
     {
-        var mongoFilter = BuildFilter(filter);
-        var totalReviewersTask = _collection.CountDocumentsAsync(
-            Builders<Feedback>.Filter.Empty,
-            cancellationToken: cancellationToken);
-        var filteredFeedbacksTask = _collection.Find(mongoFilter).ToListAsync(cancellationToken);
+        var renderedFilter = BuildFilter(filter).Render(
+            new RenderArgs<Feedback>(_collection.DocumentSerializer, _collection.Settings.SerializerRegistry));
+        var facet = new BsonDocument("$facet", new BsonDocument
+        {
+            {
+                "totalReviewers",
+                new BsonArray { new BsonDocument("$count", "count") }
+            },
+            {
+                "summary",
+                new BsonArray
+                {
+                    new BsonDocument("$match", renderedFilter),
+                    new BsonDocument("$group", new BsonDocument
+                    {
+                        { "_id", BsonNull.Value },
+                        { "averageRating", new BsonDocument("$avg", "$rating") },
+                        { "visibleReviewers", new BsonDocument("$sum", new BsonDocument("$cond", new BsonArray { "$isVisible", 1, 0 })) }
+                    })
+                }
+            },
+            {
+                "ratings",
+                new BsonArray
+                {
+                    new BsonDocument("$match", renderedFilter),
+                    new BsonDocument("$group", new BsonDocument
+                    {
+                        { "_id", "$rating" },
+                        { "count", new BsonDocument("$sum", 1) }
+                    })
+                }
+            },
+            {
+                "topics",
+                new BsonArray
+                {
+                    new BsonDocument("$match", renderedFilter),
+                    new BsonDocument("$group", new BsonDocument
+                    {
+                        { "_id", "$topic" },
+                        { "count", new BsonDocument("$sum", 1) }
+                    })
+                }
+            }
+        });
+        var result = await _collection.Aggregate()
+            .AppendStage(new BsonDocumentPipelineStageDefinition<Feedback, BsonDocument>(facet, BsonDocumentSerializer.Instance))
+            .FirstOrDefaultAsync(cancellationToken);
 
-        await Task.WhenAll(totalReviewersTask, filteredFeedbacksTask);
+        var totalReviewers = GetFacetCount(result, "totalReviewers");
+        var summary = GetFacetDocuments(result, "summary").FirstOrDefault();
+        var ratings = GetFacetDocuments(result, "ratings")
+            .ToDictionary(x => x["_id"].ToInt32(), x => x["count"].ToInt32());
+        var topics = GetFacetDocuments(result, "topics")
+            .ToDictionary(x => (FeedbackTopic)x["_id"].ToInt32(), x => x["count"].ToInt32());
 
-        var feedbacks = filteredFeedbacksTask.Result;
-        var averageRating = feedbacks.Count == 0
+        var averageRating = summary is null
             ? 0
-            : Math.Round(feedbacks.Average(x => x.Rating), 2);
-
+            : Math.Round(summary["averageRating"].ToDouble(), 2);
+        var visibleReviewers = summary is null ? 0 : summary["visibleReviewers"].ToInt32();
         var ratingDistribution = Enumerable.Range(1, 5)
-            .Select(rating => new RatingDistributionDto(rating, feedbacks.Count(x => x.Rating == rating)))
+            .Select(rating => new RatingDistributionDto(rating, ratings.GetValueOrDefault(rating)))
             .ToList();
         var topicDistribution = Enum.GetValues<FeedbackTopic>()
-            .Select(topic => new TopicDistributionDto(topic, feedbacks.Count(x => x.Topic == topic)))
+            .Select(topic => new TopicDistributionDto(topic, topics.GetValueOrDefault(topic)))
             .ToList();
 
         return new FeedbackSummaryDto(
-            checked((int)totalReviewersTask.Result),
+            totalReviewers,
             averageRating,
-            feedbacks.Count(x => x.IsVisible),
+            visibleReviewers,
             ratingDistribution,
             topicDistribution);
     }
@@ -153,5 +202,17 @@ public class FeedbackRepository : IFeedbackRepository
         return parts.Count == 0
             ? Builders<Feedback>.Filter.Empty
             : Builders<Feedback>.Filter.And(parts);
+    }
+
+    private static int GetFacetCount(BsonDocument? result, string name)
+    {
+        return GetFacetDocuments(result, name).FirstOrDefault()?["count"].ToInt32() ?? 0;
+    }
+
+    private static IReadOnlyList<BsonDocument> GetFacetDocuments(BsonDocument? result, string name)
+    {
+        return result is not null && result.TryGetValue(name, out var value)
+            ? value.AsBsonArray.Select(x => x.AsBsonDocument).ToList()
+            : [];
     }
 }

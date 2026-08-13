@@ -80,12 +80,13 @@ public class SepayService : ISepayService
 
     public bool IsValidIpnSecret(string? providedSecret)
     {
-        var secretKey = GetSecretKey();
-        return !string.IsNullOrWhiteSpace(secretKey)
+        var webhookSecret = _settings.WebhookApiKey;
+
+        return !string.IsNullOrWhiteSpace(webhookSecret)
             && !string.IsNullOrWhiteSpace(providedSecret)
             && CryptographicOperations.FixedTimeEquals(
                 Encoding.UTF8.GetBytes(providedSecret),
-                Encoding.UTF8.GetBytes(secretKey));
+                Encoding.UTF8.GetBytes(webhookSecret));
     }
 
     public static string CreateTopUpInvoiceNumber(Guid paymentId)
@@ -150,5 +151,16 @@ public class SepayService : ISepayService
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey));
         var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(signedString));
         return Convert.ToBase64String(hashBytes);
+    }
+
+    public bool IsValidIpnApiKey(string? providedApiKey)
+    {
+        var apiKey = _settings.WebhookApiKey;
+
+        return !string.IsNullOrWhiteSpace(apiKey)
+            && !string.IsNullOrWhiteSpace(providedApiKey)
+            && CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(providedApiKey),
+                Encoding.UTF8.GetBytes(apiKey));
     }
 }

@@ -6,4 +6,5 @@ public interface ISepayService
 {
     SepayCheckoutData CreateTopUpCheckout(Guid paymentId, Guid userId, decimal amount, string? paymentMethod = null);
     bool IsValidIpnSecret(string? providedSecret);
+    bool IsValidIpnApiKey(string? providedApiKey);
 }

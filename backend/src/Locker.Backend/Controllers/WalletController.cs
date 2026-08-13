@@ -150,21 +150,64 @@ public class WalletController : ControllerBase
 
     [HttpPost("top-up/sepay/ipn")]
     [AllowAnonymous]
-    public async Task<IActionResult> SepayIpn([FromBody] SepayIpnRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> SepayIpn(
+    [FromBody] SepayIpnRequest request,
+    CancellationToken cancellationToken)
     {
-        var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
-        if (!_sepayService.IsValidIpnSecret(providedSecret))
+        var authorization = Request.Headers["Authorization"].FirstOrDefault();
+
+        if (string.IsNullOrWhiteSpace(authorization))
         {
-            return Unauthorized(new { success = false, message = "Invalid SePay IPN secret" });
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Missing Authorization header"
+            });
         }
 
-        var result = await _sender.Send(new SepayProcessIpnCommand(request), cancellationToken);
+        const string prefix = "Apikey ";
+
+        if (!authorization.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Invalid Authorization scheme"
+            });
+        }
+
+        var providedApiKey = authorization[prefix.Length..].Trim();
+
+        if (!_sepayService.IsValidIpnApiKey(providedApiKey))
+        {
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Invalid SePay API key"
+            });
+        }
+
+        var result = await _sender.Send(
+            new SepayProcessIpnCommand(request),
+            cancellationToken
+        );
+
         if (!result.Success)
         {
-            return BadRequest(new { success = false, message = result.Message, paymentId = result.PaymentId });
+            return BadRequest(new
+            {
+                success = false,
+                message = result.Message,
+                paymentId = result.PaymentId
+            });
         }
 
-        return Ok(new { success = true, message = result.Message, paymentId = result.PaymentId });
+        return Ok(new
+        {
+            success = true,
+            message = result.Message,
+            paymentId = result.PaymentId
+        });
     }
 
     private string GetClientIpAddress()

@@ -13,6 +13,8 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
     private readonly SepaySettings _sepaySettings;
     private readonly IPaymentRepository _paymentRepository;
 
+    
+
     public SepayInitTopUpCommandHandler(
         ISepayService sepayService,
         IOptions<SepaySettings> sepaySettings,

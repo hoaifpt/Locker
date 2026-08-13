@@ -36,11 +36,10 @@ Persistence happens before publication. If publication fails after persistence s
 The backend exposes an authenticated hub at `/hubs/notifications`.
 
 - Every authenticated connection joins `user:{userId}`.
-- Connections whose JWT contains the `Admin` role also join `admins`.
 - The hub derives identity and role only from validated JWT claims; clients cannot choose arbitrary groups.
 - The JWT bearer configuration accepts `access_token` from the query string only for the notification hub path, as required for browser WebSocket/SSE connections.
 
-User notifications are published to `user:{userId}`. Feedback notifications are stored once for each current Admin account and published to the `admins` group. Each Admin therefore has an independent read state in MongoDB.
+User notifications are published to `user:{userId}`. Feedback notifications are stored once for each current Admin account, and each persisted DTO is published to that Admin's `user:{adminId}` group. Each Admin therefore receives the correct notification ID and has an independent read state in MongoDB.
 
 ## Backend Integration
 

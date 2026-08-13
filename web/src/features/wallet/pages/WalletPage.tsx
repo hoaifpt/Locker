@@ -36,7 +36,7 @@ export default function WalletPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/wallet/top-up/sepay/init`, {
+      const response = await fetch(`https://api.hoaitran.online/api/wallet/top-up/sepay/init`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ amount: Number(topupAmount) }),

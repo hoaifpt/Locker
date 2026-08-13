@@ -6,19 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="bd37f4d5-a7d5-4d00-822a-d2f4f5e36c67" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Wallet/Commands/SepayInitTopUp/SepayInitTopUpCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Wallet/Commands/SepayInitTopUp/SepayInitTopUpCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Wallet/Commands/SepayInitTopUp/SepayInitTopUpResponse.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Wallet/Commands/SepayInitTopUp/SepayInitTopUpResponse.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Wallet/Commands/SepayProcessReturn/SepayProcessReturnCommand.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Features/Wallet/Commands/SepayProcessReturn/SepayProcessReturnCommand.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/ISepayService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Interfaces/ISepayService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/SepaySettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Application/Models/SepaySettings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/DependencyInjection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/DependencyInjection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Services/SepayService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/Locker.Backend.Infrastructure/Services/SepayService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/core/constants/api_endpoints.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/core/constants/api_endpoints.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mobile/lib/features/wallet/data/wallet_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/wallet/data/wallet_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/wallet/domain/repositories/i_wallet_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/wallet/domain/repositories/i_wallet_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/wallet/presentation/controllers/wallet_cubit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/wallet/presentation/controllers/wallet_cubit.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mobile/lib/features/wallet/presentation/pages/top_up_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/lib/features/wallet/presentation/pages/top_up_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/features/wallet/pages/WalletPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/features/wallet/pages/WalletPage.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

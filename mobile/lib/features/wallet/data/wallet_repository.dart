@@ -12,14 +12,12 @@ import 'models/wallet_transaction_model.dart';
 class WalletRepository implements IWalletRepository {
   final ApiClient _apiClient = ApiClient();
 
-  // Helper để nối chuỗi URL chuẩn: baseUrl + endpoint (VD: .../api + /wallet/...)
   String _url(String endpoint) => '${AppConstants.apiBaseUrl}$endpoint';
 
   @override
   Future<WalletOverview> getWalletOverview() async {
     try {
       final response = await _apiClient.client.get(_url(ApiEndpoints.walletOverview));
-
       if (response.statusCode == 200) {
         return WalletOverviewModel.fromJson(response.data);
       }
@@ -35,12 +33,9 @@ class WalletRepository implements IWalletRepository {
   Future<List<WalletTransaction>> getTransactions() async {
     try {
       final response = await _apiClient.client.get(_url(ApiEndpoints.walletTransactions));
-
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
-        return data
-            .map((json) => WalletTransactionModel.fromJson(json))
-            .toList();
+        return data.map((json) => WalletTransactionModel.fromJson(json)).toList();
       }
       throw NetworkException('Failed to load transactions');
     } on DioException catch (e) {
@@ -55,7 +50,6 @@ class WalletRepository implements IWalletRepository {
     try {
       final response = await _apiClient.client.get(_url(ApiEndpoints.walletBalance));
       if (response.statusCode == 200) {
-        // API trả về { "balance": 500000 }
         return (response.data['balance'] as num).toDouble();
       }
       throw NetworkException('Failed to get balance');
@@ -67,10 +61,7 @@ class WalletRepository implements IWalletRepository {
   @override
   Future<void> topUp(double amount) async {
     try {
-      await _apiClient.client.post(
-        _url(ApiEndpoints.walletTopUp),
-        data: {'amount': amount}
-      );
+      await _apiClient.client.post(_url(ApiEndpoints.walletTopUp), data: {'amount': amount});
     } catch (e) {
       throw AppException('Top-up failed: $e');
     }
@@ -80,7 +71,7 @@ class WalletRepository implements IWalletRepository {
   Future<void> transfer(String receiverId, double amount) async {
     try {
       await _apiClient.client.post(
-        _url(ApiEndpoints.walletTransfer),
+        _url(AppConstants.apiBaseUrl + ApiEndpoints.walletTransfer),
         data: {'receiverId': receiverId, 'amount': amount},
       );
     } catch (e) {
@@ -91,17 +82,25 @@ class WalletRepository implements IWalletRepository {
   @override
   Future<String> initSePayTopUp(double amount) async {
     try {
-      // Sửa lỗi 404: Dùng URL đầy đủ bao gồm cả /api
       final response = await _apiClient.client.post(
         _url(ApiEndpoints.walletTopUpSePayInit),
         data: {'amount': amount},
       );
-      if (response.statusCode == 200) {
-        return response.data['sePayUrl'];
+
+      if (response.statusCode == 200 && response.data != null) {
+        // Backend trả về trường 'checkoutUrl' hoặc 'paymentUrl'
+        final String? url = response.data['checkoutUrl'] ?? response.data['paymentUrl'];
+
+        if (url != null && url.isNotEmpty) {
+          return url;
+        }
+        throw AppException('Hệ thống chưa tạo được liên kết thanh toán. Vui lòng thử lại.');
       }
-      throw NetworkException('SePay initialization failed');
+      throw NetworkException('Lỗi kết nối thanh toán (Mã: ${response.statusCode})');
+    } on DioException catch (e) {
+      throw AppException('Lỗi mạng: ${e.message}');
     } catch (e) {
-      throw AppException('SePay error: $e');
+      throw AppException('Không thể bắt đầu thanh toán: $e');
     }
   }
 }

@@ -43,7 +43,15 @@ public sealed class ExportFeedbackQueryHandler
         var feedbacks = await _repository.GetForExportAsync(filter, cancellationToken);
         var csv = new StringBuilder();
 
-        csv.AppendLine("Username,Rating,Topic,Content,PageUrl,IsVisible,CreatedAtUtc,UpdatedAtUtc");
+        csv.AppendLine(string.Join(',',
+            CsvCell("Username"),
+            CsvCell("Rating"),
+            CsvCell("Topic"),
+            CsvCell("Content"),
+            CsvCell("PageUrl"),
+            CsvCell("IsVisible"),
+            CsvCell("CreatedAtUtc"),
+            CsvCell("UpdatedAtUtc")));
         foreach (var feedback in feedbacks)
         {
             csv.AppendJoin(',',

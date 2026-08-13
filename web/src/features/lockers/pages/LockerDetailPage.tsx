@@ -1,11 +1,30 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Package, ChevronRight, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { MapPin, Package, ChevronRight, ArrowLeft, AlertCircle } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import MapView from '../../../components/ui/MapView';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { getLockerById, SeedLocker as Locker } from '../../../mocks/seed';
+import { apiFetch } from '../../../lib/api';
+import { useToast } from '../../../context/ToastContext';
+
+type LockerSlot = {
+  index: number;
+  status: number; // 0: Available, 1: Used, 2: Maintenance/Other
+  size: string;
+  sensorState: string;
+};
+
+type Locker = {
+  id: string;
+  name: string;
+  location: string;
+  latitude: number;
+  longitude: number;
+  slots: LockerSlot[];
+};
+
+const SLOT_STATUS_MAP: Record<number, keyof typeof STATUS_STYLE> = { 0: 'Available', 1: 'Active', 2: 'Pending' };
 
 const STATUS_STYLE: Record<string, { label: string; cls: string; dotCls: string }> = {
   Available: { label: 'Trống', cls: 'border-green-300 bg-green-50', dotCls: 'bg-green-400' },
@@ -17,17 +36,31 @@ const STATUS_STYLE: Record<string, { label: string; cls: string; dotCls: string 
 export default function LockerDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { show: showToast } = useToast();
   const [locker, setLocker] = useState<Locker | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Seed data — swap for GET /api/lockers/:id when backend is ready
-    setTimeout(() => {
-      const found = getLockerById(id ?? '') ?? null;
-      setLocker(found);
-      setLoading(false);
-    }, 300);
-  }, [id]);
+    if (!id) { setLoading(false); return; }
+
+    const fetchLocker = async () => {
+      setLoading(true);
+      try {
+        const response = await apiFetch(`/lockers/${id}`);
+        if (!response.ok) {
+          throw new Error('Không thể tải thông tin tủ khóa.');
+        }
+        const data = await response.json() as Locker;
+        setLocker(data);
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+        navigate('/lockers', { replace: true });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLocker();
+  }, [id, navigate, showToast]);
 
   const handleBook = () => {
     navigate(`/orders/new?lockerId=${id}`);
@@ -42,7 +75,12 @@ export default function LockerDetailPage() {
     </div>
   );
 
-  if (!locker) return null;
+  if (!locker) return (
+    <div className="min-h-screen bg-[#F9F8F6]">
+      <AppHeader />
+      <div className="py-20 text-center text-gray-400"><AlertCircle className="mx-auto mb-2" />Không tìm thấy tủ khóa.</div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased">
@@ -76,19 +114,19 @@ export default function LockerDetailPage() {
             <p className="mb-4 text-xs text-gray-400">Chỉ các ô trống mới có thể đặt.</p>
             <div className="grid grid-cols-4 gap-2">
               {locker.slots.map((slot) => {
-                const style = STATUS_STYLE[slot.status] ?? STATUS_STYLE['Active'];
-                const isAvailable = slot.status === 'Available';
+                const statusString = SLOT_STATUS_MAP[slot.status] ?? 'Active';
+                const style = STATUS_STYLE[statusString];
+                const isAvailable = slot.status === 0;
                 return (
                   <div
                     key={slot.index}
-                    className={`relative flex flex-col items-center rounded-xl border-2 p-2.5 text-xs font-semibold transition ${
-                          isAvailable
-                          ? 'border-green-300 bg-green-50 text-green-700'
-                          : 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed'
+                    className={`relative flex flex-col items-center rounded-xl border-2 p-2.5 text-xs font-semibold transition ${isAvailable
+                        ? 'border-green-300 bg-green-50 text-green-700'
+                        : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
                       }`}
                   >
                     <span className={`mb-1 h-2 w-2 rounded-full ${style.dotCls}`} />
-                    Ô {slot.index + 1}
+                    Ô {slot.index}
                   </div>
                 );
               })}

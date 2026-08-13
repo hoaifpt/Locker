@@ -52,7 +52,15 @@ export default function ProfilePage() {
             window.location.href = '/login'; // Chuyển hướng về trang đăng nhập
             return;
           }
-          throw new Error('Không thể tải thông tin người dùng.');
+          // Cố gắng đọc lỗi từ body của response để cung cấp thông tin chi tiết hơn
+          let errorMessage = 'Không thể tải thông tin người dùng.';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (e) {
+            // Bỏ qua nếu body không phải JSON, giữ lại lỗi chung
+          }
+          throw new Error(errorMessage);
         }
         const userData = (await response.json()) as UserProfile;
         setUser(userData);
@@ -162,8 +170,8 @@ export default function ProfilePage() {
               key={t}
               onClick={() => setTab(t)}
               className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${tab === t
-                  ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
-                  : 'border border-gray-200 bg-white text-gray-600 hover:border-orange-300 hover:text-orange-500'
+                ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
+                : 'border border-gray-200 bg-white text-gray-600 hover:border-orange-300 hover:text-orange-500'
                 }`}
             >
               {t === 'profile' ? 'Thông tin cá nhân' : 'Đổi mật khẩu'}

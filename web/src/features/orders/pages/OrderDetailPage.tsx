@@ -4,8 +4,34 @@ import { Package, MapPin, ArrowLeft, KeyRound, CheckCircle, XCircle, Clock, Cred
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { getOrderById, getLockerById, getPackageById, SeedOrder } from '../../../mocks/seed';
+import { apiFetch } from '../../../lib/api';
 import { useToast } from '../../../context/ToastContext';
+
+type Order = {
+  id: string;
+  lockerId: string;
+  slotIndex: number;
+  packageId: string;
+  status: number;
+  checkInTime: string;
+  checkOutTime: string;
+  durationHours: number;
+  baseRate: number;
+  subtotal: number;
+  taxes: number;
+  discount: number;
+  totalAmount: number;
+  mobileNumber: string;
+  cancellationReason: string | null;
+  notes: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  pin?: string;
+};
+
+type Locker = { id: string; name: string; location: string; slots: { index: number; size: string; status: string }[] };
+type Pkg = { id: string; name: string; pricePerHour: number };
 
 const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
   Initiated: { label: 'Chờ thanh toán', cls: 'bg-yellow-100 text-yellow-700' },
@@ -16,11 +42,28 @@ const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
   Cancelled: { label: 'Đã hủy', cls: 'bg-red-100 text-red-500' },
 };
 
+const STATUS_ENUM_MAP: Record<number, string> = {
+  0: 'Initiated',
+  1: 'Reserved',
+  2: 'Paid',
+  3: 'Active',
+  4: 'Completed',
+  5: 'Cancelled',
+};
+
+const STATUS_STRING_TO_ENUM: Record<string, number> = {
+  'Active': 3,
+  'Completed': 4,
+  'Cancelled': 5,
+};
+
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { show: showToast } = useToast();
-  const [order, setOrder] = useState<SeedOrder | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [locker, setLocker] = useState<Locker | null>(null);
+  const [pkg, setPackage] = useState<Pkg | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [pin, setPin] = useState(['', '', '', '', '', '']);
@@ -28,8 +71,39 @@ export default function OrderDetailPage() {
   const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    setTimeout(() => { setOrder(getOrderById(id ?? '') ?? null); setLoading(false); }, 300);
-  }, [id]);
+    if (!id) { setLoading(false); return; }
+
+    const fetchDetails = async () => {
+      setLoading(true);
+      try {
+        const orderRes = await apiFetch(`/orders/${id}`);
+        if (!orderRes.ok) {
+          if (orderRes.status === 401) { showToast('Phiên đăng nhập đã hết hạn.', 'error'); navigate('/login', { replace: true }); return; }
+          throw new Error('Không thể tải thông tin đơn hàng.');
+        }
+        const orderData = await orderRes.json() as Order;
+
+        const [lockerRes, packageRes] = await Promise.all([
+          apiFetch(`/lockers/${orderData.lockerId}`),
+          apiFetch(`/packages/${orderData.packageId}`),
+        ]);
+
+        if (!lockerRes.ok) throw new Error('Không thể tải thông tin tủ khóa.');
+        if (!packageRes.ok) throw new Error('Không thể tải thông tin gói dịch vụ.');
+
+        setOrder(orderData);
+        setLocker(await lockerRes.json() as Locker);
+        setPackage(await packageRes.json() as Pkg);
+
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+        navigate('/orders', { replace: true });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetails();
+  }, [id, navigate, showToast]);
 
   const handlePinChange = (i: number, val: string) => {
     if (!/^\d*$/.test(val)) return;
@@ -49,23 +123,22 @@ export default function OrderDetailPage() {
       return;
     }
     if (action === 'set-pin') {
-      setOrder(o => o ? { ...o, status: 'Active', pin: pin.join(''), startedAt: new Date().toISOString() } : o);
+      setOrder(o => o ? { ...o, status: STATUS_STRING_TO_ENUM['Active'], pin: pin.join(''), startedAt: new Date().toISOString() } : o);
       showToast('✓ Mã PIN đã được thiết lập. Tủ khóa đã kích hoạt!', 'success');
     }
     if (action === 'activate') {
-      setOrder(o => o ? { ...o, status: 'Active', startedAt: new Date().toISOString() } : o);
+      setOrder(o => o ? { ...o, status: STATUS_STRING_TO_ENUM['Active'], startedAt: new Date().toISOString() } : o);
       showToast('✓ Đơn hàng đã được kích hoạt!', 'success');
     }
     if (action === 'complete') {
-      setOrder(o => o ? { ...o, status: 'Completed', completedAt: new Date().toISOString() } : o);
+      setOrder(o => o ? { ...o, status: STATUS_STRING_TO_ENUM['Completed'], completedAt: new Date().toISOString() } : o);
       showToast('✓ Đơn hàng hoàn thành!', 'success');
     }
     if (action === 'cancel') {
-      setOrder(o => o ? { ...o, status: 'Cancelled', cancelledAt: new Date().toISOString(), cancellationReason: 'Người dùng hủy' } : o);
+      setOrder(o => o ? { ...o, status: STATUS_STRING_TO_ENUM['Cancelled'], cancelledAt: new Date().toISOString(), cancellationReason: 'Người dùng hủy' } : o);
       showToast('✓ Đơn hàng đã bị hủy', 'success');
     }
     if (action === 'extend') {
-      const pkg = order ? getPackageById(order.packageId) : null;
       const addAmount = (pkg?.pricePerHour ?? 0) * extendHours;
       setOrder(o => o ? {
         ...o,
@@ -80,11 +153,10 @@ export default function OrderDetailPage() {
   };
 
   if (loading) return <div className="min-h-screen bg-[#F9F8F6]"><AppHeader /><div className="flex h-96 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" /></div></div>;
-  if (!order) return <div className="min-h-screen bg-[#F9F8F6]"><AppHeader /><div className="py-20 text-center text-gray-400">Không tìm thấy đơn hàng</div></div>;
+  if (!order || !locker || !pkg) return <div className="min-h-screen bg-[#F9F8F6]"><AppHeader /><div className="py-20 text-center text-gray-400">Không tìm thấy đơn hàng</div></div>;
 
-  const locker = getLockerById(order.lockerId);
-  const pkg = getPackageById(order.packageId);
-  const st = STATUS_STYLE[order.status];
+  const statusString = STATUS_ENUM_MAP[order.status] ?? 'Initiated';
+  const st = STATUS_STYLE[statusString];
 
   return (
     <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased">
@@ -132,7 +204,7 @@ export default function OrderDetailPage() {
         </motion.div>
 
         {/* Step 1: Initiated — Pay */}
-        {order.status === 'Initiated' && (
+        {statusString === 'Initiated' && (
           <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="mb-4 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 className="mb-1 flex items-center gap-2 font-bold text-gray-900"><CreditCard size={16} className="text-orange-500" /> Thanh toán đơn hàng</h2>
             <p className="mb-4 text-xs text-gray-400">Vui lòng thanh toán để giữ chỗ tủ khóa.</p>
@@ -144,7 +216,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Step 2: Paid — Set PIN */}
-        {order.status === 'Paid' && (
+        {statusString === 'Paid' && (
           <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="mb-4 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 className="mb-1 flex items-center gap-2 font-bold text-gray-900"><KeyRound size={16} className="text-orange-500" /> Thiết lập mã PIN</h2>
             <p className="mb-4 text-xs text-gray-400">Nhập mã PIN 6 chữ số để mở khóa tủ.</p>
@@ -163,7 +235,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Step 3: Active — QR/PIN + Complete + Extend */}
-        {order.status === 'Active' && (
+        {statusString === 'Active' && (
           <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="mb-4 space-y-4">
             {/* Unlock QR/PIN */}
             <div className="rounded-3xl border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-6 shadow-sm">
@@ -207,7 +279,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Cancel button */}
-        {(order.status === 'Initiated' || order.status === 'Paid' || order.status === 'Active') && (
+        {(statusString === 'Initiated' || statusString === 'Paid' || statusString === 'Active') && (
           <motion.div initial={hidden} animate={visible} transition={trans(0.2)}>
             <button onClick={() => doAction('cancel')} disabled={actionLoading === 'cancel'}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3 text-sm font-semibold text-red-500 transition hover:bg-red-50 disabled:opacity-60">
@@ -217,7 +289,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Cancellation reason */}
-        {order.status === 'Cancelled' && order.cancellationReason && (
+        {statusString === 'Cancelled' && order.cancellationReason && (
           <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
             <p className="font-semibold">Lý do hủy:</p>
             <p>{order.cancellationReason}</p>

@@ -5,7 +5,19 @@ import { Link } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { apiFetch } from '../../../lib/api';
-import { getMockUserDashboard, getMockShipperDashboard, SEED_USERS, SEED_ORDERS, SEED_BOOKINGS, SEED_PAYMENTS } from '../../../mocks/seed';
+import { useToast } from '../../../context/ToastContext';
+import { getMockUserDashboard, getMockShipperDashboard, SEED_ORDERS, SEED_BOOKINGS, SEED_PAYMENTS } from '../../../mocks/seed';
+
+type AdminUser = {
+  id: string;
+  username: string;
+  email: string;
+  fullName: string | null;
+  phoneNumber: string | null;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+};
 
 export default function DashboardPage() {
   const role = localStorage.getItem('role') ?? 'User';
@@ -233,11 +245,40 @@ function ShipperDashboard({ userId }: { userId: string }) {
 
 /* ─── ADMIN DASHBOARD ───────────────────────────────────── */
 function AdminDashboard() {
-  const totalUsers = SEED_USERS.length;
-  const totalOrders = SEED_ORDERS.length;
-  const totalBookings = SEED_BOOKINGS.length;
-  const totalPayments = SEED_PAYMENTS.length;
-  const totalRevenue = SEED_PAYMENTS.filter(p => p.status === 'Completed').reduce((sum, p) => sum + p.amount, 0);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { show: showToast } = useToast();
+
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      setLoading(true);
+      try {
+        const usersRes = await apiFetch('/admin/users');
+        if (!usersRes.ok) {
+          throw new Error('Không thể tải dữ liệu người dùng.');
+        }
+        const usersData = await usersRes.json() as AdminUser[];
+        setUsers(usersData);
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAdminData();
+  }, [showToast]);
+
+  // Mock data for other stats until their APIs are provided
+  const otherStats = {
+    totalOrders: SEED_ORDERS.length,
+    totalBookings: SEED_BOOKINGS.length,
+    totalPayments: SEED_PAYMENTS.length,
+    totalRevenue: SEED_PAYMENTS.filter(p => p.status === 'Completed').reduce((sum, p) => sum + p.amount, 0),
+  };
+
+  const recentUsers = [...users]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 8);
 
   return (
     <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased">
@@ -252,17 +293,21 @@ function AdminDashboard() {
 
         <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
           {[
-            { label: 'Tổng Users', value: totalUsers, icon: Users, color: 'bg-blue-500' },
-            { label: 'Đơn hàng', value: totalOrders, icon: Package, color: 'bg-orange-500' },
-            { label: 'Bookings', value: totalBookings, icon: Clock, color: 'bg-green-500' },
-            { label: 'Payments', value: totalPayments, icon: CreditCard, color: 'bg-purple-500' },
-            { label: 'Doanh thu', value: `${(totalRevenue / 1000).toFixed(0)}K`, icon: TrendingUp, color: 'bg-emerald-500' },
+            { label: 'Tổng Users', value: users.length, icon: Users, color: 'bg-blue-500' },
+            { label: 'Đơn hàng', value: otherStats.totalOrders, icon: Package, color: 'bg-orange-500' },
+            { label: 'Bookings', value: otherStats.totalBookings, icon: Clock, color: 'bg-green-500' },
+            { label: 'Payments', value: otherStats.totalPayments, icon: CreditCard, color: 'bg-purple-500' },
+            { label: 'Doanh thu', value: `${(otherStats.totalRevenue / 1000).toFixed(0)}K`, icon: TrendingUp, color: 'bg-emerald-500' },
           ].map((s) => (
             <div key={s.label} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${s.color}`}>
                 <s.icon size={16} className="text-white" />
               </div>
-              <p className="text-2xl font-extrabold text-gray-900">{s.value}</p>
+              {loading && s.label === 'Tổng Users' ? (
+                <div className="h-7 w-12 animate-pulse rounded-md bg-gray-200" />
+              ) : (
+                <p className="text-2xl font-extrabold text-gray-900">{s.value}</p>
+              )}
               <p className="text-xs text-gray-400">{s.label}</p>
             </div>
           ))}
@@ -282,14 +327,25 @@ function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {SEED_USERS.slice(0, 8).map(u => (
-                  <tr key={u.id} className="border-b border-gray-50 transition hover:bg-orange-50/30">
-                    <td className="px-4 py-3 font-medium text-gray-900">{u.fullName}</td>
-                    <td className="px-4 py-3 text-gray-500">{u.email}</td>
-                    <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === 'Admin' ? 'bg-purple-100 text-purple-600' : u.role === 'Shipper' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>{u.role}</span></td>
-                    <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.isActive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'}`}>{u.isActive ? 'Active' : 'Inactive'}</span></td>
-                  </tr>
-                ))}
+                {loading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="border-b border-gray-50">
+                      <td className="px-4 py-3"><div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" /></td>
+                      <td className="px-4 py-3"><div className="h-4 w-full animate-pulse rounded bg-gray-200" /></td>
+                      <td className="px-4 py-3"><div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" /></td>
+                      <td className="px-4 py-3"><div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" /></td>
+                    </tr>
+                  ))
+                ) : (
+                  recentUsers.map(u => (
+                    <tr key={u.id} className="border-b border-gray-50 transition hover:bg-orange-50/30">
+                      <td className="px-4 py-3 font-medium text-gray-900">{u.fullName ?? u.username}</td>
+                      <td className="px-4 py-3 text-gray-500">{u.email}</td>
+                      <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === 'Admin' ? 'bg-purple-100 text-purple-600' : u.role === 'Shipper' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>{u.role}</span></td>
+                      <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.isActive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'}`}>{u.isActive ? 'Active' : 'Inactive'}</span></td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

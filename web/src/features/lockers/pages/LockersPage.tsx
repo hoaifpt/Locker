@@ -1,27 +1,63 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Package, ChevronRight, Search } from 'lucide-react';
+import { MapPin, Package, ChevronRight, Search, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { getAvailableLockers, SeedLocker as Locker } from '../../../mocks/seed';
+import { apiFetch } from '../../../lib/api';
+import { useToast } from '../../../context/ToastContext';
+
+type LockerSlot = {
+  index: number;
+  status: number; // 0: Available, 1: Used, 2: Maintenance/Other
+  size: string;
+  sensorState: string;
+};
+
+type Locker = {
+  id: string;
+  name: string;
+  location: string;
+  latitude: number;
+  longitude: number;
+  slots: LockerSlot[];
+};
 
 const statusColor: Record<string, string> = {
   Available: 'bg-green-400',
   Active: 'bg-orange-400',
   Pending: 'bg-yellow-400',
-  Complete: 'bg-gray-300',
+  Other: 'bg-gray-300',
+};
+
+const SLOT_STATUS_MAP: Record<number, string> = {
+  0: 'Available',
+  1: 'Active',
+  2: 'Pending',
 };
 
 export default function LockersPage() {
   const [lockers, setLockers] = useState<Locker[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const { show: showToast } = useToast();
 
   useEffect(() => {
-    // Seed data — swap for GET /api/lockers/available when backend is ready
-    setTimeout(() => { setLockers(getAvailableLockers()); setLoading(false); }, 300);
-  }, []);
+    const fetchLockers = async () => {
+      setLoading(true);
+      try {
+        const response = await apiFetch('/lockers');
+        if (!response.ok) throw new Error('Không thể tải danh sách tủ khóa.');
+        const data = (await response.json()) as Locker[];
+        setLockers(data);
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Lỗi không xác định', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLockers();
+  }, [showToast]);
 
   const filtered = lockers.filter(
     (l) =>
@@ -29,7 +65,7 @@ export default function LockersPage() {
       l.location.toLowerCase().includes(search.toLowerCase())
   );
 
-  const availableCount = (l: Locker) => l.slots.filter((s) => s.status === 'Available').length;
+  const availableCount = (l: Locker) => l.slots.filter((s) => s.status === 0).length;
 
   return (
     <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased">
@@ -70,6 +106,12 @@ export default function LockersPage() {
               <div key={i} className="h-52 animate-pulse rounded-3xl bg-gray-200" />
             ))}
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-3xl border bg-white py-16 text-center shadow-sm">
+            <AlertCircle size={48} className="mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-bold text-gray-900">Không tìm thấy tủ khóa</h3>
+            <p className="mt-1 text-sm text-gray-500">Vui lòng thử lại với từ khóa khác.</p>
+          </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((locker, i) => (
@@ -102,13 +144,16 @@ export default function LockersPage() {
 
                   {/* Slot visual */}
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {locker.slots.map((slot) => (
-                      <span
-                        key={slot.index}
-                        title={`Ô ${slot.index + 1}: ${slot.status}`}
-                        className={`h-4 w-4 rounded-sm ${statusColor[slot.status] ?? 'bg-gray-200'}`}
-                      />
-                    ))}
+                    {locker.slots.map((slot) => {
+                      const statusString = SLOT_STATUS_MAP[slot.status] ?? 'Other';
+                      return (
+                        <span
+                          key={slot.index}
+                          title={`Ô ${slot.index}: ${statusString}`}
+                          className={`h-4 w-4 rounded-sm ${statusColor[statusString] ?? 'bg-gray-200'}`}
+                        />
+                      );
+                    })}
                   </div>
 
                   <div className="mt-4 flex items-center gap-1 text-xs font-medium text-orange-500 opacity-0 transition group-hover:opacity-100">
@@ -122,9 +167,10 @@ export default function LockersPage() {
 
         {/* Legend */}
         <div className="mt-8 flex flex-wrap items-center gap-4 text-xs text-gray-500">
-          {Object.entries(statusColor).map(([label, cls]) => (
+          {Object.entries(SLOT_STATUS_MAP).map(([, label]) => (
             <span key={label} className="flex items-center gap-1.5">
-              <span className={`h-3 w-3 rounded-sm ${cls}`} /> {label}
+              <span className={`h-3 w-3 rounded-sm ${statusColor[label]}`} />
+              {label === 'Available' ? 'Trống' : label === 'Active' ? 'Đang dùng' : 'Khác'}
             </span>
           ))}
         </div>

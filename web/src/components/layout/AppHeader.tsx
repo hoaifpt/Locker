@@ -32,6 +32,7 @@ export default function AppHeader() {
       return [
         { to: '/dashboard', label: 'Bảng điều khiển' },
         { to: '/lockers', label: 'Quản lý tủ khóa' },
+        { to: '/admin/feedbacks', label: 'Feedback' },
       ];
     }
     return [

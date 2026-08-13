@@ -21,6 +21,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, (AuthResp
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ILogger<RegisterCommandHandler> _logger;
     private readonly string _baseUrl;
+    private readonly string _frontendUrl;
 
     public RegisterCommandHandler(
         IIdentityService identityService,
@@ -35,6 +36,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, (AuthResp
         _jwtTokenService = jwtTokenService;
         _refreshTokenRepository = refreshTokenRepository;
         _baseUrl = appSettings.Value.BaseUrl.TrimEnd('/');
+        _frontendUrl = appSettings.Value.FrontendUrl.TrimEnd('/');
         _logger = logger;
     }
 
@@ -80,7 +82,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, (AuthResp
         _logger.LogInformation("STEP 3: Role Added");
         try
         {
-            var verificationLink = $"{_baseUrl}/api/auth/verify-email?token={verificationToken}";
+            var verificationLink = $"{_frontendUrl}/verify-email/result?token={verificationToken}&email={Uri.EscapeDataString(user.Email)}";
             await _emailService.SendVerificationEmailAsync(user.Email, user.FullName ?? user.UserName, verificationLink, cancellationToken);
         }
         catch (Exception ex)

@@ -17,6 +17,7 @@ public class ResendVerificationEmailCommandHandler : IRequestHandler<ResendVerif
     private readonly IEmailService _emailService;
     private readonly ILogger<ResendVerificationEmailCommandHandler> _logger;
     private readonly string _baseUrl;
+    private readonly string _frontendUrl;
 
     public ResendVerificationEmailCommandHandler(
         IIdentityService identityService,
@@ -27,6 +28,7 @@ public class ResendVerificationEmailCommandHandler : IRequestHandler<ResendVerif
         _identityService = identityService;
         _emailService = emailService;
         _baseUrl = appSettings.Value.BaseUrl.TrimEnd('/');
+        _frontendUrl = appSettings.Value.FrontendUrl.TrimEnd('/');
         _logger = logger;
     }
 
@@ -42,7 +44,7 @@ public class ResendVerificationEmailCommandHandler : IRequestHandler<ResendVerif
 
         try
         {
-            var verificationLink = $"{_baseUrl}/api/auth/verify-email?token={user.EmailVerificationToken}";
+            var verificationLink = $"{_frontendUrl}/verify-email/result?token={user.EmailVerificationToken}&email={Uri.EscapeDataString(user.Email)}";
             await _emailService.SendVerificationEmailAsync(user.Email, user.FullName ?? user.UserName, verificationLink, cancellationToken);
         }
         catch (Exception ex)

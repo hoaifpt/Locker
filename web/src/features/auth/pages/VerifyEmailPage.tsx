@@ -3,20 +3,33 @@ import { motion } from 'framer-motion';
 import { Lock, Mail, RefreshCw, CheckCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { hidden, visible, trans } from '../../../lib/animations';
+import { api } from '../../../lib/api';
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email') ?? '';
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
     setResending(true);
-    // TODO: POST /api/auth/resend-verification { email }
-    await new Promise((r) => setTimeout(r, 1000));
-    setResending(false);
-    setResent(true);
+    setError(null);
+    
+    try {
+      const response = await api.post('/auth/resend-verification', { email: email || undefined });
+      if (response.ok) {
+        setResent(true);
+      } else {
+        const data = await response.json().catch(() => ({}));
+        setError(data.error || 'Không thể gửi lại email. Vui lòng thử lại.');
+      }
+    } catch {
+      setError('Không thể kết nối đến server. Vui lòng thử lại.');
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -79,6 +92,11 @@ export default function VerifyEmailPage() {
                   Không nhận được email? Nhập lại địa chỉ email và chúng tôi sẽ gửi lại.
                 </p>
                 <form onSubmit={handleResend} className="space-y-4">
+                  {error && (
+                    <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                      {error}
+                    </div>
+                  )}
                   <div className="relative">
                     <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
                       <Mail size={16} />

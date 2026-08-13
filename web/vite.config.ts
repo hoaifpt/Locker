@@ -11,6 +11,12 @@ export default defineConfig({
                 target: 'http://localhost:5000',
                 changeOrigin: true,
             },
+            // SignalR hub: phải proxy thủ công vì path không bắt đầu bằng '/api'
+            '/hubs': {
+                target: 'http://localhost:5000',
+                changeOrigin: true,
+                ws: true,
+            },
         },
     },
 });

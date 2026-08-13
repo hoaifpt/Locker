@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Lock, Menu, X, User, LogOut, ChevronDown, LayoutDashboard, Settings } from 'lucide-react';
+import { Lock, Menu, X, User, LogOut, ChevronDown, LayoutDashboard, MessageSquareText, Settings } from 'lucide-react';
 import NotificationsDropdown from '../../features/notifications/components/NotificationsDropdown';
+import { useFeedback } from '../../features/feedback/context/FeedbackContext';
 import ThemeToggle from '../ui/ThemeToggle';
 
 export default function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
+  const feedback = useFeedback();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -153,6 +155,22 @@ export default function AppHeader() {
               </Link>
             ))}
             <div className="my-2 border-t border-gray-100"></div>
+            {feedback && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  const trigger = event.currentTarget;
+                  setMobileOpen(false);
+                  feedback.openFeedback(trigger);
+                }}
+                aria-haspopup="dialog"
+                aria-expanded={feedback.isOpen}
+                className="flex w-full items-center gap-2 rounded-xl px-4 py-3 text-left text-sm font-medium text-gray-600 transition hover:bg-orange-50 hover:text-orange-600 dark:text-slate-300 dark:hover:bg-orange-950/40 dark:hover:text-orange-400"
+              >
+                <MessageSquareText aria-hidden="true" size={18} />
+                Gửi feedback
+              </button>
+            )}
             <Link
               to="/profile"
               onClick={() => setMobileOpen(false)}

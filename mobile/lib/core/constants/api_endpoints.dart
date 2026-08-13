@@ -85,6 +85,9 @@ class ApiEndpoints {
   static const String notificationsMarkAllAsRead =
       '/notifications/mark-all-as-read';
 
+  // Feedback
+  static const String feedbackMe = '/feedbacks/me';
+
   // Packages
   static const String packages = '/packages';
   static String packageById(String id) => '/packages/$id';

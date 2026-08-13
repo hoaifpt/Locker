@@ -43,6 +43,11 @@ import '../../features/change_password/domain/repositories/i_change_password_rep
 import '../../features/change_password/domain/usecases/forgot_password_usecase.dart';
 import '../../features/change_password/domain/usecases/reset_password_usecase.dart';
 import '../../features/change_password/presentation/controllers/forgot_password_cubit.dart';
+import '../../features/feedback/data/feedback_repository.dart';
+import '../../features/feedback/domain/repositories/i_feedback_repository.dart';
+import '../../features/feedback/domain/usecases/get_my_feedback_usecase.dart';
+import '../../features/feedback/domain/usecases/upsert_feedback_usecase.dart';
+import '../../features/feedback/presentation/controllers/feedback_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -196,5 +201,19 @@ void configureDependencies() {
       forgotPasswordUseCase: getIt(),
       resetPasswordUseCase: getIt(),
     ),
+  );
+
+  //========================================================================
+  //                               FEEDBACK
+  //========================================================================
+  getIt.registerLazySingleton<IFeedbackRepository>(() => FeedbackRepository());
+  getIt.registerLazySingleton(
+    () => GetMyFeedbackUsecase(getIt<IFeedbackRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => UpsertFeedbackUsecase(getIt<IFeedbackRepository>()),
+  );
+  getIt.registerFactory(
+    () => FeedbackCubit(getMyFeedback: getIt(), upsertFeedback: getIt()),
   );
 }

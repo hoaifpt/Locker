@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import FeedbackButton from '../../features/feedback/components/FeedbackButton';
+import { FeedbackProvider } from '../../features/feedback/context/FeedbackContext';
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
@@ -19,9 +20,9 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   }
 
   return (
-    <>
+    <FeedbackProvider>
       <Outlet />
       <FeedbackButton />
-    </>
+    </FeedbackProvider>
   );
 }

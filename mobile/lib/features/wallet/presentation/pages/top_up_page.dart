@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../controllers/wallet_cubit.dart';
 import '../controllers/wallet_state.dart';
 import '../../../payment_failed/domain/entities/payment_failed_info.dart';
-import '../../../payment_success/domain/entities/payment_success_info.dart';
+import '../../../payment_result/domain/entities/payment_result.dart';
 
 class TopUpPage extends StatefulWidget {
   const TopUpPage({super.key});
@@ -58,12 +58,17 @@ class _TopUpPageState extends State<TopUpPage> {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
 
         if (mounted) {
+          final referenceCode =
+              'TOPUP-${DateTime.now().millisecondsSinceEpoch}';
           Navigator.pushNamed(
             context,
-            '/payment-success',
-            arguments: PaymentSuccessRequest(
-              paidAmount: amount.toInt(),
-              orderCode: 'TOPUP-${DateTime.now().millisecondsSinceEpoch}',
+            '/payment-pending',
+            arguments: PaymentResultRequest(
+              status: PaymentResultStatus.pending,
+              amount: amount.toInt(),
+              referenceCode: referenceCode,
+              orderCode: referenceCode,
+              paymentMethod: 'SePay',
             ),
           );
         }
@@ -82,6 +87,7 @@ class _TopUpPageState extends State<TopUpPage> {
         }
       }
     } else {
+      if (!mounted) return;
       final currentState = context.read<WalletCubit>().state;
       final errorMessage =
           currentState.errorMessage ?? 'Khởi tạo thanh toán thất bại';

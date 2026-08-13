@@ -35,6 +35,17 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error && error.message ? error.message : fallback;
 }
 
+function filtersMatch(left: FeedbackFilters, right: FeedbackFilters) {
+  return (
+    left.page === right.page &&
+    left.pageSize === right.pageSize &&
+    left.rating === right.rating &&
+    left.topic === right.topic &&
+    left.visibility === right.visibility &&
+    left.search === right.search
+  );
+}
+
 function formatDateTime(value: string) {
   const date = new Date(value);
 
@@ -109,11 +120,14 @@ export default function AdminFeedbackPage() {
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(() => new Set());
   const [isExporting, setIsExporting] = useState(false);
   const requestIdRef = useRef(0);
+  const filterVersionRef = useRef(0);
+  const normalizedEffectQueryRef = useRef<FeedbackFilters | null>(null);
   const isMountedRef = useRef(true);
   const filtersRef = useRef(filters);
 
-  const loadFeedback = useCallback(async (query: FeedbackFilters) => {
+  const loadFeedback = useCallback(async (query: FeedbackFilters, allowPageNormalization = true) => {
     const requestId = ++requestIdRef.current;
+    const filterVersion = filterVersionRef.current;
 
     if (isMountedRef.current) {
       setIsLoading(true);
@@ -122,33 +136,39 @@ export default function AdminFeedbackPage() {
 
     try {
       const response = await getAdminFeedback(query);
-      if (isMountedRef.current && requestId === requestIdRef.current) {
+      if (
+        isMountedRef.current &&
+        requestId === requestIdRef.current &&
+        filterVersion === filterVersionRef.current
+      ) {
         const maximumPage = Math.max(response.page.totalPages, 1);
         const requestedPage = query.page ?? 1;
 
-        if (requestedPage > maximumPage) {
-          setFilters((current) => {
-            const isCurrentQuery =
-              current.page === query.page &&
-              current.pageSize === query.pageSize &&
-              current.rating === query.rating &&
-              current.topic === query.topic &&
-              current.visibility === query.visibility &&
-              current.search === query.search;
-
-            return isCurrentQuery ? { ...current, page: maximumPage } : current;
-          });
+        if (allowPageNormalization && requestedPage > maximumPage && filtersMatch(filtersRef.current, query)) {
+          const normalizedQuery = { ...query, page: maximumPage };
+          normalizedEffectQueryRef.current = normalizedQuery;
+          filterVersionRef.current += 1;
+          setFilters((current) => filtersMatch(current, query) ? normalizedQuery : current);
+          await loadFeedback(normalizedQuery, false);
           return;
         }
 
         setFeedback(response);
       }
     } catch (error) {
-      if (isMountedRef.current && requestId === requestIdRef.current) {
+      if (
+        isMountedRef.current &&
+        requestId === requestIdRef.current &&
+        filterVersion === filterVersionRef.current
+      ) {
         setErrorMessage(getErrorMessage(error, 'Không thể tải dữ liệu feedback.'));
       }
     } finally {
-      if (isMountedRef.current && requestId === requestIdRef.current) {
+      if (
+        isMountedRef.current &&
+        requestId === requestIdRef.current &&
+        filterVersion === filterVersionRef.current
+      ) {
         setIsLoading(false);
       }
     }
@@ -165,34 +185,43 @@ export default function AdminFeedbackPage() {
 
   useEffect(() => {
     filtersRef.current = filters;
+
+    if (normalizedEffectQueryRef.current && filtersMatch(normalizedEffectQueryRef.current, filters)) {
+      normalizedEffectQueryRef.current = null;
+      return;
+    }
+
+    normalizedEffectQueryRef.current = null;
     void loadFeedback(filters);
   }, [filters, loadFeedback]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       const normalizedSearch = searchValue.trim() || undefined;
-      setFilters((current) => {
-        if (current.search === normalizedSearch) {
-          return current;
-        }
+      if (filtersRef.current.search === normalizedSearch) {
+        return;
+      }
 
-        return { ...current, search: normalizedSearch, page: 1 };
-      });
+      filterVersionRef.current += 1;
+      setFilters((current) => ({ ...current, search: normalizedSearch, page: 1 }));
     }, 300);
 
     return () => window.clearTimeout(timeoutId);
   }, [searchValue]);
 
   const updateFilter = <K extends 'rating' | 'topic' | 'visibility'>(key: K, value: FeedbackFilters[K]) => {
+    filterVersionRef.current += 1;
     setFilters((current) => ({ ...current, [key]: value, page: 1 }));
   };
 
   const resetFilters = () => {
     setSearchValue('');
+    filterVersionRef.current += 1;
     setFilters({ page: 1, pageSize: PAGE_SIZE });
   };
 
   const changePage = (page: number) => {
+    filterVersionRef.current += 1;
     setFilters((current) => ({ ...current, page }));
   };
 

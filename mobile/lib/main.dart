@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -38,13 +39,13 @@ void main() async {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       debugPrint('>>> USER GRANTED NOTIFICATION PERMISSION');
-      
+
       // Lấy Token thật của thiết bị
       String? token = await messaging.getToken();
       debugPrint('========= FCM TOKEN CỦA BẠN =========');
       debugPrint(token);
       debugPrint('======================================');
-      
+
       // Mẹo: Bạn có thể lưu tạm token này vào local storage (SharedPreferences) ở đây
       // để sau này khi user Login thành công thì lấy ra bắn API register-device lên backend.
 
@@ -60,7 +61,6 @@ void main() async {
         debugPrint('>>> USER CLICK VÀO THÔNG BÁO ĐỂ MỞ APP: ${message.data}');
         // Logic điều hướng (Navigator) đến thẳng màn hình NotificationScreen tại đây
       });
-
     } else {
       debugPrint('>>> USER DENIED NOTIFICATION PERMISSION');
     }
@@ -80,7 +80,9 @@ void main() async {
 
   debugPrint('>>> MAPBOX TOKEN LENGTH: ${mapboxToken.length}');
 
-  if (mapboxToken.isNotEmpty) {
+  if (kIsWeb) {
+    debugPrint('>>> MAPBOX NATIVE SETUP SKIPPED ON WEB');
+  } else if (mapboxToken.isNotEmpty) {
     MapboxOptions.setAccessToken(mapboxToken);
     debugPrint('>>> MapboxOptions.setAccessToken CALLED');
   } else {

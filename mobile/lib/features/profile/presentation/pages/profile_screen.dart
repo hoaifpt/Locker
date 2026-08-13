@@ -378,9 +378,19 @@ class _ProfileMenuSection extends StatelessWidget {
         _SectionCard(
           icon: Icons.help_outline_rounded,
           iconBackground: const Color(0xFFF0FDF4),
-          title: 'Trợ giúp',
-          subtitle: 'FAQs, Support',
-          onTap: () {},
+          title: 'FeedBack & Hỗ trợ',
+          subtitle: 'Feedback, Support',
+          onTap: () async {
+            final submitted = await Navigator.pushNamed(context, '/feedback');
+            if (!context.mounted || submitted != true) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Cảm ơn bạn đã gửi feedback!'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
         ),
       ],
     );

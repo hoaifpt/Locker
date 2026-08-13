@@ -32,7 +32,6 @@ class _FeedbackViewState extends State<_FeedbackView> {
   int _rating = 0;
   FeedbackTopic _topic = FeedbackTopic.general;
   String? _validationMessage;
-  bool _hydrated = false;
 
   @override
   void initState() {
@@ -50,17 +49,6 @@ class _FeedbackViewState extends State<_FeedbackView> {
 
   void _refreshCharacterCount() {
     if (mounted) setState(() {});
-  }
-
-  void _hydrate(FeedbackState state) {
-    if (_hydrated) return;
-    final feedback = state.feedback;
-    setState(() {
-      _rating = feedback?.rating ?? 0;
-      _topic = feedback?.topic ?? FeedbackTopic.general;
-      _contentController.text = feedback?.content ?? '';
-      _hydrated = true;
-    });
   }
 
   Future<void> _submit() async {
@@ -88,11 +76,7 @@ class _FeedbackViewState extends State<_FeedbackView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<FeedbackCubit, FeedbackState>(
-      listenWhen: (previous, current) =>
-          previous.status != current.status &&
-          current.status == FeedbackLoadStatus.ready,
-      listener: (_, state) => _hydrate(state),
+    return BlocBuilder<FeedbackCubit, FeedbackState>(
       builder: (context, state) {
         return Scaffold(
           backgroundColor: const Color(0xFFFFFAF5),
@@ -113,7 +97,6 @@ class _FeedbackViewState extends State<_FeedbackView> {
               FeedbackLoadStatus.failure => _LoadErrorView(
                 message: state.errorMessage ?? 'Không thể tải phản hồi.',
                 onRetry: () {
-                  _hydrated = false;
                   context.read<FeedbackCubit>().load();
                 },
               ),

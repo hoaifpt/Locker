@@ -49,7 +49,7 @@ No new product files are required.
 - Produces: `startNotificationsConnection(connection, signal): Promise<void>` with bounded exponential retry until success or cancellation.
 - Consumes: existing `createNotificationsConnection(...)` factory and component cleanup lifecycle.
 
-- [ ] **Step 1: Add the local hub proxy**
+- [x] **Step 1: Add the local hub proxy** (`d33420b`)
 
 Add a sibling entry to the existing `/api` proxy:
 
@@ -62,6 +62,8 @@ Add a sibling entry to the existing `/api` proxy:
 ```
 
 Keep `getApiOrigin()` unchanged: when REST uses `/api`, it correctly returns the Vite origin, and Vite now forwards `/hubs/notifications` to the backend.
+
+This step is already present on the current branch. Re-verify it during Task 1; do not create a duplicate proxy entry.
 
 - [ ] **Step 2: Add a cancellable retry helper for the first connection**
 

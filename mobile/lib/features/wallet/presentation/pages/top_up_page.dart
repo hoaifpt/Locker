@@ -15,12 +15,12 @@ class TopUpPage extends StatefulWidget {
 
 class _TopUpPageState extends State<TopUpPage> {
   final TextEditingController _amountController = TextEditingController();
-  String _selectedPaymentMethod = 'vnpay';
+  String _selectedPaymentMethod = 'sepay';
 
   final List<Map<String, dynamic>> _paymentMethods = [
     {
-      'id': 'vnpay',
-      'name': 'VNPay',
+      'id': 'sepay',
+      'name': 'SePay',
       'subtitle': 'Miễn phí thanh toán',
       'icon': Icons.account_balance,
       'color': const Color(0xFF00B14F),
@@ -42,13 +42,15 @@ class _TopUpPageState extends State<TopUpPage> {
       return;
     }
 
-    if (_selectedPaymentMethod != 'vnpay') {
+    if (_selectedPaymentMethod != 'sepay') {
       _showSnackBar('Phương thức $_selectedPaymentMethod chưa được hỗ trợ');
       return;
     }
 
     final cubit = context.read<WalletCubit>();
-    final url = await cubit.topUp(amount);
+    final url = await cubit.topUp(
+      amount,
+    ); // Note: Should check if WalletCubit.topUp needs updating to call initSePayTopUp
 
     if (url != null) {
       final uri = Uri.parse(url);
@@ -67,7 +69,7 @@ class _TopUpPageState extends State<TopUpPage> {
         }
       } else {
         if (mounted) {
-          _showSnackBar('Không thể mở trang thanh toán VNPay');
+          _showSnackBar('Không thể mở trang thanh toán SePay');
           Navigator.pushNamed(
             context,
             '/payment-failed',

@@ -85,10 +85,16 @@ public static class DependencyInjection
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = false;
                 options.User.RequireUniqueEmail = true;
+
+                // Thêm dòng này để fix lỗi 500 khi Reset Password
+                options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
             }
         };
 
-        services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfig);
+        services.AddDataProtection(); // Cần thiết cho Token Provider
+
+        services.ConfigureMongoDbIdentity<User, Role, Guid>(mongoDbIdentityConfig)
+            .AddDefaultTokenProviders(); // Thêm cái này để hỗ trợ Reset Password
 
         return services;
     }

@@ -17,6 +17,8 @@ export default function WalletPage() {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
+    // NOTE: This should be replaced with real API calls to fetch balance and transactions.
+    // The page will automatically refresh data after returning from the payment gateway.
     setTimeout(() => {
       setBalance(getWalletBalance(userId));
       setTransactions(getWalletTransactionsByUser(userId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
@@ -24,18 +26,76 @@ export default function WalletPage() {
     }, 300);
   }, [userId]);
 
-  const handleTopup = async (e: React.FormEvent) => {
+  const handleSepayTopup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!topupAmount || Number(topupAmount) <= 1000) {
+      showToast('Số tiền nạp phải lớn hơn 1,000đ', 'error');
+      return;
+    }
     setProcessing(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setBalance(b => b + Number(topupAmount));
-    const newTx: SeedWalletTransaction = {
-      id: `tx-mock-${Date.now()}`, userId, amount: Number(topupAmount), type: 'TopUp', status: 'Completed', description: 'Nạp tiền vào ví', createdAt: new Date().toISOString()
-    };
-    setTransactions(prev => [newTx, ...prev]);
-    showToast(`✓ Nạp thành công ${Number(topupAmount).toLocaleString('vi-VN')}đ`, 'success');
-    setProcessing(false);
-    setShowTopup(false);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/wallet/top-up/sepay/init`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ amount: Number(topupAmount) }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Khởi tạo thanh toán thất bại.');
+      }
+
+      const result = await response.json();
+      const checkoutUrl = result.checkoutUrl ?? result.paymentUrl;
+      const formFields = result.formFields;
+
+      if (!checkoutUrl || !formFields) {
+        throw new Error('Không nhận được dữ liệu thanh toán từ server.');
+      }
+
+      submitSepayCheckoutForm(checkoutUrl, formFields);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Đã có lỗi xảy ra.';
+      showToast(errorMessage, 'error');
+      setProcessing(false);
+    }
+  };
+
+  const submitSepayCheckoutForm = (checkoutUrl: string, fields: Record<string, string>) => {
+    const fieldOrder = [
+      'order_amount',
+      'merchant',
+      'currency',
+      'operation',
+      'order_description',
+      'order_invoice_number',
+      'customer_id',
+      'payment_method',
+      'success_url',
+      'error_url',
+      'cancel_url',
+      'signature',
+    ];
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = checkoutUrl;
+    form.style.display = 'none';
+
+    fieldOrder
+      .filter(field => fields[field])
+      .forEach(field => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = field;
+        input.value = fields[field];
+        form.appendChild(input);
+      });
+
+    document.body.appendChild(form);
+    form.submit();
   };
 
   const getIcon = (type: string, amount: number) => {
@@ -47,7 +107,7 @@ export default function WalletPage() {
     <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased">
       <AppHeader />
       <main className="mx-auto max-w-2xl px-4 py-8 lg:px-8">
-        
+
         {/* Balance Card */}
         <motion.div initial={hidden} animate={visible} transition={trans(0)} className="mb-6 relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 to-gray-800 p-8 shadow-xl shadow-gray-900/20">
           <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -77,8 +137,8 @@ export default function WalletPage() {
         {/* Topup Modal */}
         {showTopup && (
           <motion.div initial={hidden} animate={visible} transition={trans(0)} className="mb-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 font-bold text-gray-900 flex items-center gap-2"><CreditCard size={18} className="text-orange-500"/> Nạp tiền vào ví</h3>
-            <form onSubmit={handleTopup}>
+            <h3 className="mb-4 font-bold text-gray-900 flex items-center gap-2"><CreditCard size={18} className="text-orange-500" /> Nạp tiền qua Sepay</h3>
+            <form onSubmit={handleSepayTopup}>
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {[50000, 100000, 200000, 500000, 1000000, 2000000].map(amt => (
                   <button key={amt} type="button" onClick={() => setTopupAmount(amt.toString())}
@@ -90,10 +150,11 @@ export default function WalletPage() {
               <div className="flex gap-2">
                 <input type="number" value={topupAmount} onChange={e => setTopupAmount(e.target.value)}
                   className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm font-semibold text-gray-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100" />
-                <button type="submit" disabled={processing || !topupAmount} className="flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-50">
-                  {processing ? 'Đang xử lý...' : 'Xác nhận'}
+                <button type="submit" disabled={processing || !topupAmount} className="flex w-36 items-center justify-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-50">
+                  {processing ? 'Đang xử lý...' : 'Thanh toán'}
                 </button>
               </div>
+              <p className="mt-2 text-xs text-gray-400">Bạn sẽ được chuyển đến cổng thanh toán Sepay để hoàn tất.</p>
             </form>
           </motion.div>
         )}
@@ -104,7 +165,7 @@ export default function WalletPage() {
           {loading ? (
             <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-gray-200" />)}</div>
           ) : transactions.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-300 py-10 text-center"><Clock size={24} className="mx-auto mb-2 text-gray-300"/><p className="text-sm text-gray-400">Chưa có giao dịch nào.</p></div>
+            <div className="rounded-2xl border border-dashed border-gray-300 py-10 text-center"><Clock size={24} className="mx-auto mb-2 text-gray-300" /><p className="text-sm text-gray-400">Chưa có giao dịch nào.</p></div>
           ) : (
             <div className="space-y-3">
               {transactions.map(tx => (

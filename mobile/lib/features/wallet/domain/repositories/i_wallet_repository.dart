@@ -7,5 +7,5 @@ abstract class IWalletRepository {
   Future<double> getBalance();
   Future<void> topUp(double amount);
   Future<void> transfer(String receiverId, double amount);
-  Future<String> initVnPayTopUp(double amount);
+  Future<String> initSePayTopUp(double amount);
 }

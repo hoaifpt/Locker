@@ -1,5 +1,7 @@
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
+using Locker.Backend.Domain.Entities;
+using Locker.Backend.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Options;
 
@@ -9,19 +11,42 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
 {
     private readonly ISepayService _sepayService;
     private readonly SepaySettings _sepaySettings;
+    private readonly IPaymentRepository _paymentRepository;
 
     public SepayInitTopUpCommandHandler(
         ISepayService sepayService,
-        IOptions<SepaySettings> sepaySettings)
+        IOptions<SepaySettings> sepaySettings,
+        IPaymentRepository paymentRepository)
     {
         _sepayService = sepayService;
         _sepaySettings = sepaySettings.Value;
+        _paymentRepository = paymentRepository;
     }
 
     public async Task<SepayInitTopUpResponse> Handle(SepayInitTopUpCommand request, CancellationToken cancellationToken)
     {
-        var paymentUrl = _sepayService.GenerateSepayPaymentUrl(request.UserId, request.Amount, request.IpAddress);
+        var payment = new Payment
+        {
+            UserId = request.UserId,
+            Amount = request.Amount,
+            Method = "sepay",
+            Status = PaymentStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
 
-        return new SepayInitTopUpResponse(true, "SEPAY payment URL generated successfully.", paymentUrl);
+        await _paymentRepository.CreateAsync(payment, cancellationToken);
+
+        var checkout = _sepayService.CreateTopUpCheckout(payment.Id, request.UserId, request.Amount);
+        var expiresAt = payment.CreatedAt.AddMinutes(_sepaySettings.PaymentTimeoutMinutes);
+
+        return new SepayInitTopUpResponse(
+            Succeeded: true,
+            Message: "SEPAY checkout form generated successfully.",
+            PaymentUrl: checkout.CheckoutUrl,
+            PaymentId: payment.Id,
+            Amount: request.Amount,
+            ExpiresAt: expiresAt,
+            CheckoutUrl: checkout.CheckoutUrl,
+            FormFields: checkout.Fields);
     }
 }

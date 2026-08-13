@@ -2,7 +2,12 @@ namespace Locker.Backend.Application.Models;
 
 public class SepaySettings
 {
-    public string PaymentUrl { get; set; } = string.Empty; // Đổi tên từ BaseUrl cho rõ ràng
+    public string CheckoutUrl { get; set; } = string.Empty;
+    public string PaymentUrl { get; set; } = string.Empty;
+    public string MerchantId { get; set; } = string.Empty;
+    public string SecretKey { get; set; } = string.Empty;
+
+    // Backward-compatible aliases for the previous VNPay-shaped config.
     public string HashSecret { get; set; } = string.Empty;
     public string TmnCode { get; set; } = string.Empty;
 
@@ -18,6 +23,7 @@ public class SepaySettings
     public string WebhookApiKey { get; set; } = string.Empty;
     public string WebhookUrl { get; set; } = string.Empty;
     public string Environment { get; set; } = string.Empty;
+    public int PaymentTimeoutMinutes { get; set; } = 15;
     public string ExpectedTransferType { get; set; } = string.Empty;
     public string BankId { get; set; } = string.Empty;
     public string AccountNo { get; set; } = string.Empty;

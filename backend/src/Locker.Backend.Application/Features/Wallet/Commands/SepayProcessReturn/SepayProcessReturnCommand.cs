@@ -1,85 +1,77 @@
 using Locker.Backend.Application.Interfaces;
-using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
 using MediatR;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 
 namespace Locker.Backend.Application.Features.Wallet.Commands.SepayProcessReturn;
 
-/// <summary>
-/// Command để xử lý dữ liệu trả về từ cổng thanh toán Sepay.
-/// </summary>
 public record SepayProcessReturnCommand(IDictionary<string, string> Parameters) : IRequest<SepayProcessReturnResponse>;
 
-/// <summary>
-/// DTO kết quả trả về cho client sau khi xử lý Sepay return.
-/// </summary>
 public record SepayProcessReturnResponse(bool Success, string Message, string? TransactionId = null);
 
-/// <summary>
-/// Handler xử lý logic cho SepayProcessReturnCommand.
-/// </summary>
 public class SepayProcessReturnCommandHandler : IRequestHandler<SepayProcessReturnCommand, SepayProcessReturnResponse>
 {
-    private readonly ISepayService _sepayService;
-    private readonly IWalletTransactionRepository _walletTransactionRepository;
-    private readonly IIdentityService _identityService;
+    private readonly IPaymentRepository _paymentRepository;
 
-    public SepayProcessReturnCommandHandler(
-        ISepayService sepayService,
-        IWalletTransactionRepository walletTransactionRepository,
-        IIdentityService identityService)
+    public SepayProcessReturnCommandHandler(IPaymentRepository paymentRepository)
     {
-        _sepayService = sepayService;
-        _walletTransactionRepository = walletTransactionRepository;
-        _identityService = identityService;
+        _paymentRepository = paymentRepository;
     }
 
     public async Task<SepayProcessReturnResponse> Handle(SepayProcessReturnCommand request, CancellationToken cancellationToken)
     {
-        // 1. Xác thực chữ ký từ Sepay để đảm bảo dữ liệu không bị thay đổi
-        if (!_sepayService.VerifySepayReturnUrl(request.Parameters, out var errorMessage))
+        var paymentId = TryGetPaymentId(request.Parameters);
+        if (paymentId == Guid.Empty)
         {
-            return new SepayProcessReturnResponse(false, errorMessage);
+            return new SepayProcessReturnResponse(
+                true,
+                "Da nhan callback tu SePay. Ket qua thanh toan se duoc xac nhan bang IPN webhook.");
         }
 
-        // 2. Parse các tham số từ URL thành một đối tượng có cấu trúc
-        var paymentResponse = _sepayService.ProcessSepayReturn(request.Parameters);
-
-        // 3. Kiểm tra trạng thái giao dịch từ Sepay
-        if (!paymentResponse.IsSuccess)
+        var payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken);
+        if (payment == null)
         {
-            return new SepayProcessReturnResponse(false, paymentResponse.Message, paymentResponse.TransactionId);
+            return new SepayProcessReturnResponse(false, "Payment not found.", paymentId.ToString());
         }
 
-        // 4. Kiểm tra giao dịch đã được xử lý trước đó chưa (để tránh cộng tiền 2 lần)
-        var existingTransaction = await _walletTransactionRepository.FindOneAsync(
-            x => x.ReferenceId == paymentResponse.TransactionId && x.Type == TransactionType.TopUp,
-            cancellationToken);
-
-        if (existingTransaction != null)
+        return payment.Status switch
         {
-            return new SepayProcessReturnResponse(true, "Giao dịch đã được xử lý thành công trước đó.", existingTransaction.ReferenceId);
-        }
-
-        // 5. Tạo và lưu giao dịch nạp tiền mới vào ví
-        var walletTransaction = new WalletTransaction
-        {
-            UserId = paymentResponse.UserId,
-            Amount = paymentResponse.Amount,
-            Description = $"Nạp tiền qua Sepay. Mã GD Cổng TT: {paymentResponse.GatewayTransactionNo}",
-            ReferenceId = paymentResponse.TransactionId, // Mã giao dịch của hệ thống mình
-            CreatedAt = paymentResponse.TransactionDate, // Đã được chuyển sang UTC trong SepayService
-            Type = TransactionType.TopUp, // Đây là giao dịch nạp tiền
-            Status = TransactionStatus.Completed // Giao dịch thành công
+            PaymentStatus.Completed => new SepayProcessReturnResponse(true, "Nap tien thanh cong.", payment.TransactionId),
+            PaymentStatus.Failed => new SepayProcessReturnResponse(false, "Thanh toan that bai hoac da bi huy.", payment.TransactionId),
+            _ => new SepayProcessReturnResponse(
+                true,
+                "Thanh toan dang cho IPN tu SePay xac nhan.",
+                payment.Id.ToString())
         };
+    }
 
-        await _walletTransactionRepository.CreateAsync(walletTransaction, cancellationToken);
+    private static Guid TryGetPaymentId(IDictionary<string, string> parameters)
+    {
+        if (parameters.TryGetValue("paymentId", out var paymentIdValue) &&
+            Guid.TryParse(paymentIdValue, out var paymentId))
+        {
+            return paymentId;
+        }
 
-        // 6. Trả về kết quả thành công
-        return new SepayProcessReturnResponse(true, "Nạp tiền thành công!", paymentResponse.TransactionId);
+        if (parameters.TryGetValue("order_invoice_number", out var invoiceNumber) ||
+            parameters.TryGetValue("orderInvoiceNumber", out invoiceNumber))
+        {
+            return TryParseTopUpInvoiceNumber(invoiceNumber, out paymentId) ? paymentId : Guid.Empty;
+        }
+
+        return Guid.Empty;
+    }
+
+    private static bool TryParseTopUpInvoiceNumber(string? invoiceNumber, out Guid paymentId)
+    {
+        paymentId = Guid.Empty;
+        const string prefix = "TOPUP_";
+
+        if (string.IsNullOrWhiteSpace(invoiceNumber) ||
+            !invoiceNumber.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return Guid.TryParseExact(invoiceNumber[prefix.Length..], "N", out paymentId);
     }
 }

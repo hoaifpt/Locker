@@ -34,7 +34,7 @@ class WalletCubit extends Cubit<WalletState> {
   Future<String?> topUp(double amount) async {
     try {
       emit(state.copyWith(isLoading: true, clearError: true));
-      final url = await _walletRepository.initVnPayTopUp(amount);
+      final url = await _walletRepository.initSePayTopUp(amount);
       emit(state.copyWith(isLoading: false));
       return url;
     } catch (e) {

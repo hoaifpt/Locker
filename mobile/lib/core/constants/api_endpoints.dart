@@ -75,8 +75,8 @@ class ApiEndpoints {
   static const String walletBalance = '/wallet/balance';
   static const String walletTopUp = '/wallet/top-up';
   static const String walletTransfer = '/wallet/transfer';
-  static const String walletTopUpVnPayInit = '/wallet/top-up/vnpay/init';
-  static String walletTopUpVnPayReturn() => '/wallet/top-up/vnpay/return';
+  static const String walletTopUpSePayInit = '/wallet/top-up/sepay/init';
+  static String walletTopUpSePayReturn() => '/wallet/top-up/sepay/return';
 
   // Notifications
   static const String notificationsMy = '/notifications/my';

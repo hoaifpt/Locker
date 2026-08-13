@@ -27,6 +27,19 @@ public class SepayProcessIpnCommandHandler : IRequestHandler<SepayProcessIpnComm
     public async Task<SepayProcessIpnResponse> Handle(SepayProcessIpnCommand request, CancellationToken cancellationToken)
     {
         var ipn = request.Request;
+
+        Console.WriteLine("========== SEPAY HANDLER ==========");
+        Console.WriteLine($"NotificationType: {ipn.NotificationType}");
+        Console.WriteLine($"InvoiceNumber: {ipn.Order?.OrderInvoiceNumber}");
+        Console.WriteLine($"OrderStatus: {ipn.Order?.OrderStatus}");
+        Console.WriteLine($"OrderAmount: {ipn.Order?.OrderAmount}");
+        Console.WriteLine($"TransactionStatus: {ipn.Transaction?.TransactionStatus}");
+        Console.WriteLine($"TransactionAmount: {ipn.Transaction?.TransactionAmount}");
+        Console.WriteLine($"TransactionId: {ipn.Transaction?.TransactionId}");
+        Console.WriteLine($"TransactionDate: {ipn.Transaction?.TransactionDate}");
+        Console.WriteLine("==================================");
+
+
         if (!IsPaidNotification(ipn))
         {
             return new SepayProcessIpnResponse(true, "IPN ignored because it is not a paid notification.");

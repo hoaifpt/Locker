@@ -1,5 +1,5 @@
 import { Star } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPublicFeedback } from '../api/feedbackApi';
 import { FEEDBACK_TOPIC_LABELS, type PublicFeedbackResponse } from '../types';
 
@@ -8,14 +8,18 @@ const REVIEW_LIMIT = 6;
 function ReviewStars({ rating }: { rating: number }) {
   return (
     <div className="flex gap-1" aria-label={`${rating} trên 5 sao`}>
-      {Array.from({ length: 5 }, (_, index) => (
-        <Star
-          key={index}
-          aria-hidden="true"
-          className={index < Math.round(rating) ? 'fill-current text-orange-500' : 'text-gray-300'}
-          size={18}
-        />
-      ))}
+      {Array.from({ length: 5 }, (_, index) => {
+        const fillPercentage = Math.min(100, Math.max(0, (rating - index) * 100));
+
+        return (
+          <span key={index} className="relative block h-[18px] w-[18px] text-gray-300">
+            <Star aria-hidden="true" className="absolute inset-0" size={18} />
+            <span className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${fillPercentage}%` }}>
+              <Star aria-hidden="true" className="fill-current text-orange-500" size={18} />
+            </span>
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -32,29 +36,48 @@ function ReviewSkeleton() {
 }
 
 function formatUpdatedAt(updatedAt: string) {
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(new Date(updatedAt));
+  const date = new Date(updatedAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Không có ngày cập nhật';
+  }
+
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(date);
 }
 
 export default function PublicReviewsSection() {
   const [feedback, setFeedback] = useState<PublicFeedbackResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const requestIdRef = useRef(0);
 
   const loadFeedback = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setIsLoading(true);
     setHasError(false);
 
     try {
-      setFeedback(await getPublicFeedback(REVIEW_LIMIT));
+      const nextFeedback = await getPublicFeedback(REVIEW_LIMIT);
+      if (requestId === requestIdRef.current) {
+        setFeedback(nextFeedback);
+      }
     } catch {
-      setHasError(true);
+      if (requestId === requestIdRef.current) {
+        setHasError(true);
+      }
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     void loadFeedback();
+
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [loadFeedback]);
 
   return (

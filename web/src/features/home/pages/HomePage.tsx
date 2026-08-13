@@ -3,6 +3,7 @@ import HeroSection from '../components/HeroSection';
 import PortalSection from '../components/PortalSection';
 import LocationsSection from '../components/LocationsSection';
 import Footer from '../components/Footer';
+import PublicReviewsSection from '../../feedback/components/PublicReviewsSection';
 
 export default function HomePage() {
   return (
@@ -11,6 +12,7 @@ export default function HomePage() {
       <HeroSection />
       <PortalSection />
       <LocationsSection />
+      <PublicReviewsSection />
       <Footer />
     </div>
   );

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Locker.Backend.Domain.Entities;
+using Microsoft.Extensions.Hosting;
 using Resend;
 
 namespace Locker.Backend.Infrastructure;
@@ -37,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<ISepayService, SepayService>();
 
         services.AddSingleton<MongoContext>();
+        services.AddHostedService<MongoContextStartupValidator>();
         services.AddScoped<ILockerRepository, LockerRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
@@ -53,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<IDeliveryRequestRepository, DeliveryRequestRepository>();
         services.AddScoped<ISendReceiveOrderRepository, SendReceiveOrderRepository>();
         services.AddScoped<ILockerEventRepository, LockerEventRepository>();
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -103,4 +106,15 @@ public static class DependencyInjection
     {
         await Data.DbSeeder.SeedAsync(serviceProvider);
     }
+}
+
+internal sealed class MongoContextStartupValidator : IHostedService
+{
+    public MongoContextStartupValidator(MongoContext context)
+    {
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

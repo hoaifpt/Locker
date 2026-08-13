@@ -152,8 +152,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        RoleClaimType = "role",
-        NameClaimType = "name"
+        RoleClaimType = ClaimTypes.Role,
+        NameClaimType = ClaimTypes.Name
     };
     options.Events = new JwtBearerEvents
     {

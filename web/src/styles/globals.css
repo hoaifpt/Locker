@@ -6,6 +6,73 @@
     color-scheme: light;
 }
 
+html {
+    background: #f8fafc;
+}
+
 body {
     margin: 0;
+    min-width: 320px;
+    background: #f8fafc;
+    color: #0f172a;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+html.dark,
+html.dark body {
+    background: #020617;
+    color: #e2e8f0;
+}
+
+@layer utilities {
+    /* Compatibility colors for existing screens while components migrate to explicit dark variants. */
+    .dark [class~="bg-[#F9F8F6]"] { @apply bg-slate-950; }
+    .dark .bg-white { @apply bg-slate-900; }
+    .dark .bg-gray-50 { @apply bg-slate-950; }
+    .dark .bg-gray-100 { @apply bg-slate-800; }
+    .dark .bg-gray-200 { @apply bg-slate-700; }
+    .dark .text-gray-950,
+    .dark .text-gray-900 { @apply text-slate-50; }
+    .dark .text-gray-800 { @apply text-slate-100; }
+    .dark .text-gray-700 { @apply text-slate-200; }
+    .dark .text-gray-600 { @apply text-slate-300; }
+    .dark .text-gray-500 { @apply text-slate-400; }
+    .dark .text-gray-400 { @apply text-slate-500; }
+    .dark .border-gray-50,
+    .dark .border-gray-100 { @apply border-slate-800; }
+    .dark .border-gray-200 { @apply border-slate-700; }
+    .dark .border-gray-300 { @apply border-slate-600; }
+    .dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { @apply border-slate-800; }
+    .dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { @apply border-slate-700; }
+    .dark .hover\:bg-gray-50:hover { @apply bg-slate-800; }
+    .dark .hover\:bg-gray-100:hover { @apply bg-slate-800; }
+    .dark .hover\:text-gray-700:hover,
+    .dark .hover\:text-gray-900:hover { @apply text-white; }
+    .dark .bg-orange-50 { @apply bg-orange-950/40; }
+    .dark .bg-red-50 { @apply bg-red-950/40; }
+    .dark .bg-green-50 { @apply bg-green-950/40; }
+    .dark .bg-blue-50 { @apply bg-blue-950/40; }
+    .dark .bg-purple-50 { @apply bg-purple-950/40; }
+    .dark .bg-yellow-50 { @apply bg-yellow-950/40; }
+    .dark .text-orange-800 { @apply text-orange-300; }
+    .dark .text-red-800 { @apply text-red-300; }
+    .dark .text-green-800 { @apply text-green-300; }
+    .dark .text-blue-800 { @apply text-blue-300; }
+    .dark .text-purple-800 { @apply text-purple-300; }
+    .dark .text-yellow-800 { @apply text-yellow-300; }
+    .dark .border-orange-200 { @apply border-orange-800; }
+    .dark .border-red-200 { @apply border-red-800; }
+    .dark .border-green-200 { @apply border-green-800; }
+    .dark .border-blue-200 { @apply border-blue-800; }
+    .dark .border-purple-200 { @apply border-purple-800; }
+    .dark .border-yellow-200 { @apply border-yellow-800; }
+    .dark .hover\:bg-orange-50:hover { @apply bg-orange-950/50; }
+    .dark .hover\:bg-red-50:hover { @apply bg-red-950/50; }
+    .dark input,
+    .dark select,
+    .dark textarea { @apply border-slate-700 bg-slate-950 text-slate-100 placeholder:text-slate-500; }
+    .dark input:disabled,
+    .dark select:disabled,
+    .dark textarea:disabled { @apply bg-slate-800 text-slate-500; }
+    .dark [class*="shadow-gray-"] { --tw-shadow-color: rgb(2 6 23 / 0.55); }
 }

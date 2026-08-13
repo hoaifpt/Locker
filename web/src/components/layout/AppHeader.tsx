@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Lock, Menu, X, User, LogOut, ChevronDown, LayoutDashboard, Settings } from 'lucide-react';
 import NotificationsDropdown from '../../features/notifications/components/NotificationsDropdown';
+import ThemeToggle from '../ui/ThemeToggle';
 
 export default function AppHeader() {
   const location = useLocation();
@@ -32,6 +33,7 @@ export default function AppHeader() {
       return [
         { to: '/dashboard', label: 'Bảng điều khiển' },
         { to: '/lockers', label: 'Quản lý tủ khóa' },
+        { to: '/admin/feedbacks', label: 'Feedback' },
       ];
     }
     return [
@@ -47,10 +49,10 @@ export default function AppHeader() {
   const NAV_LINKS = getNavLinks();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/85">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         {/* Logo */}
-        <Link to={role === 'User' ? '/' : '/dashboard'} className="flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900">
+        <Link to={role === 'User' ? '/' : '/dashboard'} className="flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm shadow-orange-200">
             <Lock size={16} />
           </span>
@@ -75,6 +77,8 @@ export default function AppHeader() {
 
         {/* Right actions */}
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
+
           {/* Notifications */}
           <NotificationsDropdown />
 
@@ -96,7 +100,7 @@ export default function AppHeader() {
               <ChevronDown size={14} className="text-gray-400" />
             </button>
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-gray-100 bg-white py-2 shadow-xl shadow-gray-200/50 z-50">
+              <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-gray-100 bg-white py-2 shadow-xl shadow-gray-200/50 z-50 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
                 <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                   <LayoutDashboard size={16} /> Bảng điều khiển
                 </Link>
@@ -120,7 +124,7 @@ export default function AppHeader() {
 
         {/* Mobile menu toggle */}
         <button
-          className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100"
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800 md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           {mobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -129,8 +133,12 @@ export default function AppHeader() {
 
       {/* Mobile nav */}
       {mobileOpen && (
-        <div className="border-t border-gray-100 bg-white px-4 py-4 shadow-lg md:hidden">
+        <div className="border-t border-gray-100 bg-white px-4 py-4 shadow-lg dark:border-slate-800 dark:bg-slate-900 md:hidden">
           <nav className="flex flex-col gap-2">
+            <div className="flex items-center justify-between rounded-xl px-4 py-2 text-sm font-semibold text-gray-700 dark:text-slate-200">
+              <span>Giao diện</span>
+              <ThemeToggle />
+            </div>
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.to}

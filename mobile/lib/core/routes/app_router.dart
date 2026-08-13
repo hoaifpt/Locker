@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:locker_mobile/core/routes/injection.dart';
 import '../../features/wallet/presentation/controllers/wallet_cubit.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -35,6 +36,9 @@ import '../../features/change_password/presentation/pages/change_password_page.d
 import '../../features/change_password/presentation/pages/forgot_password_page.dart';
 import '../../features/change_password/presentation/pages/reset_password_page.dart';
 import '../../features/change_password/presentation/controllers/forgot_password_cubit.dart';
+
+// Create a single instance to share between forgot and reset password pages
+final _forgotPasswordCubit = getIt<ForgotPasswordCubit>();
 
 class AppRouter {
   static const initialRoute = '/login';
@@ -102,7 +106,13 @@ class AppRouter {
     '/security-privacy': (context) => const SecurityPrivacyPage(),
     '/personal-info': (context) => const PersonalInfoPage(),
     '/change-password': (context) => const ChangePasswordPage(),
-    '/forgot-password': (context) => const ForgotPasswordPage(),
-    '/reset-password': (context) => const ResetPasswordPage(),
+    '/forgot-password': (context) => BlocProvider.value(
+      value: _forgotPasswordCubit..resetState(),
+      child: const ForgotPasswordPage(),
+    ),
+    '/reset-password': (context) => BlocProvider.value(
+      value: _forgotPasswordCubit,
+      child: const ResetPasswordPage(),
+    ),
   };
 }

@@ -132,7 +132,7 @@ class _LoginViewState extends State<_LoginView> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          context.pushNamed('/change-password');
+                          context.pushNamed('/forgot-password');
                         },
                         child: const Text(
                           'Quên mật khẩu?',

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/repositories/change_password_repository_impl.dart';
-import '../../domain/usecases/forgot_password_usecase.dart';
-import '../../domain/usecases/reset_password_usecase.dart';
 import '../controllers/forgot_password_cubit.dart';
 import '../controllers/forgot_password_state.dart';
 
@@ -12,14 +9,7 @@ class ForgotPasswordPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repo = ChangePasswordRepositoryImpl();
-    return BlocProvider(
-      create: (_) => ForgotPasswordCubit(
-        forgotPasswordUseCase: ForgotPasswordUseCase(repository: repo),
-        resetPasswordUseCase: ResetPasswordUseCase(repository: repo),
-      ),
-      child: const _ForgotPasswordView(),
-    );
+    return const _ForgotPasswordView();
   }
 }
 

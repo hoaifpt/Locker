@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="7.0.0" />
         <PackageReference Include="DnsClient" Version="1.7.0" />
         <PackageReference Include="FirebaseAdmin" Version="3.6.0" />

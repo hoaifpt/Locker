@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Locker.Backend.Application"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Locker.Backend.Domain", "backend\src\Locker.Backend.Domain\Locker.Backend.Domain.csproj", "{DC707771-BF88-4AF8-B460-09981811F638}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Locker.Backend.Infrastructure", "backend\src\Locker.Backend.Infrastructure\Locker.Backend.Infrastructure.csproj", "{D5866ACF-3164-47E3-8EEA-9277C8ABE230}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,18 @@ Global
 		{DC707771-BF88-4AF8-B460-09981811F638}.Release|x64.Build.0 = Release|Any CPU
 		{DC707771-BF88-4AF8-B460-09981811F638}.Release|x86.ActiveCfg = Release|Any CPU
 		{DC707771-BF88-4AF8-B460-09981811F638}.Release|x86.Build.0 = Release|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Debug|x64.Build.0 = Debug|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Debug|x86.Build.0 = Debug|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Release|x64.ActiveCfg = Release|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Release|x64.Build.0 = Release|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Release|x86.ActiveCfg = Release|Any CPU
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,6 +100,7 @@ Global
 		{0EE4788D-9597-4D22-A261-F7A0775C3EE5} = {F57642F3-C37C-D174-720E-6A6AAD5BEE22}
 		{7D433F75-E017-4CD9-B384-4633C2F29533} = {0F9113EE-888A-26D2-68B0-4A7D0A2A8745}
 		{DC707771-BF88-4AF8-B460-09981811F638} = {0F9113EE-888A-26D2-68B0-4A7D0A2A8745}
+		{D5866ACF-3164-47E3-8EEA-9277C8ABE230} = {0F9113EE-888A-26D2-68B0-4A7D0A2A8745}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B79A27AF-C13A-4A1D-A420-5BB3A24341CF}

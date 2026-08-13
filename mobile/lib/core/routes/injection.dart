@@ -38,6 +38,12 @@ import '../../features/home/domain/usecases/get_nearby_lockers_usecase.dart';
 import '../../features/home/domain/usecases/get_user_profile_usecase.dart';
 import '../../features/home/presentation/controllers/home_cubit.dart';
 
+import '../../features/change_password/data/repositories/change_password_repository_impl.dart';
+import '../../features/change_password/domain/repositories/i_change_password_repository.dart';
+import '../../features/change_password/domain/usecases/forgot_password_usecase.dart';
+import '../../features/change_password/domain/usecases/reset_password_usecase.dart';
+import '../../features/change_password/presentation/controllers/forgot_password_cubit.dart';
+
 final getIt = GetIt.instance;
 
 /// Configures dependencies for the entire application.
@@ -173,6 +179,22 @@ void configureDependencies() {
       markAsRead: getIt(),
       markAllAsRead: getIt(),
       registerDevice: getIt(),
+    ),
+  );
+
+  //========================================================================
+  //                          FORGOT PASSWORD
+  //========================================================================
+  getIt.registerLazySingleton<IChangePasswordRepository>(
+    () => ChangePasswordRepositoryImpl(),
+  );
+  getIt.registerLazySingleton(() => ForgotPasswordUseCase(repository: getIt()));
+  getIt.registerLazySingleton(() => ResetPasswordUseCase(repository: getIt()));
+
+  getIt.registerFactory(
+    () => ForgotPasswordCubit(
+      forgotPasswordUseCase: getIt(),
+      resetPasswordUseCase: getIt(),
     ),
   );
 }

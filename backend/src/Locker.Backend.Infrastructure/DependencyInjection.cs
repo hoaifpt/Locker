@@ -7,6 +7,7 @@ using Locker.Backend.Infrastructure.Notifications;
 using Locker.Backend.Infrastructure.Repositories;
 using Locker.Backend.Infrastructure.Security;
 using Locker.Backend.Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Locker.Backend.Domain.Entities;
@@ -31,6 +32,9 @@ public static class DependencyInjection
 
         services.Configure<AppSettings>(configuration.GetSection("App"));
         services.Configure<VnPaySettings>(configuration.GetSection("VnPay"));
+        services.AddScoped<IVnPayService, VnPayService>();
+        services.Configure<SepaySettings>(configuration.GetSection("Sepay"));
+        services.AddScoped<ISepayService, SepayService>();
 
         services.AddSingleton<MongoContext>();
         services.AddScoped<ILockerRepository, LockerRepository>();

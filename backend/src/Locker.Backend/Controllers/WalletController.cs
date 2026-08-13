@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Locker.Backend.Application.Features.Wallet.Commands.TopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.Transfer;
 using Locker.Backend.Application.Features.Wallet.Commands.VnPayInitTopUp;
+using Locker.Backend.Application.Features.Wallet.Commands.SepayProcessReturn;
+using Locker.Backend.Application.Features.Wallet.Commands.SepayInitTopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.VnPayProcessReturn;
 using Locker.Backend.Application.Features.Wallet.Queries.GetBalance;
 using Locker.Backend.Application.Features.Wallet.Queries.GetOverview;
@@ -110,6 +112,37 @@ public class WalletController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("top-up/sepay/init")]
+    public async Task<IActionResult> InitSepayTopUp([FromBody] SepayTopUpInitRequest request, CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var ipAddress = GetClientIpAddress();
+        var result = await _sender.Send(new SepayInitTopUpCommand(userId, request.Amount, ipAddress), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("top-up/sepay/return")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SepayReturn(CancellationToken cancellationToken)
+    {
+        var parameters = Request.Query.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.ToString()
+        );
+
+        var result = await _sender.Send(new SepayProcessReturnCommand(parameters), cancellationToken);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        // Trả về kết quả thành công để client (WebView trong mobile app) có thể bắt và xử lý
+        return Ok(result);
+    }
+
     private string GetClientIpAddress()
     {
         var forwardedFor = Request.Headers["X-Forwarded-For"].FirstOrDefault();
@@ -142,6 +175,11 @@ public class TransferRequest
 }
 
 public class VnPayTopUpInitRequest
+{
+    public decimal Amount { get; set; }
+}
+
+public class SepayTopUpInitRequest
 {
     public decimal Amount { get; set; }
 }

@@ -25,7 +25,6 @@ public static class DbSeeder
         var lockerRepo = sp.GetRequiredService<ILockerRepository>();
         var restaurantRepo = sp.GetRequiredService<IRestaurantRepository>();
         var menuItemRepo = sp.GetRequiredService<IMenuItemRepository>();
-        var walletRepo = sp.GetRequiredService<IWalletTransactionRepository>();
         var foodOrderRepo = sp.GetRequiredService<IFoodOrderRepository>();
         var deliveryRepo = sp.GetRequiredService<IDeliveryRequestRepository>();
         var sendReceiveRepo = sp.GetRequiredService<ISendReceiveOrderRepository>();
@@ -253,34 +252,12 @@ public static class DbSeeder
             foreach (var r in existingRestaurants) restaurantIds.Add(r.Id);
         }
 
-        // 7. Wallets Topup for customers
-        foreach (var cid in customerIds)
-        {
-            var txs = await walletRepo.GetByUserIdAsync(cid);
-            if (txs.Count == 0)
-            {
-                var now = DateTime.UtcNow;
-                var topup = new WalletTransaction
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = cid,
-                    Amount = 1000000,
-                    Type = TransactionType.TopUp,
-                    Status = TransactionStatus.Completed,
-                    Description = "Initial Topup for Testing",
-                    CreatedAt = now,
-                    UpdatedAt = now
-                };
-                await walletRepo.CreateAsync(topup, default);
-            }
-        }
-
-        // 8. Core Business Data Sample - Only seed if empty
+        // 7. Core Business Data Sample - Only seed if empty
         if ((await foodOrderRepo.GetAllAsync(default)).Count == 0 && lockerIds.Count > 0 && restaurantIds.Count > 0 && customerIds.Count > 0)
         {
             var now = DateTime.UtcNow;
 
-            // 8a. Standard Locker Orders (with Payments & Events)
+            // 7a. Standard Locker Orders (with Payments & Events)
             for (int i = 0; i < 5; i++)
             {
                 var paymentId = Guid.NewGuid();
@@ -346,7 +323,7 @@ public static class DbSeeder
                 await lockerEventRepo.CreateAsync(evt, default);
             }
 
-            // 8b. Generate Food Orders
+            // 7b. Generate Food Orders
             for (int i = 0; i < 5; i++)
             {
                 var menus = await menuItemRepo.GetByRestaurantIdAsync(restaurantIds[i % restaurantIds.Count]);
@@ -404,7 +381,7 @@ public static class DbSeeder
                 await foodOrderRepo.CreateAsync(order, default);
             }
 
-            // 8c. Generate Delivery Requests
+            // 7c. Generate Delivery Requests
             if (shipperIds.Count > 0)
             {
                 for (int i = 0; i < 5; i++)
@@ -445,7 +422,7 @@ public static class DbSeeder
                 }
             }
 
-            // 8d. Generate Send/Receive Orders
+            // 7d. Generate Send/Receive Orders
             for (int i = 0; i < 5; i++)
             {
                 var customerIdx = i % customerIds.Count;
@@ -477,7 +454,7 @@ public static class DbSeeder
                 await sendReceiveRepo.CreateAsync(sr, default);
             }
 
-            // 8e. Generate Notifications for customers
+            // 7e. Generate Notifications for customers
             var notificationTitles = new[]
             {
                 "Welcome to Locker App!",

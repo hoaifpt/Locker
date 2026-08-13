@@ -10,8 +10,6 @@ export type SlotStatus = 'Available' | 'Reserved' | 'Occupied' | 'Maintenance';
 export type PaymentStatus = 'Pending' | 'Completed' | 'Failed' | 'Refunded';
 export type DeliveryStatus = 'Pending' | 'DeliveredToLocker' | 'Completed' | 'Cancelled';
 export type SendReceiveStatus = 'Initiated' | 'Deposited' | 'Received' | 'Cancelled';
-export type TransactionType = 'TopUp' | 'Transfer' | 'Payment' | 'Refund';
-export type TransactionStatus = 'Pending' | 'Completed' | 'Failed';
 export type PackageSize = 'S' | 'M' | 'L' | 'XL';
 export type FoodOrderStatus = 'PaymentRequired' | 'Pending' | 'Preparing' | 'Delivering' | 'DeliveredToLocker' | 'Completed' | 'Cancelled';
 
@@ -423,41 +421,6 @@ export const SEED_SEND_RECEIVE_ORDERS: SeedSendReceiveOrder[] = [
   { id: 'sr-004', senderId: 'u-004', receiverPhone: '0956789012', lockerId: 'lk-006', slotIndex: 10, status: 'Cancelled', pinCode: '6789', notes: 'Đã hủy — người nhận không lấy', createdAt: '2026-06-20T16:00:00Z' },
 ];
 
-// ─── WALLET TRANSACTIONS (matching WalletTransactionDto) ──
-export interface SeedWalletTransaction {
-  id: string;
-  userId: string;
-  amount: number;
-  type: TransactionType;
-  status: TransactionStatus;
-  description?: string;
-  createdAt: string;
-}
-
-export const SEED_WALLET_TRANSACTIONS: SeedWalletTransaction[] = [
-  { id: 'tx-001', userId: 'u-001', amount: 500000, type: 'TopUp', status: 'Completed', description: 'Nạp tiền qua VNPay', createdAt: '2026-06-20T08:00:00Z' },
-  { id: 'tx-002', userId: 'u-001', amount: -52800, type: 'Payment', status: 'Completed', description: 'Thanh toán đơn hàng ORD-001', createdAt: '2026-06-22T07:50:00Z' },
-  { id: 'tx-003', userId: 'u-001', amount: -100600, type: 'Payment', status: 'Completed', description: 'Thanh toán đơn hàng ORD-002', createdAt: '2026-06-20T08:40:00Z' },
-  { id: 'tx-004', userId: 'u-001', amount: -50000, type: 'Transfer', status: 'Completed', description: 'Chuyển tiền cho Trần Thị B', createdAt: '2026-06-21T15:00:00Z' },
-  { id: 'tx-005', userId: 'u-002', amount: 200000, type: 'TopUp', status: 'Completed', description: 'Nạp tiền qua MoMo', createdAt: '2026-06-19T10:00:00Z' },
-  { id: 'tx-006', userId: 'u-002', amount: 50000, type: 'TopUp', status: 'Completed', description: 'Nhận chuyển tiền từ Nguyễn Văn A', createdAt: '2026-06-21T15:00:00Z' },
-  { id: 'tx-007', userId: 'u-002', amount: -16500, type: 'Payment', status: 'Completed', description: 'Thanh toán đơn hàng ORD-003', createdAt: '2026-06-22T20:05:00Z' },
-  { id: 'tx-008', userId: 's-001', amount: 300000, type: 'TopUp', status: 'Completed', description: 'Nạp tiền qua VNPay', createdAt: '2026-06-18T09:00:00Z' },
-  { id: 'tx-009', userId: 's-001', amount: 150000, type: 'TopUp', status: 'Completed', description: 'Thu nhập giao hàng tuần 25', createdAt: '2026-06-22T18:00:00Z' },
-];
-
-export const SEED_WALLET_BALANCES: Record<string, number> = {
-  'u-001': 296600,
-  'u-002': 233500,
-  'u-004': 120000,
-  'u-006': 80000,
-  'u-007': 45000,
-  's-001': 450000,
-  's-002': 320000,
-  's-003': 180000,
-  'a-001': 1000000,
-};
-
 // ─── NOTIFICATIONS (matching NotificationDto) ─────────────
 export interface SeedNotification {
   id: string;
@@ -504,9 +467,6 @@ export const getPaymentsByUser = (userId: string) => SEED_PAYMENTS.filter(p => p
 export const getDeliveryRequestsByUser = (userId: string) => SEED_DELIVERY_REQUESTS.filter(d => d.userId === userId);
 export const getSendReceiveByUser = (userId: string) => SEED_SEND_RECEIVE_ORDERS.filter(s => s.senderId === userId);
 export const getNotificationsByUser = (userId: string) => SEED_NOTIFICATIONS.filter(n => n.userId === userId);
-export const getWalletTransactionsByUser = (userId: string) => SEED_WALLET_TRANSACTIONS.filter(t => t.userId === userId);
-export const getWalletBalance = (userId: string) => SEED_WALLET_BALANCES[userId] ?? 0;
-
 export const getAvailableLockers = () => SEED_LOCKERS.filter(l => l.slots.some(s => s.status === 'Available'));
 export const getBookingsByStatus = (status: BookingStatus) => SEED_BOOKINGS.filter(b => b.status === status);
 export const getUsersByRole = (role: UserRole) => SEED_USERS.filter(u => u.role === role);

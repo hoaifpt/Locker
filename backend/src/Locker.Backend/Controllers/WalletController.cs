@@ -149,156 +149,180 @@ public class WalletController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("top-up/sepay/ipn")]
-    [AllowAnonymous]
-    public async Task<IActionResult> SepayIpn(
-     [FromBody] SepayIpnRequest request,
-     CancellationToken cancellationToken)
+   [HttpPost("top-up/sepay/ipn")]
+[AllowAnonymous]
+public async Task<IActionResult> SepayIpn(
+    [FromBody] SepayIpnRequest request,
+    CancellationToken cancellationToken)
+{
+    Console.WriteLine("========== SEPAY IPN REQUEST ==========");
+
+    // =========================
+    // DEBUG HEADERS
+    // =========================
+
+    var authorization = Request.Headers["Authorization"].FirstOrDefault();
+
+    // Hỗ trợ cả:
+    // X-Secret-Key: YOUR_SECRET
+    // và:
+    // Authorization: Apikey YOUR_SECRET
+    var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
+
+    if (string.IsNullOrWhiteSpace(providedSecret) &&
+        !string.IsNullOrWhiteSpace(authorization))
     {
-        Console.WriteLine("========== SEPAY IPN REQUEST ==========");
+        var parts = authorization.Split(' ', 2);
 
-        // =========================
-        // DEBUG HEADERS
-        // =========================
-        var authorization = Request.Headers["Authorization"].FirstOrDefault();
-        var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
-
-        Console.WriteLine("----- SEPAY AUTH DEBUG -----");
-
-        Console.WriteLine(
-            $"Authorization exists: {!string.IsNullOrWhiteSpace(authorization)}"
-        );
-
-        Console.WriteLine(
-            $"Authorization length: {authorization?.Length ?? 0}"
-        );
-
-        if (!string.IsNullOrWhiteSpace(authorization))
+        if (parts.Length == 2 &&
+            parts[0].Equals("Apikey", StringComparison.OrdinalIgnoreCase))
         {
-            var parts = authorization.Split(' ', 2);
-
-            Console.WriteLine(
-                $"Authorization scheme: {parts[0]}"
-            );
+            providedSecret = parts[1].Trim();
         }
+    }
+
+    Console.WriteLine("----- SEPAY AUTH DEBUG -----");
+
+    Console.WriteLine(
+        $"Authorization exists: {!string.IsNullOrWhiteSpace(authorization)}"
+    );
+
+    Console.WriteLine(
+        $"Authorization length: {authorization?.Length ?? 0}"
+    );
+
+    if (!string.IsNullOrWhiteSpace(authorization))
+    {
+        var parts = authorization.Split(' ', 2);
 
         Console.WriteLine(
-            $"X-Secret-Key exists: {!string.IsNullOrWhiteSpace(providedSecret)}"
+            $"Authorization scheme: {parts[0]}"
         );
+    }
 
-        Console.WriteLine(
-            $"X-Secret-Key length: {providedSecret?.Length ?? 0}"
-        );
+    Console.WriteLine(
+        $"X-Secret-Key exists: {!string.IsNullOrWhiteSpace(
+            Request.Headers["X-Secret-Key"].FirstOrDefault()
+        )}"
+    );
 
-        Console.WriteLine("-----------------------------");
+    Console.WriteLine(
+        $"Provided secret exists: {!string.IsNullOrWhiteSpace(providedSecret)}"
+    );
 
-        // =========================
-        // AUTHENTICATE SEPAY
-        // =========================
+    Console.WriteLine(
+        $"Provided secret length: {providedSecret?.Length ?? 0}"
+    );
 
-        if (!_sepayService.IsValidIpnSecret(providedSecret))
+    Console.WriteLine("-----------------------------");
+
+    // =========================
+    // AUTHENTICATE SEPAY
+    // =========================
+
+    if (!_sepayService.IsValidIpnSecret(providedSecret))
+    {
+        Console.WriteLine("❌ SEPAY SECRET INVALID");
+
+        return Unauthorized(new
         {
-            Console.WriteLine("❌ SEPAY SECRET INVALID");
+            success = false,
+            message = "Invalid SePay IPN secret"
+        });
+    }
 
-            return Unauthorized(new
-            {
-                success = false,
-                message = "Invalid SePay IPN secret"
-            });
-        }
+    Console.WriteLine("✅ SEPAY SECRET VALID");
 
-        Console.WriteLine("✅ SEPAY SECRET VALID");
+    // =========================
+    // IPN DATA
+    // =========================
 
-        // =========================
-        // IPN DATA
-        // =========================
+    Console.WriteLine("========== SEPAY IPN DATA ==========");
 
-        Console.WriteLine("========== SEPAY IPN DATA ==========");
+    Console.WriteLine(
+        $"NotificationType: {request.NotificationType}"
+    );
 
+    Console.WriteLine(
+        $"Timestamp: {request.Timestamp}"
+    );
+
+    Console.WriteLine("----- ORDER -----");
+
+    Console.WriteLine(
+        $"OrderId: {request.Order?.OrderId}"
+    );
+
+    Console.WriteLine(
+        $"OrderStatus: {request.Order?.OrderStatus}"
+    );
+
+    Console.WriteLine(
+        $"OrderAmount: {request.Order?.OrderAmount}"
+    );
+
+    Console.WriteLine(
+        $"InvoiceNumber: {request.Order?.OrderInvoiceNumber}"
+    );
+
+    Console.WriteLine("----- TRANSACTION -----");
+
+    Console.WriteLine(
+        $"TransactionId: {request.Transaction?.TransactionId}"
+    );
+
+    Console.WriteLine(
+        $"TransactionStatus: {request.Transaction?.TransactionStatus}"
+    );
+
+    Console.WriteLine(
+        $"TransactionAmount: {request.Transaction?.TransactionAmount}"
+    );
+
+    Console.WriteLine(
+        $"TransactionDate: {request.Transaction?.TransactionDate}"
+    );
+
+    Console.WriteLine(
+        $"PaymentMethod: {request.Transaction?.PaymentMethod}"
+    );
+
+    Console.WriteLine("====================================");
+
+    // =========================
+    // PROCESS PAYMENT
+    // =========================
+
+    var result = await _sender.Send(
+        new SepayProcessIpnCommand(request),
+        cancellationToken
+    );
+
+    if (!result.Success)
+    {
         Console.WriteLine(
-            $"NotificationType: {request.NotificationType}"
+            $"❌ SEPAY PROCESS FAILED: {result.Message}"
         );
 
-        Console.WriteLine(
-            $"Timestamp: {request.Timestamp}"
-        );
-
-        Console.WriteLine("----- ORDER -----");
-
-        Console.WriteLine(
-            $"OrderId: {request.Order?.OrderId}"
-        );
-
-        Console.WriteLine(
-            $"OrderStatus: {request.Order?.OrderStatus}"
-        );
-
-        Console.WriteLine(
-            $"OrderAmount: {request.Order?.OrderAmount}"
-        );
-
-        Console.WriteLine(
-            $"InvoiceNumber: {request.Order?.OrderInvoiceNumber}"
-        );
-
-        Console.WriteLine("----- TRANSACTION -----");
-
-        Console.WriteLine(
-            $"TransactionId: {request.Transaction?.TransactionId}"
-        );
-
-        Console.WriteLine(
-            $"TransactionStatus: {request.Transaction?.TransactionStatus}"
-        );
-
-        Console.WriteLine(
-            $"TransactionAmount: {request.Transaction?.TransactionAmount}"
-        );
-
-        Console.WriteLine(
-            $"TransactionDate: {request.Transaction?.TransactionDate}"
-        );
-
-        Console.WriteLine(
-            $"PaymentMethod: {request.Transaction?.PaymentMethod}"
-        );
-
-        Console.WriteLine("====================================");
-
-        // =========================
-        // PROCESS PAYMENT
-        // =========================
-
-        var result = await _sender.Send(
-            new SepayProcessIpnCommand(request),
-            cancellationToken
-        );
-
-        if (!result.Success)
+        return BadRequest(new
         {
-            Console.WriteLine(
-                $"❌ SEPAY PROCESS FAILED: {result.Message}"
-            );
-
-            return BadRequest(new
-            {
-                success = false,
-                message = result.Message,
-                paymentId = result.PaymentId
-            });
-        }
-
-        Console.WriteLine(
-            $"✅ SEPAY PROCESS SUCCESS: {result.Message}"
-        );
-
-        return Ok(new
-        {
-            success = true,
+            success = false,
             message = result.Message,
             paymentId = result.PaymentId
         });
     }
+
+    Console.WriteLine(
+        $"✅ SEPAY PROCESS SUCCESS: {result.Message}"
+    );
+
+    return Ok(new
+    {
+        success = true,
+        message = result.Message,
+        paymentId = result.PaymentId
+    });
+}
 
     [HttpPost("top-up/sepay/bank-notify")]
     [AllowAnonymous]

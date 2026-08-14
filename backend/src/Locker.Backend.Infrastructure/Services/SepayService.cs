@@ -31,32 +31,37 @@ public class SepayService : ISepayService
         _settings = settings.Value;
     }
 
-    public SepayCheckoutData CreateTopUpCheckout(Guid paymentId, Guid userId, decimal amount, string? paymentMethod = null)
+    public SepayCheckoutData CreateTopUpCheckout(
+     Guid paymentId,
+     Guid userId,
+     decimal amount,
+     string? paymentMethod = null)
     {
         var checkoutUrl = GetCheckoutUrl();
         var merchantId = GetMerchantId();
         var secretKey = GetSecretKey();
 
         if (string.IsNullOrWhiteSpace(checkoutUrl))
-        {
-            throw new InvalidOperationException("Sepay checkout URL is not configured.");
-        }
+            throw new InvalidOperationException(
+                "Sepay checkout URL is not configured.");
 
         if (string.IsNullOrWhiteSpace(merchantId))
-        {
-            throw new InvalidOperationException("Sepay merchant ID is not configured.");
-        }
+            throw new InvalidOperationException(
+                "Sepay merchant ID is not configured.");
 
         if (string.IsNullOrWhiteSpace(secretKey))
-        {
-            throw new InvalidOperationException("Sepay secret key is not configured.");
-        }
+            throw new InvalidOperationException(
+                "Sepay secret key is not configured.");
+
+        // Đây là mã dùng để liên kết giao dịch SePay
+        // với Payment trong database của Locker.
+        var invoiceNumber = CreateTopUpInvoiceNumber(paymentId);
 
         var fields = new Dictionary<string, string>
         {
             ["order_amount"] =
-         decimal.Truncate(amount)
-             .ToString("0", CultureInfo.InvariantCulture),
+                decimal.Truncate(amount)
+                    .ToString("0", CultureInfo.InvariantCulture),
 
             ["merchant"] = merchantId,
 
@@ -64,17 +69,20 @@ public class SepayService : ISepayService
 
             ["operation"] = "PURCHASE",
 
+            // Quan trọng:
+            // Đưa TOPUP_<GUID> vào description.
             ["order_description"] =
-         $"Nap tien vi Locker {paymentId:N}",
+                $"TOPUP_{paymentId:N}",
 
+            // Vẫn giữ invoice là TOPUP_<GUID>
             ["order_invoice_number"] =
-         CreateTopUpInvoiceNumber(paymentId),
+                invoiceNumber,
 
             ["customer_id"] =
-         userId.ToString("N"),
+                userId.ToString("N"),
 
             ["payment_method"] =
-         paymentMethod ?? "BANK_TRANSFER",
+                paymentMethod ?? "BANK_TRANSFER",
 
             ["success_url"] = _settings.SuccessUrl,
 
@@ -83,16 +91,27 @@ public class SepayService : ISepayService
             ["cancel_url"] = _settings.CancelUrl
         };
 
-        if (!string.IsNullOrWhiteSpace(paymentMethod))
-        {
-            fields["payment_method"] = paymentMethod;
-        }
-
         var signedString = BuildSignedString(fields);
-        var signature = Sign(signedString, secretKey);
+
+        var signature = Sign(
+            signedString,
+            secretKey);
+
         fields["signature"] = signature;
 
-        return new SepayCheckoutData(checkoutUrl, fields, signedString, signature);
+        Console.WriteLine("========== SEPAY CHECKOUT ==========");
+        Console.WriteLine($"PaymentId: {paymentId}");
+        Console.WriteLine($"InvoiceNumber: {invoiceNumber}");
+        Console.WriteLine($"OrderDescription: {fields["order_description"]}");
+        Console.WriteLine($"Amount: {fields["order_amount"]}");
+        Console.WriteLine($"PaymentMethod: {fields["payment_method"]}");
+        Console.WriteLine("====================================");
+
+        return new SepayCheckoutData(
+            checkoutUrl,
+            fields,
+            signedString,
+            signature);
     }
 
     public bool IsValidIpnSecret(string? providedSecret)
@@ -123,18 +142,21 @@ public class SepayService : ISepayService
         return $"TOPUP_{paymentId:N}";
     }
 
-    public static bool TryParseTopUpPaymentId(string? invoiceNumber, out Guid paymentId)
+    public static bool TryParseTopUpPaymentId(
+    string? invoiceNumber,
+    out Guid paymentId)
     {
         paymentId = Guid.Empty;
-        const string prefix = "TOPUP_";
 
-        if (string.IsNullOrWhiteSpace(invoiceNumber) ||
-            !invoiceNumber.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-        {
+        if (string.IsNullOrWhiteSpace(invoiceNumber))
             return false;
-        }
 
-        return Guid.TryParseExact(invoiceNumber[prefix.Length..], "N", out paymentId);
+        if (!invoiceNumber.StartsWith("TOPUP_"))
+            return false;
+
+        var id = invoiceNumber.Substring("TOPUP_".Length);
+
+        return Guid.TryParse(id, out paymentId);
     }
 
     public static string? ExtractInvoiceNumberFromContent(string? content)
@@ -142,41 +164,14 @@ public class SepayService : ISepayService
         if (string.IsNullOrWhiteSpace(content))
             return null;
 
-        content = content.Trim();
-
-        // =====================================================
-        // 1. Tìm mã TOPUP_xxx
-        // =====================================================
-
-        var topupMatch = System.Text.RegularExpressions.Regex.Match(
+        var match = System.Text.RegularExpressions.Regex.Match(
             content,
-            @"\bTOPUP[_-]?[A-Z0-9]+\b",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase
-        );
+            @"TOPUP_[A-Fa-f0-9]{32}",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
-        if (topupMatch.Success)
-        {
-            return topupMatch.Value.ToUpperInvariant();
-        }
-
-        // =====================================================
-        // 2. Tìm mã PAYxxxx
-        // Ví dụ:
-        // PAY28336A7F03BE19A2F
-        // =====================================================
-
-        var payMatch = System.Text.RegularExpressions.Regex.Match(
-            content,
-            @"\bPAY[A-Z0-9]+\b",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase
-        );
-
-        if (payMatch.Success)
-        {
-            return payMatch.Value.ToUpperInvariant();
-        }
-
-        return null;
+        return match.Success
+            ? match.Value.ToUpperInvariant()
+            : null;
     }
 
     private string GetCheckoutUrl()

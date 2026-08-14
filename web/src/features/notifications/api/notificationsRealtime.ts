@@ -30,3 +30,69 @@ export function createNotificationsConnection(
 
     return connection;
 }
+
+const START_DELAY_MS: ReadonlyArray<number> = [0, 2_000, 5_000, 10_000, 30_000];
+
+function isTransientState(state: signalR.HubConnectionState): boolean {
+    return (
+        state === signalR.HubConnectionState.Connected ||
+        state === signalR.HubConnectionState.Connecting ||
+        state === signalR.HubConnectionState.Reconnecting
+    );
+}
+
+function abortableSleep(ms: number, signal: AbortSignal): Promise<void> {
+    if (signal.aborted) {
+        return Promise.reject(new DOMException('Aborted', 'AbortError'));
+    }
+    return new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => {
+            signal.removeEventListener('abort', onAbort);
+            resolve();
+        }, ms);
+        const onAbort = () => {
+            clearTimeout(timer);
+            signal.removeEventListener('abort', onAbort);
+            reject(new DOMException('Aborted', 'AbortError'));
+        };
+        signal.addEventListener('abort', onAbort, { once: true });
+    });
+}
+
+export async function startNotificationsConnection(
+    connection: signalR.HubConnection,
+    signal: AbortSignal
+): Promise<void> {
+    if (signal.aborted) {
+        return;
+    }
+
+    for (let attempt = 0; ; attempt++) {
+        if (signal.aborted) {
+            return;
+        }
+
+        if (isTransientState(connection.state)) {
+            return;
+        }
+
+        try {
+            await connection.start();
+            return;
+        } catch (err) {
+            if (signal.aborted) {
+                return;
+            }
+            const delayMs = START_DELAY_MS[Math.min(attempt, START_DELAY_MS.length - 1)];
+            console.warn(
+                `[notifications] initial start attempt ${attempt + 1} failed; retrying in ${delayMs}ms`,
+                err
+            );
+            try {
+                await abortableSleep(delayMs, signal);
+            } catch {
+                return;
+            }
+        }
+    }
+}

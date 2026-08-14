@@ -3,14 +3,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Check, Package, CreditCard, Send, Lock } from 'lucide-react';
 import type { HubConnection } from '@microsoft/signalr';
 import { getMyNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../api/notificationsApi';
-import { createNotificationsConnection } from '../api/notificationsRealtime';
+import { createNotificationsConnection, startNotificationsConnection } from '../api/notificationsRealtime';
 import type { NotificationDto } from '../types';
+
+function mergeNotifications(
+    current: NotificationDto[],
+    incoming: NotificationDto[]
+): NotificationDto[] {
+    const byId = new Map(current.map((item) => [item.id, item]));
+    for (const item of incoming) {
+        byId.set(item.id, item);
+    }
+    return [...byId.values()].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+}
 
 export default function NotificationsDropdown() {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<NotificationDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    const [mutationError, setMutationError] = useState<string | null>(null);
     const [pendingReadIds, setPendingReadIds] = useState<Set<string>>(new Set());
     const [isMarkingAll, setIsMarkingAll] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -21,22 +35,19 @@ export default function NotificationsDropdown() {
     const loadNotifications = useCallback(async () => {
         const generation = ++requestGenerationRef.current;
         setIsLoading(true);
-        setError(null);
+        setLoadError(null);
         try {
             const items = await getMyNotifications();
             if (generation !== requestGenerationRef.current || !isMountedRef.current) {
                 return;
             }
-            const sorted = [...items].sort(
-                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-            setNotifications(sorted);
+            setNotifications((current) => mergeNotifications(current, items));
         } catch (err) {
             if (generation !== requestGenerationRef.current || !isMountedRef.current) {
                 return;
             }
             console.error('Failed to load notifications', err);
-            setError('Không thể tải thông báo.');
+            setLoadError('Không thể tải thông báo.');
             setNotifications([]);
         } finally {
             if (generation === requestGenerationRef.current && isMountedRef.current) {
@@ -52,10 +63,7 @@ export default function NotificationsDropdown() {
         const connection = createNotificationsConnection({
             onNotification: (incoming) => {
                 if (!isMountedRef.current) return;
-                setNotifications((current) => {
-                    const withoutDuplicate = current.filter((item) => item.id !== incoming.id);
-                    return [incoming, ...withoutDuplicate];
-                });
+                setNotifications((current) => mergeNotifications(current, [incoming]));
             },
             onReconnected: () => {
                 loadNotifications();
@@ -63,13 +71,14 @@ export default function NotificationsDropdown() {
         });
 
         connectionRef.current = connection;
-        connection.start().catch((err) => {
-            console.error('SignalR connection failed', err);
-        });
+
+        const abortController = new AbortController();
+        void startNotificationsConnection(connection, abortController.signal);
 
         return () => {
             isMountedRef.current = false;
             requestGenerationRef.current++;
+            abortController.abort();
             const conn = connectionRef.current;
             connectionRef.current = null;
             if (conn) {
@@ -95,6 +104,7 @@ export default function NotificationsDropdown() {
     const markAllAsRead = async () => {
         if (isMarkingAll) return;
         setIsMarkingAll(true);
+        setMutationError(null);
         try {
             await markAllNotificationsAsRead();
             if (!isMountedRef.current) return;
@@ -102,7 +112,7 @@ export default function NotificationsDropdown() {
         } catch (err) {
             console.error('Failed to mark all as read', err);
             if (isMountedRef.current) {
-                setError('Không thể đánh dấu tất cả đã đọc.');
+                setMutationError('Không thể đánh dấu tất cả đã đọc.');
             }
         } finally {
             if (isMountedRef.current) {
@@ -118,6 +128,7 @@ export default function NotificationsDropdown() {
             next.add(id);
             return next;
         });
+        setMutationError(null);
         try {
             await markNotificationAsRead(id);
             if (!isMountedRef.current) return;
@@ -125,7 +136,7 @@ export default function NotificationsDropdown() {
         } catch (err) {
             console.error('Failed to mark notification as read', err);
             if (isMountedRef.current) {
-                setError('Không thể đánh dấu đã đọc.');
+                setMutationError('Không thể đánh dấu đã đọc.');
             }
         } finally {
             setPendingReadIds((prev) => {
@@ -164,7 +175,7 @@ export default function NotificationsDropdown() {
                     >
                         <div className="flex items-center justify-between border-b border-gray-100 p-4">
                             <h3 className="font-bold text-gray-900">Thông báo</h3>
-                            {unreadCount > 0 && !isLoading && !error && (
+                            {unreadCount > 0 && !isLoading && !loadError && (
                                 <button
                                     onClick={markAllAsRead}
                                     disabled={isMarkingAll}
@@ -175,12 +186,18 @@ export default function NotificationsDropdown() {
                             )}
                         </div>
 
+                        {mutationError && (
+                            <div className="border-b border-orange-100 bg-orange-50 px-4 py-2 text-xs text-orange-700">
+                                {mutationError}
+                            </div>
+                        )}
+
                         <div className="max-h-[400px] overflow-y-auto">
                             {isLoading ? (
                                 <div className="p-8 text-center text-sm text-gray-400">Đang tải thông báo...</div>
-                            ) : error ? (
+                            ) : loadError ? (
                                 <div className="p-8 text-center text-sm text-gray-500">
-                                    <p>{error}</p>
+                                    <p>{loadError}</p>
                                     <button
                                         onClick={loadNotifications}
                                         className="mt-3 inline-flex items-center justify-center rounded-full border border-orange-500 px-4 py-1.5 text-xs font-semibold text-orange-500 hover:bg-orange-50"

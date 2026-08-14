@@ -228,6 +228,8 @@ public class WalletController : ControllerBase
             });
         }
 
+
+
         Console.WriteLine("========== SEPAY DATA ==========");
         Console.WriteLine($"Id: {request.Id}");
         Console.WriteLine($"Gateway: {request.Gateway}");
@@ -242,6 +244,18 @@ public class WalletController : ControllerBase
         Console.WriteLine($"Accumulated: {request.Accumulated}");
         Console.WriteLine($"ReferenceCode: {request.ReferenceCode}");
         Console.WriteLine("================================");
+
+        if (!string.IsNullOrWhiteSpace(request.Content))
+        {
+            // Sử dụng Regex lọc lấy chuỗi PAY... nằm trong chuỗi nội dung dài
+            var match = System.Text.RegularExpressions.Regex.Match(request.Content, @"(PAY[A-Z0-9]+)");
+            if (match.Success)
+            {
+                // Đè mã sạch (PAY28336A7F2598C6077) ngược lại vào biến Content
+                request.Content = match.Value;
+                Console.WriteLine($"⚙️ Đã bóc tách mã đơn hàng chuẩn thành công: {request.Content}");
+            }
+        }
 
         // =========================================================
         // 3. CHỈ XỬ LÝ TIỀN VÀO
@@ -281,18 +295,13 @@ public class WalletController : ControllerBase
         }
 
         // =========================================================
-        // 5. LẤY SEPAY PAYMENT CODE
+        // 5. LẤY SEPAY PAYMENT CODE VÀ BÓC TÁCH MÃ ĐƠN HÀNG SẠCH
         // =========================================================
 
-        Console.WriteLine(
-            $"Searching SePay payment code from webhook..."
-        );
+        Console.WriteLine($"Searching SePay payment code from webhook...");
 
         var sepayCode = request.Code?.Trim();
-
-        Console.WriteLine(
-            $"SePayCode: {sepayCode}"
-        );
+        Console.WriteLine($"SePayCode: {sepayCode}");
 
         if (string.IsNullOrWhiteSpace(sepayCode))
         {
@@ -303,8 +312,22 @@ public class WalletController : ControllerBase
             });
         }
 
+        // Tạo biến riêng để chứa mã hóa đơn sạch
+        string cleanInvoiceNumber = request.Content ?? "";
+
+        if (!string.IsNullOrWhiteSpace(request.Content))
+        {
+            // Sử dụng Regex lọc lấy duy nhất chuỗi PAY... nằm trong chuỗi nội dung dài
+            var match = System.Text.RegularExpressions.Regex.Match(request.Content, @"(PAY[A-Z0-9]+)");
+            if (match.Success)
+            {
+                cleanInvoiceNumber = match.Value; // Kết quả thu được: PAY28336A7F2598C6077
+                Console.WriteLine($"⚙️ Đã bóc tách mã đơn hàng chuẩn thành công: {cleanInvoiceNumber}");
+            }
+        }
+
         // =========================================================
-        // 6. TẠO REQUEST CHO MEDIATR
+        // 6. TẠO REQUEST CHO MEDIATR (Sử dụng mã hóa đơn sạch)
         // =========================================================
 
         var ipnRequest = new SepayIpnRequest
@@ -313,13 +336,12 @@ public class WalletController : ControllerBase
 
             Order = new SepayIpnOrder
             {
-                OrderInvoiceNumber = request.Content ?? "",
+                // GÁN MÃ SẠCH ĐÃ BÓC TÁCH VÀO ĐÂY
+                OrderInvoiceNumber = cleanInvoiceNumber,
                 OrderStatus = "CAPTURED",
 
                 OrderAmount = request.TransferAmount
-                    .ToString(
-                        System.Globalization.CultureInfo.InvariantCulture
-                    ),
+                    .ToString(System.Globalization.CultureInfo.InvariantCulture),
 
                 OrderDescription = request.Description
             },
@@ -327,17 +349,10 @@ public class WalletController : ControllerBase
             Transaction = new SepayIpnTransaction
             {
                 TransactionId = request.Id.ToString(),
-
                 TransactionStatus = "APPROVED",
-
-                TransactionAmount = request.TransferAmount.ToString(
-        System.Globalization.CultureInfo.InvariantCulture
-    ),
-
+                TransactionAmount = request.TransferAmount.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 TransactionDate = request.TransactionDate ?? "",
-
                 PaymentMethod = "BANK_TRANSFER",
-
                 TransactionType = request.TransferType
             },
             Customer = null
@@ -356,9 +371,7 @@ public class WalletController : ControllerBase
 
         if (!result.Success)
         {
-            Console.WriteLine(
-                $"❌ SEPAY PROCESS FAILED: {result.Message}"
-            );
+            Console.WriteLine($"❌ SEPAY PROCESS FAILED: {result.Message}");
 
             return BadRequest(new
             {
@@ -368,9 +381,7 @@ public class WalletController : ControllerBase
             });
         }
 
-        Console.WriteLine(
-            $"✅ SEPAY PROCESS SUCCESS: {result.Message}"
-        );
+        Console.WriteLine($"✅ SEPAY PROCESS SUCCESS: {result.Message}");
 
         // SePay yêu cầu HTTP 200 + JSON success=true
         return Ok(new

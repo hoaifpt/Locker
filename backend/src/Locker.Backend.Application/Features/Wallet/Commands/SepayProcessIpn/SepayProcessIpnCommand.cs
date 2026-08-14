@@ -8,6 +8,7 @@ using Locker.Backend.Application.Models;
 using Locker.Backend.Domain.Entities;
 using Locker.Backend.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace Locker.Backend.Application.Features.Wallet.Commands.SepayProcessIpn;
 
@@ -24,17 +25,20 @@ public record SepayProcessIpnResponse(
 public class SepayProcessIpnCommandHandler
     : IRequestHandler<SepayProcessIpnCommand, SepayProcessIpnResponse>
 {
+    private readonly SepaySettings _sepaySettings;
     private readonly IPaymentRepository _paymentRepository;
     private readonly IWalletTransactionRepository _walletTransactionRepository;
     private readonly IRealtimeNotificationService _notificationService;
     private readonly IPaymentRealtimeNotifier _paymentRealtimeNotifier;
 
     public SepayProcessIpnCommandHandler(
+        IOptions<SepaySettings> sepaySettings,
         IPaymentRepository paymentRepository,
         IWalletTransactionRepository walletTransactionRepository,
         IRealtimeNotificationService notificationService,
         IPaymentRealtimeNotifier paymentRealtimeNotifier)
     {
+        _sepaySettings = sepaySettings.Value;
         _paymentRepository = paymentRepository;
         _walletTransactionRepository = walletTransactionRepository;
         _notificationService = notificationService;
@@ -109,7 +113,34 @@ public class SepayProcessIpnCommandHandler
 
         Console.WriteLine($"✅ [SEPAY] Tìm thấy đúng đơn hàng! PaymentId={payment.Id}, UserId={payment.UserId}");
 
-        // 6. Kiểm tra method
+        // 6. Timeout: nếu IPN đến sau khi đã quá PaymentTimeoutMinutes thì không cộng tiền.
+        //    Áp dụng cùng pattern với VnPayProcessReturnCommandHandler để tránh user quét QR muộn
+        //    vẫn bị trừ tiền sau khi frontend đã hiển thị "hết hạn".
+        if (payment.Status == PaymentStatus.Pending
+            && (DateTime.UtcNow - payment.CreatedAt).TotalMinutes > _sepaySettings.PaymentTimeoutMinutes)
+        {
+            payment.Status = PaymentStatus.Failed;
+            await _paymentRepository.UpdateAsync(payment, cancellationToken);
+
+            await _paymentRealtimeNotifier.NotifyStatusChangedAsync(
+                payment.UserId,
+                new PaymentStatusChangedEvent
+                {
+                    PaymentId = payment.Id,
+                    Amount = payment.Amount,
+                    Status = payment.Status.ToString(),
+                },
+                cancellationToken);
+
+            Console.WriteLine($"⏰ [SEPAY] Payment {payment.Id} expired (> {_sepaySettings.PaymentTimeoutMinutes}min). Marked Failed.");
+
+            return new SepayProcessIpnResponse(
+                true,
+                $"Payment expired (>{_sepaySettings.PaymentTimeoutMinutes}min). Status={payment.Status}",
+                paymentId);
+        }
+
+        // 8. Kiểm tra method
         if (!string.Equals(payment.Method, "sepay", StringComparison.OrdinalIgnoreCase))
         {
             return new SepayProcessIpnResponse(
@@ -118,7 +149,7 @@ public class SepayProcessIpnCommandHandler
                 paymentId);
         }
 
-        // 7. Kiểm tra amount
+        // 9. Kiểm tra amount
         if (!IsSameAmount(payment.Amount, ipn.Order?.OrderAmount, ipn.Transaction?.TransactionAmount))
         {
             return new SepayProcessIpnResponse(
@@ -127,7 +158,7 @@ public class SepayProcessIpnCommandHandler
                 paymentId);
         }
 
-        // 8. Chống xử lý trùng bằng atomic transition Pending -> Completed
+        // 10. Chống xử lý trùng bằng atomic transition Pending -> Completed
         var gatewayTransactionId = FirstNotEmpty(
             ipn.Transaction?.TransactionId,
             ipn.Transaction?.Id,
@@ -156,12 +187,12 @@ public class SepayProcessIpnCommandHandler
                 paymentId);
         }
 
-        // 9. Kiểm tra WalletTransaction
+        // 11. Kiểm tra WalletTransaction
         var existingWalletTransaction = await _walletTransactionRepository.FindOneAsync(
             x => x.ReferenceId == completedPayment.Id.ToString() && x.Type == TransactionType.TopUp,
             cancellationToken);
 
-        // 10. Tạo WalletTransaction
+        // 12. Tạo WalletTransaction
         if (existingWalletTransaction == null)
         {
             var walletTransaction = new WalletTransaction

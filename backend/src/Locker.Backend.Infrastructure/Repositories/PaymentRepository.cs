@@ -71,4 +71,25 @@ public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
             },
             cancellationToken);
     }
+
+    public async Task<Payment?> TryCancelPendingAsync(
+        Guid paymentId,
+        CancellationToken cancellationToken)
+    {
+        var filter = Builders<Payment>.Filter.And(
+            Builders<Payment>.Filter.Eq(x => x.Id, paymentId),
+            Builders<Payment>.Filter.Eq(x => x.Status, PaymentStatus.Pending));
+
+        var update = Builders<Payment>.Update
+            .Set(x => x.Status, PaymentStatus.Cancelled);
+
+        return await _collection.FindOneAndUpdateAsync(
+            filter,
+            update,
+            new FindOneAndUpdateOptions<Payment>
+            {
+                ReturnDocument = ReturnDocument.After,
+            },
+            cancellationToken);
+    }
 }

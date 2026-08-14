@@ -12,6 +12,7 @@ using Locker.Backend.Application.Features.Wallet.Commands.VnPayInitTopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.SepayProcessReturn;
 using Locker.Backend.Application.Features.Wallet.Commands.SepayProcessIpn;
 using Locker.Backend.Application.Features.Wallet.Commands.SepayInitTopUp;
+using Locker.Backend.Application.Features.Wallet.Commands.SepayCancelTopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.VnPayProcessReturn;
 using Locker.Backend.Application.Features.Wallet.Queries.GetBalance;
 using Locker.Backend.Application.Features.Wallet.Queries.GetOverview;
@@ -129,6 +130,16 @@ public class WalletController : ControllerBase
         var ipAddress = GetClientIpAddress();
         var result = await _sender.Send(new SepayInitTopUpCommand(userId, request.Amount, ipAddress), cancellationToken);
         return Ok(result);
+    }
+
+    [HttpPost("top-up/sepay/cancel")]
+    public async Task<IActionResult> CancelSepayTopUp([FromBody] SepayTopUpCancelRequest request, CancellationToken cancellationToken)
+    {
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var result = await _sender.Send(new SepayCancelTopUpCommand(request.PaymentId, userId), cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
     }
 
     [HttpGet("top-up/sepay/return")]
@@ -334,6 +345,11 @@ public class VnPayTopUpInitRequest
 public class SepayTopUpInitRequest
 {
     public decimal Amount { get; set; }
+}
+
+public class SepayTopUpCancelRequest
+{
+    public Guid PaymentId { get; set; }
 }
 
 public class SepayBankNotifyRequest

@@ -27,4 +27,14 @@ public interface IPaymentRepository : IGenericRepository<Payment>
         string transactionId,
         DateTime paidAt,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Atomically transitions a payment from <see cref="PaymentStatus.Pending"/> to
+    /// <see cref="PaymentStatus.Cancelled"/>. Returns the updated payment when this
+    /// caller owned the transition; returns <c>null</c> when the payment is no longer
+    /// in <see cref="PaymentStatus.Pending"/> (already completed, cancelled, or expired).
+    /// </summary>
+    Task<Payment?> TryCancelPendingAsync(
+        Guid paymentId,
+        CancellationToken cancellationToken);
 }

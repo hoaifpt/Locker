@@ -38,7 +38,10 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
         await _paymentRepository.CreateAsync(payment, cancellationToken);
 
         // =========================================================
-        // CẬP NHẬT MÃ NGÂN HÀNG CHUẨN ĐÃ TEST CHẠY THÀNH CÔNG
+        // Tạo QR link theo schema img.vietqr.io (chuẩn, đã chạy ổn trước đó)
+        // - bankId/accountNo/accountName: hardcode cho khớp tài khoản merchant
+        // - amount & addInfo: nhúng vào QR để user quét xong bank app tự điền
+        // - SepayCode trong addInfo = key SePay IPN dùng để match → auto-confirm
         // =========================================================
         string bankId = "TPB";
         string accountNo = "84519828888";

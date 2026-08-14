@@ -139,13 +139,44 @@ public class SepayService : ISepayService
 
     public static string? ExtractInvoiceNumberFromContent(string? content)
     {
-        if (string.IsNullOrWhiteSpace(content)) return null;
+        if (string.IsNullOrWhiteSpace(content))
+            return null;
 
-        // Tách nội dung theo dấu cách hoặc dòng mới
-        var parts = content.Split(new[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        content = content.Trim();
 
-        // Tìm phần tử bắt đầu bằng "TOPUP_" (đúng với logic bạn tạo invoice)
-        return parts.FirstOrDefault(p => p.StartsWith("TOPUP_", StringComparison.OrdinalIgnoreCase));
+        // =====================================================
+        // 1. Tìm mã TOPUP_xxx
+        // =====================================================
+
+        var topupMatch = System.Text.RegularExpressions.Regex.Match(
+            content,
+            @"\bTOPUP[_-]?[A-Z0-9]+\b",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        );
+
+        if (topupMatch.Success)
+        {
+            return topupMatch.Value.ToUpperInvariant();
+        }
+
+        // =====================================================
+        // 2. Tìm mã PAYxxxx
+        // Ví dụ:
+        // PAY28336A7F03BE19A2F
+        // =====================================================
+
+        var payMatch = System.Text.RegularExpressions.Regex.Match(
+            content,
+            @"\bPAY[A-Z0-9]+\b",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        );
+
+        if (payMatch.Success)
+        {
+            return payMatch.Value.ToUpperInvariant();
+        }
+
+        return null;
     }
 
     private string GetCheckoutUrl()

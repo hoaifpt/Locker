@@ -25,11 +25,17 @@ public class PaymentRealtimeNotifier : IPaymentRealtimeNotifier
         PaymentStatusChangedEvent payload,
         CancellationToken cancellationToken)
     {
+        var groupName = $"user:{userId:D}";
         try
         {
             await _hubContext.Clients
-                .Group($"user:{userId:D}")
+                .Group(groupName)
                 .SendAsync(PaymentStatusChangedEvent, payload, cancellationToken);
+            _logger.LogInformation(
+                "Published PaymentStatusChanged for payment {PaymentId} to group {Group} (user {UserId})",
+                payload.PaymentId,
+                groupName,
+                userId);
         }
         catch (Exception ex)
         {

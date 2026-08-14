@@ -82,3 +82,15 @@ public class SepayIpnCustomer
     [JsonPropertyName("customer_id")]
     public string CustomerId { get; set; } = string.Empty;
 }
+
+public class SepayBankNotifyRequest
+{
+    [JsonPropertyName("content")]
+    public string Content { get; set; }
+
+    [JsonPropertyName("transferAmount")]
+    public decimal TransferAmount { get; set; }
+
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+}

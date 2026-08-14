@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Locker.Backend.Infrastructure.Services;
 using Locker.Backend.Application.Features.Wallet.Commands.TopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.Transfer;
 using Locker.Backend.Application.Features.Wallet.Commands.VnPayInitTopUp;
@@ -154,6 +155,39 @@ public class WalletController : ControllerBase
         [FromBody] SepayIpnRequest request,
         CancellationToken cancellationToken)
     {
+
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+
+        // 2. Định dạng SePay gửi là: "Apikey <API_KEY_CUA_BAN>"
+        // Chúng ta cần trích xuất phần API_KEY_CUA_BAN
+        var providedKey = authHeader?.Replace("Apikey ", "").Trim();
+
+        if (!_sepayService.IsValidIpnSecret(providedKey))
+        {
+            return Unauthorized("Invalid API Key");
+        }
+
+        Console.WriteLine("========== SEPAY IPN START ==========");
+
+        Console.WriteLine($"NotificationType: {request.NotificationType}");
+        Console.WriteLine($"Timestamp: {request.Timestamp}");
+
+        Console.WriteLine("----- ORDER -----");
+        Console.WriteLine($"OrderId: {request.Order?.OrderId}");
+        Console.WriteLine($"OrderStatus: {request.Order?.OrderStatus}");
+        Console.WriteLine($"OrderAmount: {request.Order?.OrderAmount}");
+        Console.WriteLine($"InvoiceNumber: {request.Order?.OrderInvoiceNumber}");
+        Console.WriteLine($"OrderDescription: {request.Order?.OrderDescription}");
+
+        Console.WriteLine("----- TRANSACTION -----");
+        Console.WriteLine($"TransactionId: {request.Transaction?.TransactionId}");
+        Console.WriteLine($"TransactionStatus: {request.Transaction?.TransactionStatus}");
+        Console.WriteLine($"TransactionAmount: {request.Transaction?.TransactionAmount}");
+        Console.WriteLine($"TransactionDate: {request.Transaction?.TransactionDate}");
+        Console.WriteLine($"PaymentMethod: {request.Transaction?.PaymentMethod}");
+
+        Console.WriteLine("====================================");
+
         var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
         if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
@@ -184,6 +218,38 @@ public class WalletController : ControllerBase
             message = result.Message,
             paymentId = result.PaymentId
         });
+    }
+
+    [HttpPost("top-up/sepay/bank-notify")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SepayBankNotify([FromBody] SepayBankNotifyRequest request, CancellationToken cancellationToken)
+    {
+        // Dùng cho trường hợp khách chuyển khoản trực tiếp qua App ngân hàng
+        // 1. Trích xuất mã TOPUP từ content
+        var invoiceNumber = SepayService.ExtractInvoiceNumberFromContent(request.Content);
+
+        // 2. Nếu tìm thấy mã, giả lập một request IPN để tái sử dụng logic xử lý thanh toán đã có
+        if (SepayService.TryParseTopUpPaymentId(invoiceNumber, out var paymentId))
+        {
+            var result = await _sender.Send(new SepayProcessIpnCommand(new SepayIpnRequest
+            {
+                NotificationType = "ORDER_PAID",
+                Order = new SepayIpnOrder
+                {
+                    OrderInvoiceNumber = invoiceNumber,
+                    OrderStatus = "CAPTURED",
+                    OrderAmount = request.TransferAmount.ToString()
+                },
+                Transaction = new SepayIpnTransaction
+                {
+                    TransactionStatus = "APPROVED",
+                    TransactionId = request.Id
+                }
+            }), cancellationToken);
+
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+        return BadRequest("Invalid content");
     }
 
     private string GetClientIpAddress()
@@ -225,4 +291,12 @@ public class VnPayTopUpInitRequest
 public class SepayTopUpInitRequest
 {
     public decimal Amount { get; set; }
+}
+
+public class SepayBankNotifyRequest
+{
+    public string Content { get; set; }
+    public decimal TransferAmount { get; set; }
+    public string Code { get; set; }
+    public string Id { get; set; }
 }

@@ -125,6 +125,17 @@ public class SepayService : ISepayService
         return Guid.TryParseExact(invoiceNumber[prefix.Length..], "N", out paymentId);
     }
 
+    public static string? ExtractInvoiceNumberFromContent(string? content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return null;
+
+        // Tách nội dung theo dấu cách hoặc dòng mới
+        var parts = content.Split(new[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+        // Tìm phần tử bắt đầu bằng "TOPUP_" (đúng với logic bạn tạo invoice)
+        return parts.FirstOrDefault(p => p.StartsWith("TOPUP_", StringComparison.OrdinalIgnoreCase));
+    }
+
     private string GetCheckoutUrl()
     {
         if (!string.IsNullOrWhiteSpace(_settings.CheckoutUrl))

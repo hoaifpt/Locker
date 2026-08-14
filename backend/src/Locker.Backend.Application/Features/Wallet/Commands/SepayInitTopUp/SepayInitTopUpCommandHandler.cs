@@ -55,21 +55,19 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
             request.Amount,
             sepayCode);
 
+        string bankId = "TPBank";
+        string accountNo = "84519828888";
+        string accountName = "PHAM DUC HUNG";
 
-        // SỬA CẤU TRÚC URL THEO CHUẨN API MỚI NHẤT CỦA VIETQR.IO
-        // =========================================================
-        string bankId = "TPB"; 
-        string accountNo = "84519828888"; 
-        string accountName = "PHAM DUC HUNG"; 
-
-        // Chuẩn mới: .../image/TÊN_NGÂN_HÀNG/SỐ_TÀI_KHOẢN/generate
-        // Đồng thời thêm tham số &template=compact để ép kiểu hiển thị thu gọn
-        string cleanVietQrUrl = $"https://vietqr.io{bankId}/{accountNo}/generate" +
-                                $"?amount={decimal.Truncate(request.Amount).ToString("0")}" +
-                                $"&addInfo={System.Net.WebUtility.UrlEncode(sepayCode)}" +
-                                $"&accountName={System.Net.WebUtility.UrlEncode(accountName)}" +
-                                $"&template=compact";
-
+        // Sử dụng đúng các tham số: &amount=... và &memo=... theo tài liệu của vietqr.app
+        string cleanVietQrUrl = $"https://vietqr.app/img" +
+                                $"?bank={bankId}" +
+                                $"&acc={accountNo}" +
+                                $"&template=standee" +
+                                $"&fullacc=true" +
+                                $"&holder={System.Net.WebUtility.UrlEncode(accountName)}" +
+                                $"&amount={decimal.Truncate(request.Amount).ToString("0")}" +
+                                $"&memo={System.Net.WebUtility.UrlEncode(sepayCode)}";
 
         var expiresAt = payment.CreatedAt.AddMinutes(_sepaySettings.PaymentTimeoutMinutes);
 
@@ -77,8 +75,8 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
 
         return new SepayInitTopUpResponse(
             Succeeded: true,
-            Message: "VietQR dynamic checkout generated successfully.",
-            PaymentUrl: cleanVietQrUrl, // Trả link ảnh QR chuẩn về cho Front-end
+            Message: "VietQR standee generated successfully.",
+            PaymentUrl: cleanVietQrUrl, // Trả link QR động hoàn chỉnh về cho Frontend hiển thị
             PaymentId: payment.Id,
             Amount: request.Amount,
             ExpiresAt: expiresAt,
@@ -86,4 +84,5 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
             FormFields: checkout.Fields);
     }
 }
+
 

@@ -154,8 +154,8 @@ public class WalletController : ControllerBase
     [HttpPost("top-up/sepay/ipn")]
     [AllowAnonymous]
     public async Task<IActionResult> SepayIpn(
-     [FromBody] SepayBankWebhookRequest request,
-     CancellationToken cancellationToken)
+  [FromBody] SepayBankWebhookRequest request,
+  CancellationToken cancellationToken)
     {
         Console.WriteLine("========== SEPAY BANK WEBHOOK ==========");
 
@@ -169,8 +169,6 @@ public class WalletController : ControllerBase
         var providedSecret = Request.Headers["X-Secret-Key"]
             .FirstOrDefault();
 
-        // SePay Bank Webhook dùng:
-        // Authorization: Apikey YOUR_API_KEY
         if (string.IsNullOrWhiteSpace(providedSecret) &&
             !string.IsNullOrWhiteSpace(authorization))
         {
@@ -186,18 +184,10 @@ public class WalletController : ControllerBase
         }
 
         Console.WriteLine("========== SEPAY AUTH ==========");
-        Console.WriteLine(
-            $"Authorization exists: {!string.IsNullOrWhiteSpace(authorization)}"
-        );
-        Console.WriteLine(
-            $"Authorization length: {authorization?.Length ?? 0}"
-        );
-        Console.WriteLine(
-            $"Provided secret exists: {!string.IsNullOrWhiteSpace(providedSecret)}"
-        );
-        Console.WriteLine(
-            $"Provided secret length: {providedSecret?.Length ?? 0}"
-        );
+        Console.WriteLine($"Authorization exists: {!string.IsNullOrWhiteSpace(authorization)}");
+        Console.WriteLine($"Authorization length: {authorization?.Length ?? 0}");
+        Console.WriteLine($"Provided secret exists: {!string.IsNullOrWhiteSpace(providedSecret)}");
+        Console.WriteLine($"Provided secret length: {providedSecret?.Length ?? 0}");
         Console.WriteLine("================================");
 
         if (!_sepayService.IsValidIpnSecret(providedSecret))
@@ -228,7 +218,8 @@ public class WalletController : ControllerBase
             });
         }
 
-
+        // Tạo một bản sao nội dung chuyển khoản gốc trước khi bóc tách để lưu log chính xác
+        string originalContent = request.Content ?? "";
 
         Console.WriteLine("========== SEPAY DATA ==========");
         Console.WriteLine($"Id: {request.Id}");
@@ -237,25 +228,13 @@ public class WalletController : ControllerBase
         Console.WriteLine($"AccountNumber: {request.AccountNumber}");
         Console.WriteLine($"SubAccount: {request.SubAccount}");
         Console.WriteLine($"Code: {request.Code}");
-        Console.WriteLine($"Content: {request.Content}");
+        Console.WriteLine($"Content: {originalContent}");
         Console.WriteLine($"TransferType: {request.TransferType}");
         Console.WriteLine($"Description: {request.Description}");
         Console.WriteLine($"TransferAmount: {request.TransferAmount}");
         Console.WriteLine($"Accumulated: {request.Accumulated}");
         Console.WriteLine($"ReferenceCode: {request.ReferenceCode}");
         Console.WriteLine("================================");
-
-        if (!string.IsNullOrWhiteSpace(request.Content))
-        {
-            // Sử dụng Regex lọc lấy chuỗi PAY... nằm trong chuỗi nội dung dài
-            var match = System.Text.RegularExpressions.Regex.Match(request.Content, @"(PAY[A-Z0-9]+)");
-            if (match.Success)
-            {
-                // Đè mã sạch (PAY28336A7F2598C6077) ngược lại vào biến Content
-                request.Content = match.Value;
-                Console.WriteLine($"⚙️ Đã bóc tách mã đơn hàng chuẩn thành công: {request.Content}");
-            }
-        }
 
         // =========================================================
         // 3. CHỈ XỬ LÝ TIỀN VÀO
@@ -266,9 +245,7 @@ public class WalletController : ControllerBase
                 "in",
                 StringComparison.OrdinalIgnoreCase))
         {
-            Console.WriteLine(
-                $"⚠️ IGNORE: transaction type = {request.TransferType}"
-            );
+            Console.WriteLine($"⚠️ IGNORE: transaction type = {request.TransferType}");
 
             return Ok(new
             {
@@ -283,9 +260,7 @@ public class WalletController : ControllerBase
 
         if (request.TransferAmount <= 0)
         {
-            Console.WriteLine(
-                $"❌ INVALID AMOUNT: {request.TransferAmount}"
-            );
+            Console.WriteLine($"❌ INVALID AMOUNT: {request.TransferAmount}");
 
             return BadRequest(new
             {
@@ -295,7 +270,7 @@ public class WalletController : ControllerBase
         }
 
         // =========================================================
-        // 5. LẤY SEPAY PAYMENT CODE VÀ BÓC TÁCH MÃ ĐƠN HÀNG SẠCH
+        // 5. LẤY SEPAY PAYMENT CODE VÀ BÓC TÁCH MÀ HOÁ ĐƠN GỐC (GUID/ID)
         // =========================================================
 
         Console.WriteLine($"Searching SePay payment code from webhook...");
@@ -312,22 +287,22 @@ public class WalletController : ControllerBase
             });
         }
 
-        // Tạo biến riêng để chứa mã hóa đơn sạch
-        string cleanInvoiceNumber = request.Content ?? "";
+        // Mặc định giữ chuỗi ban đầu
+        string cleanInvoiceNumber = originalContent;
 
-        if (!string.IsNullOrWhiteSpace(request.Content))
+        // Tiến hành bóc tách lấy phần tử đầu tiên trước dấu '-' (Mã hóa đơn hệ thống của bạn)
+        if (!string.IsNullOrWhiteSpace(originalContent) && originalContent.Contains("-"))
         {
-            // Sử dụng Regex lọc lấy duy nhất chuỗi PAY... nằm trong chuỗi nội dung dài
-            var match = System.Text.RegularExpressions.Regex.Match(request.Content, @"(PAY[A-Z0-9]+)");
-            if (match.Success)
+            string[] parts = originalContent.Split('-');
+            if (parts.Length > 0 && !string.IsNullOrWhiteSpace(parts[0]))
             {
-                cleanInvoiceNumber = match.Value; // Kết quả thu được: PAY28336A7F2598C6077
-                Console.WriteLine($"⚙️ Đã bóc tách mã đơn hàng chuẩn thành công: {cleanInvoiceNumber}");
+                cleanInvoiceNumber = parts[0].Trim();
+                Console.WriteLine($"⚙️ Đã bóc tách mã hóa đơn gốc hệ thống thành công: {cleanInvoiceNumber}");
             }
         }
 
         // =========================================================
-        // 6. TẠO REQUEST CHO MEDIATR (Sử dụng mã hóa đơn sạch)
+        // 6. TẠO REQUEST CHO MEDIATR (Sử dụng mã hóa đơn hệ thống)
         // =========================================================
 
         var ipnRequest = new SepayIpnRequest
@@ -336,7 +311,7 @@ public class WalletController : ControllerBase
 
             Order = new SepayIpnOrder
             {
-                // GÁN MÃ SẠCH ĐÃ BÓC TÁCH VÀO ĐÂY
+                // Gán mã hóa đơn hệ thống sạch đã bóc tách được từ bước 5
                 OrderInvoiceNumber = cleanInvoiceNumber,
                 OrderStatus = "CAPTURED",
 
@@ -383,12 +358,13 @@ public class WalletController : ControllerBase
 
         Console.WriteLine($"✅ SEPAY PROCESS SUCCESS: {result.Message}");
 
-        // SePay yêu cầu HTTP 200 + JSON success=true
+        // SePay yêu cầu phản hồi HTTP 200 kèm JSON success=true
         return Ok(new
         {
             success = true
         });
     }
+
 
     [HttpPost("top-up/sepay/bank-notify")]
     [AllowAnonymous]

@@ -307,8 +307,8 @@ public class SepayProcessIpnCommandHandler
     }
 
     private static bool TryParseTopUpInvoiceNumber(
-     string? invoiceNumber,
-     out Guid paymentId)
+    string? invoiceNumber,
+    out Guid paymentId)
     {
         paymentId = Guid.Empty;
 
@@ -320,16 +320,12 @@ public class SepayProcessIpnCommandHandler
         {
             try
             {
-                // Bỏ chữ PAY ở đầu, lấy chuỗi Hex còn lại
+                // Quy đổi chuỗi Hex của SePay ngược về lại định dạng mã Guid gốc của hệ thống bạn
                 string hexPart = invoiceNumber[3..];
-
-                // Loại bỏ ký tự phân tách của SePay ở vị trí số 8 (ví dụ chữ F, A, B... tùy phiên bản QR)
                 if (hexPart.Length > 8)
                 {
-                    hexPart = hexPart.Remove(8, 1);
+                    hexPart = hexPart.Remove(8, 1); // Loại bỏ ký tự phân tách của SePay
                 }
-
-                // Ép chuỗi Hex sạch này về lại mã Guid gốc định dạng "N"
                 return Guid.TryParseExact(hexPart, "N", out paymentId);
             }
             catch
@@ -338,7 +334,7 @@ public class SepayProcessIpnCommandHandler
             }
         }
 
-        // Trường hợp 2: Dự phòng cấu hình cũ chạy mã TOPUP_
+        // Trường hợp 2: Dự phòng cho luồng thanh toán TOPUP_ cũ
         const string prefix = "TOPUP_";
         if (invoiceNumber.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
@@ -350,5 +346,6 @@ public class SepayProcessIpnCommandHandler
 
         return false;
     }
+
 
 }

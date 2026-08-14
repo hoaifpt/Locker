@@ -66,6 +66,7 @@ export default function WalletPage() {
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const realtimeRef = useRef<HubConnection | null>(null);
+  const currentPaymentIdRef = useRef<string | null>(null);
 
   const loadWallet = useCallback(async () => {
     try {
@@ -123,11 +124,12 @@ export default function WalletPage() {
     }
   };
 
-  const openRealtime = useCallback(async () => {
+  const openRealtime = useCallback(async (paymentId: string) => {
+    currentPaymentIdRef.current = paymentId;
     if (realtimeRef.current) return;
     const conn = createPaymentRealtimeConnection({
       onPaymentStatusChanged: (payload) => {
-        if (!payment || payload.paymentId !== payment.paymentId) return;
+        if (!currentPaymentIdRef.current || payload.paymentId !== currentPaymentIdRef.current) return;
         const numericStatus =
           payload.status === 'Completed' ? 1 :
           payload.status === 'Failed' ? 2 :
@@ -156,7 +158,7 @@ export default function WalletPage() {
     } catch (err) {
       console.warn('[payment-realtime] start failed', err);
     }
-  }, [payment, showToast, loadWallet]);
+  }, [showToast, loadWallet]);
 
   const closeRealtime = useCallback(async () => {
     const conn = realtimeRef.current;
@@ -180,7 +182,7 @@ export default function WalletPage() {
       }
       setPayment(p);
       setStep('paying');
-      void openRealtime();
+      void openRealtime(p.paymentId);
     } catch {
       sessionStorage.removeItem(PAYMENT_STORAGE_KEY);
     }
@@ -230,7 +232,7 @@ export default function WalletPage() {
       setPayment(result);
       setPaymentStatus(null);
       setStep('paying');
-      void openRealtime();
+      void openRealtime(result.paymentId);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Đã có lỗi xảy ra.';
       showToast(errorMessage, 'error');
@@ -446,77 +448,7 @@ export default function WalletPage() {
                     </motion.form>
                   )}
 
-                  {step === 'paying' && payment && (isCompleted || isFailed || expired) && (
-                    <motion.div
-                      key="result"
-                      initial={{ opacity: 0, scale: 0.92 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.92 }}
-                      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                      className="mx-auto flex max-w-md flex-col items-center gap-5 py-6 text-center"
-                    >
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.05, type: 'spring', stiffness: 220, damping: 18 }}
-                        className={`flex h-20 w-20 items-center justify-center rounded-full ${
-                          isCompleted
-                            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
-                            : 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400'
-                        }`}
-                      >
-                        {isCompleted ? <CheckCircle size={42} /> : <XCircle size={42} />}
-                      </motion.div>
-
-                      <div>
-                        <h3 className="text-2xl font-extrabold text-slate-950 dark:text-white">
-                          {isCompleted ? 'Nạp tiền thành công!' :
-                           isFailed ? 'Thanh toán thất bại' :
-                           'Đơn đã hết hạn'}
-                        </h3>
-                        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                          {isCompleted ? `Đã cộng ${formatVnd(payment.amount)} vào ví E-Box Pay của bạn.` :
-                           isFailed ? 'Giao dịch không thành công. Vui lòng thử lại hoặc liên hệ hỗ trợ.' :
-                           'Mã QR đã hết hạn. Vui lòng tạo đơn nạp mới.'}
-                        </p>
-                      </div>
-
-                      {isCompleted && (
-                        <div className="w-full rounded-2xl border border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Số tiền đã nạp</p>
-                          <p className="mt-1 text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">+{formatVnd(payment.amount)}</p>
-                          {paymentStatus?.paidAt && (
-                            <p className="mt-1 text-[10px] text-emerald-700/70 dark:text-emerald-400/70">
-                              {new Date(paymentStatus.paidAt).toLocaleString('vi-VN')}
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="flex w-full flex-col gap-2 sm:flex-row">
-                        {isCompleted || expired ? (
-                          <button
-                            type="button"
-                            onClick={handleCloseTopup}
-                            className="flex-1 rounded-2xl bg-orange-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
-                          >
-                            {isCompleted ? 'Xem ví' : 'Đóng'}
-                          </button>
-                        ) : null}
-                        {(isFailed || expired) && (
-                          <button
-                            type="button"
-                            onClick={handleCreateNew}
-                            className="flex-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                          >
-                            Tạo lại mã QR
-                          </button>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {step === 'paying' && payment && !isCompleted && !isFailed && !expired && (
+                  {step === 'paying' && payment && (
                     <motion.div
                       key="paying"
                       initial={{ opacity: 0, x: 10 }}
@@ -602,15 +534,13 @@ export default function WalletPage() {
                           </div>
                         </div>
 
-                        {!isCompleted && !isFailed && !expired && (
-                          <button
-                            type="button"
-                            onClick={handleCloseTopup}
-                            className="block w-full rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                          >
-                            Đóng
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={handleCloseTopup}
+                          className="block w-full rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                        >
+                          Đóng
+                        </button>
                       </div>
                     </motion.div>
                   )}

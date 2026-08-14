@@ -16,10 +16,14 @@ public record CreateUserCommand(
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, (User? User, string? Error)>
 {
     private readonly IIdentityService _identityService;
+    private readonly IRealtimeNotificationService _notificationService;
 
-    public CreateUserCommandHandler(IIdentityService identityService)
+    public CreateUserCommandHandler(
+        IIdentityService identityService,
+        IRealtimeNotificationService notificationService)
     {
         _identityService = identityService;
+        _notificationService = notificationService;
     }
 
     public async Task<(User? User, string? Error)> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -48,6 +52,12 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, (User
         }
 
         await _identityService.AddToRoleAsync(user, request.Role);
+
+        await _notificationService.NotifyAdminsAsync(
+            "Tài khoản mới được tạo",
+            $"Admin vừa tạo tài khoản \"{user.UserName}\" với quyền {request.Role}.",
+            cancellationToken);
+
         return (user, null);
     }
 }

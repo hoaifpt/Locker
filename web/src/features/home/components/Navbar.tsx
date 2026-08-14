@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Lock, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
 import ThemeToggle from '../../../components/ui/ThemeToggle';
+import Logo from '../../../components/ui/Logo';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -44,13 +45,11 @@ export default function Navbar() {
           : 'bg-transparent backdrop-blur-sm'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
-            <Lock size={16} />
-          </span>
-          E-Box
+        <Link to="/" className="flex items-center gap-2">
+          <Logo size={72} showText={false} />
+          <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">E-Box</span>
         </Link>
 
         {/* Desktop nav */}

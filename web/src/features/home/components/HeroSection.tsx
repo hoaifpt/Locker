@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { ChevronRight, Lock, Play } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { hidden, visible, trans } from '../../../lib/animations';
 
 export default function HeroSection() {
@@ -47,14 +48,16 @@ export default function HeroSection() {
               transition={trans(0.3)}
               className="mt-8 flex flex-wrap gap-3"
             >
-              <a
-                href="#"
+              <Link
+                to="/login"
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-orange-600"
               >
                 Bắt đầu ngay <ChevronRight size={16} />
-              </a>
+              </Link>
               <a
-                href="#"
+                href="https://locker-ebox.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 transition hover:border-orange-400 hover:text-orange-500"
               >
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-orange-500">

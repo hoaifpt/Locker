@@ -122,7 +122,6 @@ export default function WalletPage() {
       }
       return b.id.localeCompare(a.id);
     });
-    console.info('[wallet] sorted tx', sorted.map(t => ({ createdAt: t.createdAt, status: t.status })));
     if (statusFilter === 'all') return sorted;
     return sorted.filter((t) => {
       const s = String(t.status).toLowerCase();

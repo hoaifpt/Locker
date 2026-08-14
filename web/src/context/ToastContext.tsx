@@ -38,7 +38,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           existingId = existing.id;
           return prev.map((t) =>
             t.id === existing.id
-              ? { ...t, duration: duration ?? t.duration, pulseAt: Date.now() }
+              ? { ...t, duration: duration ?? DEFAULT_DURATIONS[type], pulseAt: Date.now() }
               : t,
           );
         }

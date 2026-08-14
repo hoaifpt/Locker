@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
+using System.Globalization;
 using Locker.Backend.Infrastructure.Services;
 using Locker.Backend.Application.Features.Wallet.Commands.TopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.Transfer;
@@ -15,12 +16,10 @@ using Locker.Backend.Application.Features.Wallet.Commands.VnPayProcessReturn;
 using Locker.Backend.Application.Features.Wallet.Queries.GetBalance;
 using Locker.Backend.Application.Features.Wallet.Queries.GetOverview;
 using Locker.Backend.Application.Features.Wallet.Queries.GetTransactions;
-using System.Text.RegularExpressions;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Locker.Backend.Controllers;
@@ -148,178 +147,87 @@ public class WalletController : ControllerBase
             return BadRequest(result);
         }
 
-        // Trả về kết quả thành công để client (WebView trong mobile app) có thể bắt và xử lý
         return Ok(result);
     }
 
     [HttpPost("top-up/sepay/ipn")]
     [AllowAnonymous]
     public async Task<IActionResult> SepayIpn(
-  [FromBody] SepayBankWebhookRequest request,
-  CancellationToken cancellationToken)
+        [FromBody] SepayBankWebhookRequest request,
+        CancellationToken cancellationToken)
     {
         Console.WriteLine("========== SEPAY BANK WEBHOOK ==========");
 
-        // =========================================================
         // 1. AUTHORIZATION
-        // =========================================================
+        var authorization = Request.Headers["Authorization"].FirstOrDefault();
+        var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
 
-        var authorization = Request.Headers["Authorization"]
-            .FirstOrDefault();
-
-        var providedSecret = Request.Headers["X-Secret-Key"]
-            .FirstOrDefault();
-
-        if (string.IsNullOrWhiteSpace(providedSecret) &&
-            !string.IsNullOrWhiteSpace(authorization))
+        if (string.IsNullOrWhiteSpace(providedSecret) && !string.IsNullOrWhiteSpace(authorization))
         {
             var parts = authorization.Split(' ', 2);
-
-            if (parts.Length == 2 &&
-                parts[0].Equals(
-                    "Apikey",
-                    StringComparison.OrdinalIgnoreCase))
+            if (parts.Length == 2 && parts[0].Equals("Apikey", StringComparison.OrdinalIgnoreCase))
             {
                 providedSecret = parts[1].Trim();
             }
         }
 
-        Console.WriteLine("========== SEPAY AUTH ==========");
-        Console.WriteLine($"Authorization exists: {!string.IsNullOrWhiteSpace(authorization)}");
-        Console.WriteLine($"Authorization length: {authorization?.Length ?? 0}");
-        Console.WriteLine($"Provided secret exists: {!string.IsNullOrWhiteSpace(providedSecret)}");
-        Console.WriteLine($"Provided secret length: {providedSecret?.Length ?? 0}");
-        Console.WriteLine("================================");
-
         if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
             Console.WriteLine("❌ SEPAY SECRET INVALID");
-
-            return Unauthorized(new
-            {
-                success = false,
-                message = "Invalid SePay API key"
-            });
+            return Unauthorized(new { success = false, message = "Invalid SePay API key" });
         }
 
         Console.WriteLine("✅ SEPAY SECRET VALID");
 
-        // =========================================================
         // 2. VALIDATE BODY
-        // =========================================================
-
         if (request == null)
         {
-            Console.WriteLine("❌ SEPAY REQUEST BODY IS NULL");
-
-            return BadRequest(new
-            {
-                success = false,
-                message = "SePay request body is empty"
-            });
+            return BadRequest(new { success = false, message = "SePay request body is empty" });
         }
 
-        // Tạo một bản sao nội dung chuyển khoản gốc trước khi bóc tách để lưu log chính xác
-        string originalContent = request.Content ?? "";
-
-        Console.WriteLine("========== SEPAY DATA ==========");
-        Console.WriteLine($"Id: {request.Id}");
-        Console.WriteLine($"Gateway: {request.Gateway}");
-        Console.WriteLine($"TransactionDate: {request.TransactionDate}");
-        Console.WriteLine($"AccountNumber: {request.AccountNumber}");
-        Console.WriteLine($"SubAccount: {request.SubAccount}");
-        Console.WriteLine($"Code: {request.Code}");
-        Console.WriteLine($"Content: {originalContent}");
-        Console.WriteLine($"TransferType: {request.TransferType}");
-        Console.WriteLine($"Description: {request.Description}");
-        Console.WriteLine($"TransferAmount: {request.TransferAmount}");
-        Console.WriteLine($"Accumulated: {request.Accumulated}");
-        Console.WriteLine($"ReferenceCode: {request.ReferenceCode}");
-        Console.WriteLine("================================");
-
-        // =========================================================
-        // 3. CHỈ XỬ LÝ TIỀN VÀO
-        // =========================================================
-
-        if (!string.Equals(
-                request.TransferType,
-                "in",
-                StringComparison.OrdinalIgnoreCase))
+        // 3. CHỈ XỬ LÝ TIỀN VÀO (IN)
+        if (!string.Equals(request.TransferType, "in", StringComparison.OrdinalIgnoreCase))
         {
-            Console.WriteLine($"⚠️ IGNORE: transaction type = {request.TransferType}");
-
-            return Ok(new
-            {
-                success = true,
-                message = "Ignored transaction type"
-            });
+            return Ok(new { success = true, message = "Ignored transaction type" });
         }
 
-        // =========================================================
         // 4. VALIDATE AMOUNT
-        // =========================================================
-
         if (request.TransferAmount <= 0)
         {
-            Console.WriteLine($"❌ INVALID AMOUNT: {request.TransferAmount}");
-
-            return BadRequest(new
-            {
-                success = false,
-                message = "Transfer amount must be greater than zero"
-            });
+            return BadRequest(new { success = false, message = "Transfer amount must be greater than zero" });
         }
 
-        // =========================================================
-        // 5. LẤY SEPAY PAYMENT CODE (LẤY MÃ TRỰC TIẾP TỪ SEPAY)
-        // =========================================================
-
-        Console.WriteLine($"Searching SePay payment code from webhook...");
-
-        // Lấy mã SePayCode sạch (Ví dụ: PAY28336A7F2F1DA6E16)
-        // SePay bank webhook KHÔNG có `code` khi user CK tự do qua QR tĩnh — chỉ có `content`.
-        // Fallback: trích xuất `TOPUP_<guid>` từ `content` bằng regex.
+        // 5. TRÍCH XUẤT SEPAY PAYMENT CODE
         var sepayCode = request.Code?.Trim();
         if (string.IsNullOrWhiteSpace(sepayCode))
         {
-            sepayCode = SepayWebhookHelpers.ExtractTopUpCodeFromContent(request.Content);
+            // Dùng thống nhất SepayService để bóc tách mã TOPUP
+            sepayCode = SepayService.ExtractInvoiceNumberFromContent(request.Content);
         }
-        Console.WriteLine($"SePayCode: {sepayCode}");
+
+        Console.WriteLine($"SePayCode Extracted: {sepayCode}");
 
         if (string.IsNullOrWhiteSpace(sepayCode))
         {
-            return BadRequest(new
-            {
-                success = false,
-                message = "Cannot find SePay payment code"
-            });
+            return BadRequest(new { success = false, message = "Cannot find SePay payment code" });
         }
 
-        // =========================================================
         // 6. TẠO REQUEST CHO MEDIATR 
-        // =========================================================
-
         var ipnRequest = new SepayIpnRequest
         {
             NotificationType = "ORDER_PAID",
-
             Order = new SepayIpnOrder
             {
-                // Truyền trực tiếp mã sepayCode sạch xuống handler
                 OrderInvoiceNumber = sepayCode,
                 OrderStatus = "CAPTURED",
-
-                OrderAmount = request.TransferAmount
-                    .ToString(System.Globalization.CultureInfo.InvariantCulture),
-
+                OrderAmount = request.TransferAmount.ToString(CultureInfo.InvariantCulture),
                 OrderDescription = request.Description
             },
-
             Transaction = new SepayIpnTransaction
             {
                 TransactionId = request.Id.ToString(),
                 TransactionStatus = "APPROVED",
-                TransactionAmount = request.TransferAmount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                TransactionAmount = request.TransferAmount.ToString(CultureInfo.InvariantCulture),
                 TransactionDate = request.TransactionDate ?? "",
                 PaymentMethod = "BANK_TRANSFER",
                 TransactionType = request.TransferType
@@ -327,22 +235,12 @@ public class WalletController : ControllerBase
             Customer = null
         };
 
-
-        // =========================================================
-        // 7. PROCESS TOP-UP
-        // =========================================================
-
-        Console.WriteLine("========== SEPAY PROCESS ==========");
-
-        var result = await _sender.Send(
-            new SepayProcessIpnCommand(ipnRequest),
-            cancellationToken
-        );
+        // 7. PROCESS TOP-UP VIA MEDIATR
+        var result = await _sender.Send(new SepayProcessIpnCommand(ipnRequest), cancellationToken);
 
         if (!result.Success)
         {
             Console.WriteLine($"❌ SEPAY PROCESS FAILED: {result.Message}");
-
             return BadRequest(new
             {
                 success = false,
@@ -352,35 +250,23 @@ public class WalletController : ControllerBase
         }
 
         Console.WriteLine($"✅ SEPAY PROCESS SUCCESS: {result.Message}");
-
-        // SePay yêu cầu phản hồi HTTP 200 kèm JSON success=true
-        return Ok(new
-        {
-            success = true
-        });
+        return Ok(new { success = true });
     }
-
 
     [HttpPost("top-up/sepay/bank-notify")]
     [AllowAnonymous]
     public async Task<IActionResult> SepayBankNotify([FromBody] SepayBankNotifyRequest request, CancellationToken cancellationToken)
     {
-        // Dùng cho trường hợp khách chuyển khoản trực tiếp qua App ngân hàng
         var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-
-        // Tách lấy phần API Key
         var providedKey = authHeader?.Replace("Apikey ", "").Trim();
 
-        // Xác thực
         if (!_sepayService.IsValidIpnSecret(providedKey))
         {
             return Unauthorized("Sai API Key");
         }
 
-        // 1. Trích xuất mã TOPUP từ content
         var invoiceNumber = SepayService.ExtractInvoiceNumberFromContent(request.Content);
 
-        // 2. Nếu tìm thấy mã, giả lập một request IPN để tái sử dụng logic xử lý thanh toán đã có
         if (SepayService.TryParseTopUpPaymentId(invoiceNumber, out var paymentId))
         {
             var result = await _sender.Send(new SepayProcessIpnCommand(new SepayIpnRequest
@@ -390,7 +276,7 @@ public class WalletController : ControllerBase
                 {
                     OrderInvoiceNumber = invoiceNumber,
                     OrderStatus = "CAPTURED",
-                    OrderAmount = request.TransferAmount.ToString()
+                    OrderAmount = request.TransferAmount.ToString(CultureInfo.InvariantCulture)
                 },
                 Transaction = new SepayIpnTransaction
                 {
@@ -401,7 +287,8 @@ public class WalletController : ControllerBase
 
             return result.Success ? Ok(result) : BadRequest(result);
         }
-        return BadRequest("Invalid content");
+
+        return BadRequest("Invalid content or payment code");
     }
 
     private string GetClientIpAddress()
@@ -421,6 +308,10 @@ public class WalletController : ControllerBase
         return Guid.TryParse(idStr, out var id) ? id : Guid.Empty;
     }
 }
+
+// =========================================================
+// REQUEST MODELS
+// =========================================================
 
 public class TopUpRequest
 {
@@ -447,10 +338,10 @@ public class SepayTopUpInitRequest
 
 public class SepayBankNotifyRequest
 {
-    public string Content { get; set; }
+    public string Content { get; set; } = string.Empty;
     public decimal TransferAmount { get; set; }
-    public string Code { get; set; }
-    public string Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Id { get; set; } = string.Empty;
 }
 
 public class SepayBankWebhookRequest
@@ -490,25 +381,4 @@ public class SepayBankWebhookRequest
 
     [JsonPropertyName("referenceCode")]
     public string? ReferenceCode { get; set; }
-}
-
-// Trích xuất mã TOPUP_<32 hex> từ nội dung chuyển khoản của SePay bank webhook.
-// Ví dụ content: "TOPUP_5f3c8a9e1b2d4e7f8a9b0c1d2e3f4a5b" hoặc "KHONG CO  TOPUP_xxx..."
-static partial class SepayWebhookHelpers
-{
-    private static readonly Regex TopUpRegex = new(
-        @"(?<![A-Za-z0-9])TOPUP_?[0-9a-fA-F]{32}(?![A-Za-z0-9])",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-    public static string? ExtractTopUpCodeFromContent(string? content)
-    {
-        if (string.IsNullOrWhiteSpace(content))
-            return null;
-
-        var match = TopUpRegex.Match(content);
-
-        return match.Success
-            ? match.Value.ToUpperInvariant()
-            : null;
-    }
 }

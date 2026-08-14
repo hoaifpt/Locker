@@ -138,19 +138,31 @@ public class SepayService : ISepayService
     }
 
     public static bool TryParseTopUpPaymentId(
-    string? invoiceNumber,
-    out Guid paymentId)
+      string? invoiceNumber,
+      out Guid paymentId)
     {
         paymentId = Guid.Empty;
         if (string.IsNullOrWhiteSpace(invoiceNumber)) return false;
 
-        // Bỏ qua tiền tố để lấy phần GUID phía sau
-        string idPart = invoiceNumber;
-        if (invoiceNumber.StartsWith("TOPUP_")) idPart = invoiceNumber["TOPUP_".Length..];
-        else if (invoiceNumber.StartsWith("PAY")) idPart = invoiceNumber["PAY".Length..];
+        string idPart = invoiceNumber.Trim();
 
-        // Chuyển đổi chuỗi sang GUID
-        // Lưu ý: Nếu mã PAY của SePay không phải là GUID thô, bạn cần logic map từ mã này sang ID thật
+        // 1. Kiểm tra "TOPUP_" trước (có gạch dưới)
+        if (idPart.StartsWith("TOPUP_", StringComparison.OrdinalIgnoreCase))
+        {
+            idPart = idPart["TOPUP_".Length..];
+        }
+        // 2. Kiểm tra "TOPUP" (không có gạch dưới - trường hợp từ SePay thực tế)
+        else if (idPart.StartsWith("TOPUP", StringComparison.OrdinalIgnoreCase))
+        {
+            idPart = idPart["TOPUP".Length..];
+        }
+        // 3. Kiểm tra "PAY"
+        else if (idPart.StartsWith("PAY", StringComparison.OrdinalIgnoreCase))
+        {
+            idPart = idPart["PAY".Length..];
+        }
+
+        // Guid.TryParse tự động đọc được chuỗi 32 ký tự viết liền (dạng N: fda0bd1964d94d6ba61aa0eb2d68a5ee)
         return Guid.TryParse(idPart, out paymentId);
     }
 

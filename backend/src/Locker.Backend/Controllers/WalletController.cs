@@ -158,17 +158,22 @@ public class WalletController : ControllerBase
         // Xác thực Secret Key của SePay Payment Gateway
         var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
 
+        Console.WriteLine("========== SEPAY AUTH DEBUG ==========");
         Console.WriteLine($"X-Secret-Key exists: {!string.IsNullOrWhiteSpace(providedSecret)}");
         Console.WriteLine($"Received secret length: {providedSecret?.Length ?? 0}");
 
         if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
+            Console.WriteLine("❌ SEPAY SECRET INVALID");
+
             return Unauthorized(new
             {
                 success = false,
                 message = "Invalid SePay IPN secret"
             });
         }
+
+        Console.WriteLine("✅ SEPAY SECRET VALID");
 
         Console.WriteLine("========== SEPAY IPN START ==========");
 

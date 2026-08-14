@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Text.Json.Serialization;
 using Locker.Backend.Infrastructure.Services;
 using Locker.Backend.Application.Features.Wallet.Commands.TopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.Transfer;
@@ -154,82 +154,38 @@ public class WalletController : ControllerBase
     [HttpPost("top-up/sepay/ipn")]
     [AllowAnonymous]
     public async Task<IActionResult> SepayIpn(
-    CancellationToken cancellationToken)
+     [FromBody] SepayBankWebhookRequest request,
+     CancellationToken cancellationToken)
     {
-        Console.WriteLine("========== SEPAY IPN REQUEST ==========");
+        Console.WriteLine("========== SEPAY BANK WEBHOOK ==========");
 
         // =========================================================
-        // 1. ĐỌC RAW BODY
+        // 1. AUTHORIZATION
         // =========================================================
 
-        Request.EnableBuffering();
+        var authorization = Request.Headers["Authorization"]
+            .FirstOrDefault();
 
-        // Quan trọng:
-        // Nếu middleware trước đó đã đọc Body thì đưa Position về 0
-        if (Request.Body.CanSeek)
-        {
-            Request.Body.Position = 0;
-        }
+        var providedSecret = Request.Headers["X-Secret-Key"]
+            .FirstOrDefault();
 
-        using var reader = new StreamReader(
-            Request.Body,
-            leaveOpen: true
-        );
-
-        var rawBody = await reader.ReadToEndAsync(cancellationToken);
-
-        if (Request.Body.CanSeek)
-        {
-            Request.Body.Position = 0;
-        }
-
-        Console.WriteLine("========== RAW SEPAY IPN ==========");
-        Console.WriteLine(rawBody);
-        Console.WriteLine("====================================");
-
-        if (string.IsNullOrWhiteSpace(rawBody))
-        {
-            Console.WriteLine("❌ SEPAY BODY EMPTY");
-
-            return BadRequest(new
-            {
-                success = false,
-                message = "SePay request body is empty"
-            });
-        }
-
-        // =========================================================
-        // 2. AUTHENTICATION
-        // =========================================================
-
-        var authorization =
-            Request.Headers["Authorization"]
-                .FirstOrDefault();
-
-        var providedSecret =
-            Request.Headers["X-Secret-Key"]
-                .FirstOrDefault();
-
-        if (
-            string.IsNullOrWhiteSpace(providedSecret) &&
-            !string.IsNullOrWhiteSpace(authorization)
-        )
+        // SePay Bank Webhook dùng:
+        // Authorization: Apikey YOUR_API_KEY
+        if (string.IsNullOrWhiteSpace(providedSecret) &&
+            !string.IsNullOrWhiteSpace(authorization))
         {
             var parts = authorization.Split(' ', 2);
 
-            if (
-                parts.Length == 2 &&
+            if (parts.Length == 2 &&
                 parts[0].Equals(
                     "Apikey",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
+                    StringComparison.OrdinalIgnoreCase))
             {
                 providedSecret = parts[1].Trim();
             }
         }
 
-        Console.WriteLine("========== SEPAY AUTH DEBUG ==========");
+        Console.WriteLine("========== SEPAY AUTH ==========");
         Console.WriteLine(
             $"Authorization exists: {!string.IsNullOrWhiteSpace(authorization)}"
         );
@@ -242,7 +198,7 @@ public class WalletController : ControllerBase
         Console.WriteLine(
             $"Provided secret length: {providedSecret?.Length ?? 0}"
         );
-        Console.WriteLine("======================================");
+        Console.WriteLine("================================");
 
         if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
@@ -251,135 +207,53 @@ public class WalletController : ControllerBase
             return Unauthorized(new
             {
                 success = false,
-                message = "Invalid SePay IPN secret"
+                message = "Invalid SePay API key"
             });
         }
 
         Console.WriteLine("✅ SEPAY SECRET VALID");
 
         // =========================================================
-        // 3. PARSE SEPAY BANK NOTIFY
+        // 2. VALIDATE BODY
         // =========================================================
 
-        static string GetField(
-            string body,
-            string fieldName,
-            string nextFieldPattern)
+        if (request == null)
         {
-            var pattern =
-                $@"(?:^|\s){System.Text.RegularExpressions.Regex.Escape(fieldName)}:\s*(.*?)(?=\s+{nextFieldPattern}:|$)";
+            Console.WriteLine("❌ SEPAY REQUEST BODY IS NULL");
 
-            var match =
-                System.Text.RegularExpressions.Regex.Match(
-                    body,
-                    pattern,
-                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
-                );
-
-            return match.Success
-                ? match.Groups[1].Value.Trim()
-                : string.Empty;
+            return BadRequest(new
+            {
+                success = false,
+                message = "SePay request body is empty"
+            });
         }
 
-        var gateway = GetField(
-            rawBody,
-            "gateway",
-            "transactionDate"
-        );
-
-        var transactionDate = GetField(
-            rawBody,
-            "transactionDate",
-            "accountNumber"
-        );
-
-        var accountNumber = GetField(
-            rawBody,
-            "accountNumber",
-            "subAccount"
-        );
-
-        var subAccount = GetField(
-            rawBody,
-            "subAccount",
-            "code"
-        );
-
-        var code = GetField(
-            rawBody,
-            "code",
-            "content"
-        );
-
-        var content = GetField(
-            rawBody,
-            "content",
-            "transferType"
-        );
-
-        var transferType = GetField(
-            rawBody,
-            "transferType",
-            "description"
-        );
-
-        var description = GetField(
-            rawBody,
-            "description",
-            "transferAmount"
-        );
-
-        var transferAmountText = GetField(
-            rawBody,
-            "transferAmount",
-            "referenceCode"
-        );
-
-        var referenceCode = GetField(
-            rawBody,
-            "referenceCode",
-            "accumulated"
-        );
-
-        var accumulated = GetField(
-            rawBody,
-            "accumulated",
-            "id"
-        );
-
-        var transactionId = GetField(
-            rawBody,
-            "id",
-            "$"
-        );
-
-        Console.WriteLine("========== PARSED SEPAY ==========");
-        Console.WriteLine($"Gateway: {gateway}");
-        Console.WriteLine($"TransactionDate: {transactionDate}");
-        Console.WriteLine($"AccountNumber: {accountNumber}");
-        Console.WriteLine($"Code: {code}");
-        Console.WriteLine($"Content: {content}");
-        Console.WriteLine($"TransferType: {transferType}");
-        Console.WriteLine($"Description: {description}");
-        Console.WriteLine($"TransferAmount: {transferAmountText}");
-        Console.WriteLine($"ReferenceCode: {referenceCode}");
-        Console.WriteLine($"Accumulated: {accumulated}");
-        Console.WriteLine($"TransactionId: {transactionId}");
-        Console.WriteLine("==================================");
+        Console.WriteLine("========== SEPAY DATA ==========");
+        Console.WriteLine($"Id: {request.Id}");
+        Console.WriteLine($"Gateway: {request.Gateway}");
+        Console.WriteLine($"TransactionDate: {request.TransactionDate}");
+        Console.WriteLine($"AccountNumber: {request.AccountNumber}");
+        Console.WriteLine($"SubAccount: {request.SubAccount}");
+        Console.WriteLine($"Code: {request.Code}");
+        Console.WriteLine($"Content: {request.Content}");
+        Console.WriteLine($"TransferType: {request.TransferType}");
+        Console.WriteLine($"Description: {request.Description}");
+        Console.WriteLine($"TransferAmount: {request.TransferAmount}");
+        Console.WriteLine($"Accumulated: {request.Accumulated}");
+        Console.WriteLine($"ReferenceCode: {request.ReferenceCode}");
+        Console.WriteLine("================================");
 
         // =========================================================
-        // 4. CHỈ XỬ LÝ TIỀN VÀO
+        // 3. CHỈ XỬ LÝ TIỀN VÀO
         // =========================================================
 
-        if (
-            !transferType.Equals(
+        if (!string.Equals(
+                request.TransferType,
                 "in",
-                StringComparison.OrdinalIgnoreCase
-            )
-        )
+                StringComparison.OrdinalIgnoreCase))
         {
             Console.WriteLine(
-                $"⚠️ IGNORE: transaction is not money-in: {transferType}"
+                $"⚠️ IGNORE: transaction type = {request.TransferType}"
             );
 
             return Ok(new
@@ -390,28 +264,15 @@ public class WalletController : ControllerBase
         }
 
         // =========================================================
-        // 5. PARSE AMOUNT
+        // 4. VALIDATE AMOUNT
         // =========================================================
 
-        if (!decimal.TryParse(
-                transferAmountText,
-                System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out var transferAmount))
+        if (request.TransferAmount <= 0)
         {
             Console.WriteLine(
-                $"❌ INVALID TRANSFER AMOUNT: {transferAmountText}"
+                $"❌ INVALID AMOUNT: {request.TransferAmount}"
             );
 
-            return BadRequest(new
-            {
-                success = false,
-                message = "Invalid transfer amount"
-            });
-        }
-
-        if (transferAmount <= 0)
-        {
             return BadRequest(new
             {
                 success = false,
@@ -420,15 +281,17 @@ public class WalletController : ControllerBase
         }
 
         // =========================================================
-        // 6. TÌM MÃ TOPUP
+        // 5. LẤY TOP-UP CODE
         // =========================================================
 
         Console.WriteLine(
-            $"Searching TOPUP invoice from content: {content}"
+            $"Searching TOPUP invoice from content: {request.Content}"
         );
 
         var invoiceNumber =
-            SepayService.ExtractInvoiceNumberFromContent(content);
+            SepayService.ExtractInvoiceNumberFromContent(
+                request.Content
+            );
 
         Console.WriteLine(
             $"InvoiceNumber: {invoiceNumber}"
@@ -449,7 +312,7 @@ public class WalletController : ControllerBase
         }
 
         // =========================================================
-        // 7. TẠO REQUEST CHO HANDLER HIỆN TẠI
+        // 6. TẠO REQUEST CHO MEDIATR
         // =========================================================
 
         var ipnRequest = new SepayIpnRequest
@@ -460,29 +323,36 @@ public class WalletController : ControllerBase
             {
                 OrderInvoiceNumber = invoiceNumber,
                 OrderStatus = "CAPTURED",
-                OrderAmount = transferAmount.ToString(
-                    System.Globalization.CultureInfo.InvariantCulture
-                ),
-                OrderDescription = description
+
+                OrderAmount = request.TransferAmount
+                    .ToString(
+                        System.Globalization.CultureInfo.InvariantCulture
+                    ),
+
+                OrderDescription = request.Description
             },
 
             Transaction = new SepayIpnTransaction
             {
-                TransactionId = transactionId,
-                TransactionStatus = "APPROVED",
-                TransactionAmount = transferAmount.ToString(
-                    System.Globalization.CultureInfo.InvariantCulture
-                ),
-                TransactionDate = transactionDate,
-                PaymentMethod = "BANK_TRANSFER",
-                TransactionType = transferType
-            },
+                TransactionId = request.Id.ToString(),
 
+                TransactionStatus = "APPROVED",
+
+                TransactionAmount = request.TransferAmount.ToString(
+        System.Globalization.CultureInfo.InvariantCulture
+    ),
+
+                TransactionDate = request.TransactionDate ?? "",
+
+                PaymentMethod = "BANK_TRANSFER",
+
+                TransactionType = request.TransferType
+            },
             Customer = null
         };
 
         // =========================================================
-        // 8. GỌI HANDLER
+        // 7. PROCESS TOP-UP
         // =========================================================
 
         Console.WriteLine("========== SEPAY PROCESS ==========");
@@ -510,11 +380,10 @@ public class WalletController : ControllerBase
             $"✅ SEPAY PROCESS SUCCESS: {result.Message}"
         );
 
+        // SePay yêu cầu HTTP 200 + JSON success=true
         return Ok(new
         {
-            success = true,
-            message = result.Message,
-            paymentId = result.PaymentId
+            success = true
         });
     }
 
@@ -608,4 +477,43 @@ public class SepayBankNotifyRequest
     public decimal TransferAmount { get; set; }
     public string Code { get; set; }
     public string Id { get; set; }
+}
+
+public class SepayBankWebhookRequest
+{
+    [JsonPropertyName("id")]
+    public long Id { get; set; }
+
+    [JsonPropertyName("gateway")]
+    public string? Gateway { get; set; }
+
+    [JsonPropertyName("transactionDate")]
+    public string? TransactionDate { get; set; }
+
+    [JsonPropertyName("accountNumber")]
+    public string? AccountNumber { get; set; }
+
+    [JsonPropertyName("subAccount")]
+    public string? SubAccount { get; set; }
+
+    [JsonPropertyName("code")]
+    public string? Code { get; set; }
+
+    [JsonPropertyName("content")]
+    public string? Content { get; set; }
+
+    [JsonPropertyName("transferType")]
+    public string? TransferType { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("transferAmount")]
+    public decimal TransferAmount { get; set; }
+
+    [JsonPropertyName("accumulated")]
+    public decimal Accumulated { get; set; }
+
+    [JsonPropertyName("referenceCode")]
+    public string? ReferenceCode { get; set; }
 }

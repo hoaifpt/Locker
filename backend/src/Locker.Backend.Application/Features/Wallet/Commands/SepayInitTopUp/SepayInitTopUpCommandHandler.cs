@@ -56,14 +56,14 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
             sepayCode);
 
         // =========================================================
-        // 💡 GIẢI PHÁP TẠO MÃ QR ĐỘNG CHUẨN QUỐC GIA (API VIETQR.IO)
+        // CẬP NHẬT MÃ NGÂN HÀNG CHUẨN ĐÃ TEST CHẠY THÀNH CÔNG
         // =========================================================
-        string bankId = "TPBank";
-        string accountNo = "84519828888";
-        string accountName = "PHAM DUC HUNG";
+        string bankId = "TPB"; // Đổi từ "TPBank" thành "TPB" theo link chuẩn của bạn
+        string accountNo = "84519828888"; 
+        string accountName = "PHAM DUC HUNG"; 
 
-        // Sử dụng template 'qr_only' hoặc 'compact2' của VietQR để hiển thị ảnh động mượt mà
-        string cleanVietQrUrl = $"https://vietqr.io{bankId}-{accountNo}-compact2.png" +
+        // Hệ thống tự động gán mã QR động cho từng khách hàng
+        string cleanVietQrUrl = $"https://img.vietqr.io/image/{bankId}-{accountNo}-compact.png" +
                                 $"?amount={decimal.Truncate(request.Amount).ToString("0")}" +
                                 $"&addInfo={System.Net.WebUtility.UrlEncode(sepayCode)}" +
                                 $"&accountName={System.Net.WebUtility.UrlEncode(accountName)}";

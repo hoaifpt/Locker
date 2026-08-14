@@ -18,6 +18,7 @@ using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Locker.Backend.Controllers;

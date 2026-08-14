@@ -106,17 +106,21 @@ export default function WalletPage() {
 
   const filteredTransactions = useMemo(() => {
     // Sort DESC by createdAt — newest first.
-    // Tin tưởng chính xác createdAt từ backend; nếu parse fail (Invalid Date) → rơi xuống cuối.
-    // Dùng spread để tránh mutate source array (useState contract).
+    // Tiebreaker: id DESC (Guid v7 is time-sortable, tạo sau thì id lớn hơn) để đảm bảo
+    // thứ tự ổn định khi nhiều record cùng millisecond timestamp.
     const sorted = [...transactions].sort((a, b) => {
       const ta = new Date(a.createdAt).getTime();
       const tb = new Date(b.createdAt).getTime();
       const validA = Number.isFinite(ta);
       const validB = Number.isFinite(tb);
-      if (validA && validB) return tb - ta;
-      if (validA && !validB) return -1; // valid date xếp trước invalid
-      if (!validA && validB) return 1;
-      return 0;
+      if (validA && validB) {
+        if (tb !== ta) return tb - ta;
+      } else if (validA && !validB) {
+        return -1;
+      } else if (!validA && validB) {
+        return 1;
+      }
+      return b.id.localeCompare(a.id);
     });
     if (statusFilter === 'all') return sorted;
     return sorted.filter((t) => {

@@ -36,7 +36,7 @@ public class SepayProcessIpnCommandHandler
 
     public async Task<SepayProcessIpnResponse> Handle(
         SepayProcessIpnCommand request,
-        
+
         CancellationToken cancellationToken)
     {
         var ipn = request.Request;
@@ -307,24 +307,48 @@ public class SepayProcessIpnCommandHandler
     }
 
     private static bool TryParseTopUpInvoiceNumber(
-        string? invoiceNumber,
-        out Guid paymentId)
+     string? invoiceNumber,
+     out Guid paymentId)
     {
         paymentId = Guid.Empty;
-
-        const string prefix = "TOPUP_";
 
         if (string.IsNullOrWhiteSpace(invoiceNumber))
             return false;
 
-        if (!invoiceNumber.StartsWith(
-                prefix,
-                StringComparison.OrdinalIgnoreCase))
-            return false;
+        // Trường hợp 1: Nếu chuỗi nhận được là mã PAY... bóc tách từ SePay
+        if (invoiceNumber.StartsWith("PAY", StringComparison.OrdinalIgnoreCase) && invoiceNumber.Length >= 20)
+        {
+            try
+            {
+                // Bỏ chữ PAY ở đầu, lấy chuỗi Hex còn lại
+                string hexPart = invoiceNumber[3..];
 
-        return Guid.TryParseExact(
-            invoiceNumber[prefix.Length..],
-            "N",
-            out paymentId);
+                // Loại bỏ ký tự phân tách của SePay ở vị trí số 8 (ví dụ chữ F, A, B... tùy phiên bản QR)
+                if (hexPart.Length > 8)
+                {
+                    hexPart = hexPart.Remove(8, 1);
+                }
+
+                // Ép chuỗi Hex sạch này về lại mã Guid gốc định dạng "N"
+                return Guid.TryParseExact(hexPart, "N", out paymentId);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Trường hợp 2: Dự phòng cấu hình cũ chạy mã TOPUP_
+        const string prefix = "TOPUP_";
+        if (invoiceNumber.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return Guid.TryParseExact(
+                invoiceNumber[prefix.Length..],
+                "N",
+                out paymentId);
+        }
+
+        return false;
     }
+
 }

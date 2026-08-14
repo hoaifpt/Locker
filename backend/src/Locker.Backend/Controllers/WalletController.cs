@@ -270,7 +270,7 @@ public class WalletController : ControllerBase
         }
 
         // =========================================================
-        // 5. LẤY SEPAY PAYMENT CODE VÀ BÓC TÁCH MÀ HOÁ ĐƠN GỐC (GUID/ID)
+        // 5. LẤY SEPAY PAYMENT CODE VÀ BÓC TÁCH MÃ ĐƠN HÀNG GỐC (GUID/ID)
         // =========================================================
 
         Console.WriteLine($"Searching SePay payment code from webhook...");
@@ -288,14 +288,15 @@ public class WalletController : ControllerBase
         }
 
         // Mặc định giữ chuỗi ban đầu
-        string cleanInvoiceNumber = originalContent;
+        string cleanInvoiceNumber = request.Content ?? "";
 
-        // Tiến hành bóc tách lấy phần tử đầu tiên trước dấu '-' (Mã hóa đơn hệ thống của bạn)
-        if (!string.IsNullOrWhiteSpace(originalContent) && originalContent.Contains("-"))
+        if (!string.IsNullOrWhiteSpace(request.Content))
         {
-            string[] parts = originalContent.Split('-');
-            if (parts.Length > 0 && !string.IsNullOrWhiteSpace(parts[0]))
+            // Cắt chuỗi theo khoảng trắng (áp dụng cho chuỗi dạng "142250468725 0938110861 PAY...")
+            string[] parts = request.Content.Split(new[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 0)
             {
+                // Lấy chuỗi số đầu tiên đứng ở đầu nội dung chuyển khoản
                 cleanInvoiceNumber = parts[0].Trim();
                 Console.WriteLine($"⚙️ Đã bóc tách mã hóa đơn gốc hệ thống thành công: {cleanInvoiceNumber}");
             }
@@ -311,7 +312,7 @@ public class WalletController : ControllerBase
 
             Order = new SepayIpnOrder
             {
-                // Gán mã hóa đơn hệ thống sạch đã bóc tách được từ bước 5
+                // Gán mã hóa đơn hệ thống sạch đã bóc tách được (Ví dụ: 142250468725)
                 OrderInvoiceNumber = cleanInvoiceNumber,
                 OrderStatus = "CAPTURED",
 

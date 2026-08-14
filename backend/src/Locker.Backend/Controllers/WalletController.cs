@@ -225,6 +225,17 @@ public class WalletController : ControllerBase
     public async Task<IActionResult> SepayBankNotify([FromBody] SepayBankNotifyRequest request, CancellationToken cancellationToken)
     {
         // Dùng cho trường hợp khách chuyển khoản trực tiếp qua App ngân hàng
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+
+        // Tách lấy phần API Key
+        var providedKey = authHeader?.Replace("Apikey ", "").Trim();
+
+        // Xác thực
+        if (!_sepayService.IsValidIpnSecret(providedKey))
+        {
+            return Unauthorized("Sai API Key");
+        }
+
         // 1. Trích xuất mã TOPUP từ content
         var invoiceNumber = SepayService.ExtractInvoiceNumberFromContent(request.Content);
 

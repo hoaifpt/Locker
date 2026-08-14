@@ -142,16 +142,16 @@ public class SepayService : ISepayService
     out Guid paymentId)
     {
         paymentId = Guid.Empty;
+        if (string.IsNullOrWhiteSpace(invoiceNumber)) return false;
 
-        if (string.IsNullOrWhiteSpace(invoiceNumber))
-            return false;
+        // Bỏ qua tiền tố để lấy phần GUID phía sau
+        string idPart = invoiceNumber;
+        if (invoiceNumber.StartsWith("TOPUP_")) idPart = invoiceNumber["TOPUP_".Length..];
+        else if (invoiceNumber.StartsWith("PAY")) idPart = invoiceNumber["PAY".Length..];
 
-        if (!invoiceNumber.StartsWith("TOPUP_"))
-            return false;
-
-        var id = invoiceNumber.Substring("TOPUP_".Length);
-
-        return Guid.TryParse(id, out paymentId);
+        // Chuyển đổi chuỗi sang GUID
+        // Lưu ý: Nếu mã PAY của SePay không phải là GUID thô, bạn cần logic map từ mã này sang ID thật
+        return Guid.TryParse(idPart, out paymentId);
     }
 
     public static string? ExtractInvoiceNumberFromContent(string? content)
@@ -159,14 +159,15 @@ public class SepayService : ISepayService
         if (string.IsNullOrWhiteSpace(content))
             return null;
 
-        // Sửa Regex để tìm chuỗi bắt đầu bằng TOPUP_ theo sau là các ký tự hex (độ dài 32 ký tự theo chuẩn GUID N)
+        // Thay đổi Regex để tìm cả 3 loại mã: TOPUP_, DH, hoặc PAY
+        // Regex này sẽ tìm chuỗi nào có tiền tố TOPUP_, DH, hoặc PAY theo sau là ký tự chữ/số
         var match = System.Text.RegularExpressions.Regex.Match(
             content,
-            @"\bTOPUP_[a-zA-Z0-9]{32}\b", // Thay DH... bằng TOPUP_ + 32 ký tự GUID
+            @"\b(TOPUP_[a-zA-Z0-9]+|DH[A-Z0-9]+|PAY[A-Z0-9]+)\b",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
         return match.Success
-            ? match.Value
+            ? match.Value.ToUpperInvariant()
             : null;
     }
 

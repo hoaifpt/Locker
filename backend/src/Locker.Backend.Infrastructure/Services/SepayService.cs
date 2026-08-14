@@ -159,13 +159,14 @@ public class SepayService : ISepayService
         if (string.IsNullOrWhiteSpace(content))
             return null;
 
+        // Sửa Regex để tìm chuỗi bắt đầu bằng TOPUP_ theo sau là các ký tự hex (độ dài 32 ký tự theo chuẩn GUID N)
         var match = System.Text.RegularExpressions.Regex.Match(
             content,
-            @"\bDH[A-Z0-9]{3,10}\b",
+            @"\bTOPUP_[a-zA-Z0-9]{32}\b", // Thay DH... bằng TOPUP_ + 32 ký tự GUID
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
         return match.Success
-            ? match.Value.ToUpperInvariant()
+            ? match.Value
             : null;
     }
 

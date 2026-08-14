@@ -296,10 +296,6 @@ public class WalletController : ControllerBase
 
         if (string.IsNullOrWhiteSpace(sepayCode))
         {
-            Console.WriteLine(
-                "❌ Cannot find SePay payment code"
-            );
-
             return BadRequest(new
             {
                 success = false,
@@ -317,7 +313,7 @@ public class WalletController : ControllerBase
 
             Order = new SepayIpnOrder
             {
-                OrderInvoiceNumber = sepayCode,
+                OrderInvoiceNumber = request.Content ?? "",
                 OrderStatus = "CAPTURED",
 
                 OrderAmount = request.TransferAmount

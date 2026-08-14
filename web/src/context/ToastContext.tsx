@@ -1,32 +1,70 @@
-import React, { createContext, useContext, useState } from 'react';
-import { ToastContainer, ToastMessage } from '../components/ui/Toast';
+import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
+import { ToastContainer } from '../components/ui/Toast';
+import type { ToastMessage, ToastType } from '../components/ui/Toast';
+
+const DEFAULT_DURATIONS: Record<ToastType, number> = {
+  success: 3500,
+  info: 4500,
+  warning: 6000,
+  notification: 5000,
+  error: 7000,
+};
+
+const MAX_TOASTS = 4;
 
 interface ToastContextType {
-  toasts: ToastMessage[];
-  show: (message: string, type?: 'success' | 'error' | 'info' | 'warning' | 'notification', duration?: number) => void;
+  show: (message: string, type?: ToastType, duration?: number) => string;
   remove: (id: string) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [id, setId] = useState(0);
+  const [toasts, setToasts] = useState<(ToastMessage & { pulseAt?: number })[]>([]);
+  const idRef = useRef(0);
 
-  const show = (message: string, type: 'success' | 'error' | 'info' | 'warning' | 'notification' = 'info', duration?: number) => {
-    const toastId = `toast-${id}`;
-    setId(prev => prev + 1);
-    const toast: ToastMessage = { id: toastId, message, type, duration };
-    setToasts((prev) => [...prev, toast]);
-    return toastId;
-  };
-
-  const remove = (toastId: string) => {
+  const remove = useCallback((toastId: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== toastId));
-  };
+  }, []);
+
+  const show = useCallback(
+    (message: string, type: ToastType = 'info', duration?: number): string => {
+      const dedupeKey = `${type}::${message}`;
+      let existingId: string | null = null;
+
+      setToasts((prev) => {
+        const existing = prev.find((t) => `${t.type}::${t.message}` === dedupeKey);
+        if (existing) {
+          existingId = existing.id;
+          return prev.map((t) =>
+            t.id === existing.id
+              ? { ...t, duration: duration ?? t.duration, pulseAt: Date.now() }
+              : t,
+          );
+        }
+
+        idRef.current += 1;
+        const newId = `toast-${idRef.current}`;
+        const newToast: ToastMessage & { pulseAt?: number } = {
+          id: newId,
+          message,
+          type,
+          duration: duration ?? DEFAULT_DURATIONS[type],
+        };
+        const next = [...prev, newToast];
+        if (next.length > MAX_TOASTS) {
+          return next.slice(next.length - MAX_TOASTS);
+        }
+        return next;
+      });
+
+      return existingId ?? `toast-${idRef.current}`;
+    },
+    [],
+  );
 
   return (
-    <ToastContext.Provider value={{ toasts, show, remove }}>
+    <ToastContext.Provider value={{ show, remove }}>
       {children}
       <ToastContainer toasts={toasts} onRemove={remove} />
     </ToastContext.Provider>

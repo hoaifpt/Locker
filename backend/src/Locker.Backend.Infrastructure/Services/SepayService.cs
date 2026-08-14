@@ -56,6 +56,7 @@ public class SepayService : ISepayService
 
         // Đây là mã dùng để liên kết giao dịch SePay
         // với Payment trong database của Locker.
+        var invoiceNumber = CreateTopUpInvoiceNumber(paymentId);
         var fields = new Dictionary<string, string>
         {
             ["order_amount"] =
@@ -68,9 +69,9 @@ public class SepayService : ISepayService
 
             ["operation"] = "PURCHASE",
 
-            ["order_description"] = sepayCode,
+            ["order_description"] = invoiceNumber,
 
-            ["order_invoice_number"] = sepayCode,
+            ["order_invoice_number"] = invoiceNumber,
 
             ["customer_id"] = userId.ToString("N"),
 

@@ -102,36 +102,52 @@ public class SepayProcessIpnCommandHandler
                 $"Transaction is not APPROVED. Status={ipn.Transaction?.TransactionStatus}");
         }
 
-        // 4. Parse invoice number
-        if (!TryParseTopUpInvoiceNumber(
-                ipn.Order.OrderInvoiceNumber,
-                out var paymentId))
+        // =========================================================
+        // 4. PARSE INVOICE NUMBER (ĐÃ BỎ QUA VÌ SEPAY KHÔNG TRUYỀN GUID)
+        // =========================================================
+
+        // Thay vì trả về lỗi, ta thử ép kiểu xem có Guid không, nếu không có ta sẽ dùng cơ chế dò tìm theo Số tiền
+        bool hasValidGuid = TryParseTopUpInvoiceNumber(ipn.Order.OrderInvoiceNumber, out var paymentId);
+
+        Console.WriteLine($"[SEPAY] Has Valid Guid in InvoiceNumber: {hasValidGuid}");
+
+        // =========================================================
+        // 5. TÌM PAYMENT TRONG DATABASE
+        // =========================================================
+        Payment? payment = null;
+
+        if (hasValidGuid)
         {
-            return new SepayProcessIpnResponse(
-                false,
-                $"Invalid invoice number: {ipn.Order.OrderInvoiceNumber}");
+            // Nếu may mắn bóc tách được Guid chuẩn, tìm theo Id như cũ
+            payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken);
         }
+        else
+        {
+            // 💡 CƠ CHẾ CỨU CÁNH: Dò tìm đơn hàng dựa vào Số tiền (Amount) và Trạng thái đang chờ (Status = 0)
+            decimal txAmount = 0;
+            if (decimal.TryParse(ipn.Transaction?.TransactionAmount, System.Globalization.CultureInfo.InvariantCulture, out txAmount))
+            {
+                Console.WriteLine($"[SEPAY] Dò tìm đơn hàng trùng khớp số tiền: {txAmount} và đang ở trạng thái Pending...");
 
-        Console.WriteLine(
-            $"PaymentId extracted: {paymentId}");
-
-        // 5. Tìm Payment
-        var payment = await _paymentRepository.GetByIdAsync(
-            paymentId,
-            cancellationToken);
+                // Bạn hãy gọi hàm tìm kiếm của Repository tương ứng với dự án của bạn, ví dụ:
+                payment = await _paymentRepository.FindOneAsync(x =>
+                    x.Amount == txAmount &&
+                    x.Status == 0 && // 0 nghĩa là Pending / Chưa thanh toán
+                    (x.Method == "sepay" || x.Method == "Wallet"),
+                    cancellationToken);
+            }
+        }
 
         if (payment == null)
         {
             return new SepayProcessIpnResponse(
                 false,
-                $"Payment not found: {paymentId}",
-                paymentId);
+                $"Payment not found for amount: {ipn.Transaction?.TransactionAmount} or invalid invoice number.",
+                Guid.Empty);
         }
 
-        Console.WriteLine(
-            $"Payment found: Id={payment.Id}, " +
-            $"Amount={payment.Amount}, " +
-            $"Status={payment.Status}");
+        Console.WriteLine($"✅ [SEPAY] Khớp đơn hàng thành công qua cơ chế dò tìm! PaymentId={payment.Id}");
+
 
         // 6. Kiểm tra method
         if (!string.Equals(

@@ -174,6 +174,12 @@ export default function WalletPage() {
         transactionsResponse.json() as Promise<WalletTransaction[]>,
       ]);
 
+      // Debug: log raw API order + parsed timestamps
+      console.info('[wallet] RAW API ORDER:');
+      walletTransactions.forEach((t, i) => {
+        console.info(`  [${i}] id=${t.id.slice(0,8)} status=${t.status} createdAt=${t.createdAt} parsed=${new Date(t.createdAt).toISOString()}`);
+      });
+
       // Bỏ qua response cũ nếu đã có call mới hơn bắt đầu sau
       if (seq !== loadSeqRef.current) return;
 

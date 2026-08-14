@@ -105,11 +105,19 @@ export default function WalletPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const filteredTransactions = useMemo(() => {
-    // Sort DESC by createdAt — same contract whether filter applied or not.
-    // Using slice() so we don't mutate the source array (useState requires non-mutation).
-    const sorted = [...transactions].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+    // Sort DESC by createdAt — newest first.
+    // Tin tưởng chính xác createdAt từ backend; nếu parse fail (Invalid Date) → rơi xuống cuối.
+    // Dùng spread để tránh mutate source array (useState contract).
+    const sorted = [...transactions].sort((a, b) => {
+      const ta = new Date(a.createdAt).getTime();
+      const tb = new Date(b.createdAt).getTime();
+      const validA = Number.isFinite(ta);
+      const validB = Number.isFinite(tb);
+      if (validA && validB) return tb - ta;
+      if (validA && !validB) return -1; // valid date xếp trước invalid
+      if (!validA && validB) return 1;
+      return 0;
+    });
     if (statusFilter === 'all') return sorted;
     return sorted.filter((t) => {
       const s = String(t.status).toLowerCase();
@@ -118,8 +126,6 @@ export default function WalletPage() {
       if (statusFilter === 'pending') return s === '0' || s === 'pending';
       if (statusFilter === 'completed') return s === '1' || s === 'completed';
       if (statusFilter === 'failed') return s === '2' || s === 'failed';
-      // Reference-only transactions (Cancelled/Refunded/...) should still appear under "all"
-      // even if Type is empty. The statusFilter='all' short-circuit above handles that.
       return type === statusFilter;
     });
   }, [transactions, statusFilter]);

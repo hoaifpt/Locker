@@ -6,6 +6,7 @@ interface InlineAlertProps {
   description?: string;
   action?: { label: string; onClick: () => void };
   onDismiss?: () => void;
+  className?: string;
 }
 
 const VARIANT_STYLES: Record<InlineAlertProps['variant'], {
@@ -17,7 +18,7 @@ const VARIANT_STYLES: Record<InlineAlertProps['variant'], {
 }> = {
   warning: {
     container:
-      'border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10',
+      'border-amber-300 bg-amber-50/90 shadow-sm dark:border-amber-500/40 dark:bg-amber-500/15',
     iconColor: 'text-amber-500',
     accent: 'border-l-amber-500',
     Icon: TriangleAlert,
@@ -25,7 +26,8 @@ const VARIANT_STYLES: Record<InlineAlertProps['variant'], {
       'text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-500/20',
   },
   info: {
-    container: 'border-blue-200 bg-blue-50 dark:border-blue-500/30 dark:bg-blue-500/10',
+    container:
+      'border-blue-300 bg-blue-50/90 shadow-sm dark:border-blue-500/40 dark:bg-blue-500/15',
     iconColor: 'text-blue-500',
     accent: 'border-l-blue-500',
     Icon: Info,
@@ -34,7 +36,7 @@ const VARIANT_STYLES: Record<InlineAlertProps['variant'], {
   },
 };
 
-export function InlineAlert({ variant, title, description, action, onDismiss }: InlineAlertProps) {
+export function InlineAlert({ variant, title, description, action, onDismiss, className }: InlineAlertProps) {
   const styles = VARIANT_STYLES[variant];
   const Icon = styles.Icon;
 
@@ -45,6 +47,7 @@ export function InlineAlert({ variant, title, description, action, onDismiss }: 
         'flex flex-col gap-2 rounded-xl border border-l-4 px-5 py-4',
         styles.container,
         styles.accent,
+        className ?? '',
       ].join(' ')}
     >
       <div className="flex items-start gap-3">

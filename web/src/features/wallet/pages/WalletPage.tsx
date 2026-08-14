@@ -219,9 +219,11 @@ export default function WalletPage() {
           setStep('success');
         } else if (numericStatus === 2) {
           stopPolling();
+          void loadWallet();
           showToast('Thanh toán thất bại.', 'error');
         } else if (numericStatus === 3) {
           stopPolling();
+          void loadWallet();
           showToast('Đã huỷ thanh toán.', 'warning');
         }
       },
@@ -311,6 +313,10 @@ export default function WalletPage() {
       });
       if (response.ok) {
         showToast('Đã huỷ thanh toán.', 'warning');
+        // Optimistic local refresh: realtime event có thể đến muộn hoặc fail khi
+        // user vừa cancel payment → đóng modal ngay. Pull lại transactions chủ
+        // động để tab "Đã huỷ" hiển thị record mới không cần đợi realtime.
+        void loadWallet();
       } else {
         console.warn('[sepay-cancel] backend rejected, will rely on timeout');
         showToast('Không thể huỷ ngay. Giao dịch sẽ tự hết hạn.', 'warning');

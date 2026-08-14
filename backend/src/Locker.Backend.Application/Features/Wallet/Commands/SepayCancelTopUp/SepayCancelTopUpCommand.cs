@@ -27,15 +27,18 @@ public class SepayCancelTopUpCommandHandler
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPaymentRealtimeNotifier _paymentRealtimeNotifier;
     private readonly IWalletTransactionRepository _walletTransactionRepository;
+    private readonly IRealtimeNotificationService _notificationService;
 
     public SepayCancelTopUpCommandHandler(
         IPaymentRepository paymentRepository,
         IPaymentRealtimeNotifier paymentRealtimeNotifier,
-        IWalletTransactionRepository walletTransactionRepository)
+        IWalletTransactionRepository walletTransactionRepository,
+        IRealtimeNotificationService notificationService)
     {
         _paymentRepository = paymentRepository;
         _paymentRealtimeNotifier = paymentRealtimeNotifier;
         _walletTransactionRepository = walletTransactionRepository;
+        _notificationService = notificationService;
     }
 
     public async Task<SepayCancelTopUpResponse> Handle(
@@ -145,6 +148,13 @@ public class SepayCancelTopUpCommandHandler
                 Amount = cancelled.Amount,
                 Status = cancelled.Status.ToString(),
             },
+            cancellationToken);
+
+        // 6. Persist notification → bell icon nhận được + lưu DB để reload lại sau
+        await _notificationService.NotifyUserAsync(
+            cancelled.UserId,
+            "Đã huỷ giao dịch nạp tiền",
+            $"Giao dịch nạp {cancelled.Amount:N0} đ đã được huỷ thành công. Số dư ví không thay đổi.",
             cancellationToken);
 
         return new SepayCancelTopUpResponse(

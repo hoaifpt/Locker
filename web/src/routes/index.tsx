@@ -48,8 +48,15 @@ import FoodOrderDetailPage from '../features/food/pages/FoodOrderDetailPage';
 // Profile
 import ProfilePage from '../features/profile/pages/ProfilePage';
 
+// Settings
+import SettingsPage from '../features/settings/SettingsPage';
+
 // Feedback
 import AdminFeedbackPage from '../features/feedback/pages/AdminFeedbackPage';
+
+// Admin
+import AdminDashboardPage from '../features/admin/pages/AdminDashboardPage';
+import AdminUsersPage from '../features/admin/pages/AdminUsersPage';
 
 export default function AppRoutes() {
   return (
@@ -66,15 +73,24 @@ export default function AppRoutes() {
 
       {/* Common Authenticated Routes (Any logged in user) */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/wallet" element={<WalletPage />} />
         <Route path="/lockers" element={<LockersPage />} />
         <Route path="/lockers/:id" element={<LockerDetailPage />} />
       </Route>
 
+      {/* Admin Only Routes */}
+      <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
+        <Route path="/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/users" element={<AdminUsersPage />} />
+        <Route path="/feedbacks" element={<AdminFeedbackPage />} />
+      </Route>
+
       {/* User Only Routes */}
       <Route element={<ProtectedRoute allowedRoles={['User']} />}>
+        <Route path="/my-dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/packages" element={<PackagesPage />} />
         
         <Route path="/orders" element={<OrdersPage />} />
@@ -102,11 +118,6 @@ export default function AppRoutes() {
         <Route path="/shipper/tasks" element={<DeliveryTasksPage />} />
         <Route path="/shipper/tasks/:id" element={<DeliveryTaskDetailPage />} />
         <Route path="/shipper/delivery/new" element={<CreateDeliveryPage />} />
-      </Route>
-
-      {/* Admin Only Routes */}
-      <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
-        <Route path="/admin/feedbacks" element={<AdminFeedbackPage />} />
       </Route>
     </Routes>
   );

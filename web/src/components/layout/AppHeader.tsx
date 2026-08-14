@@ -34,12 +34,12 @@ export default function AppHeader() {
     if (role === 'Admin') {
       return [
         { to: '/dashboard', label: 'Bảng điều khiển' },
-        { to: '/lockers', label: 'Quản lý tủ khóa' },
-        { to: '/admin/feedbacks', label: 'Feedback' },
+        { to: '/users', label: 'Quản lý Users' },
+        { to: '/feedbacks', label: 'Feedback' },
       ];
     }
     return [
-      { to: '/dashboard', label: 'Dashboard' },
+      { to: '/my-dashboard', label: 'Dashboard' },
       { to: '/lockers', label: 'Tủ khóa' },
       { to: '/orders', label: 'Đơn hàng' },
       { to: '/food', label: 'Ăn uống' },
@@ -103,7 +103,7 @@ export default function AppHeader() {
             </button>
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-gray-100 bg-white py-2 shadow-xl shadow-gray-200/50 z-50 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
-                <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                <Link to={role === 'Admin' ? '/dashboard' : '/my-dashboard'} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                   <LayoutDashboard size={16} /> Bảng điều khiển
                 </Link>
                 <Link to="/profile" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
@@ -177,6 +177,13 @@ export default function AppHeader() {
               className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
             >
               <User size={18} /> Hồ sơ cá nhân
+            </Link>
+            <Link
+              to="/settings"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
+            >
+              <Settings size={18} /> Cài đặt
             </Link>
             <button
               onClick={handleLogout}

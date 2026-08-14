@@ -15,8 +15,8 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {
-    // Nếu role không nằm trong danh sách cho phép, redirect về dashboard
-    return <Navigate to="/dashboard" replace />;
+    const redirectPath = role === 'Admin' ? '/dashboard' : '/my-dashboard';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return (

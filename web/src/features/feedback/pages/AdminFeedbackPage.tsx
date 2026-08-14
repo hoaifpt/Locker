@@ -12,7 +12,7 @@ import {
   Star,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import AppHeader from '../../../components/layout/AppHeader';
+import AdminSidebar from '../../admin/components/AdminSidebar';
 import { useToast } from '../../../context/ToastContext';
 import {
   downloadFeedbackCsv,
@@ -271,9 +271,9 @@ export default function AdminFeedbackPage() {
   const distributionTotal = summary?.ratingDistribution.reduce((sum, bucket) => sum + bucket.count, 0) ?? 0;
 
   return (
-    <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased">
-      <AppHeader />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen bg-[#F9F8F6] font-sans antialiased">
+      <AdminSidebar />
+      <main className="ml-64 flex-1 px-8 py-8">
         <div className="mb-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-purple-600">
             <ShieldCheck size={13} aria-hidden="true" /> Quản trị viên

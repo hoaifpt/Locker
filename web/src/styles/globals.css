@@ -4,10 +4,12 @@
 
 :root {
     color-scheme: light;
+    --font-scale: 1;
 }
 
 html {
     background: #f8fafc;
+    font-size: calc(1rem * var(--font-scale, 1));
 }
 
 body {

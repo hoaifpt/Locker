@@ -253,7 +253,7 @@ function AdminDashboard() {
     const fetchAdminData = async () => {
       setLoading(true);
       try {
-        const usersRes = await apiFetch('/admin/users');
+        const usersRes = await apiFetch('/users');
         if (!usersRes.ok) {
           throw new Error('Không thể tải dữ liệu người dùng.');
         }

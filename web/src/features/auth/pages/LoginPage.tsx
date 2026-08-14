@@ -55,7 +55,9 @@ export default function LoginPage() {
       localStorage.setItem('role', data.role);
       localStorage.setItem('expiresAt', data.expiresAt);
 
-      navigate('/dashboard');
+            // Navigate based on role
+      const redirectPath = data.role === 'Admin' ? '/dashboard' : '/my-dashboard';
+      navigate(redirectPath);
     } catch (err: any) {
       setError(err.message);
     } finally {

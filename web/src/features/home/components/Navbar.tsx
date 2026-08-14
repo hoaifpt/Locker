@@ -31,6 +31,11 @@ export default function Navbar() {
     navigate('/');
   };
 
+  const getDashboardLink = () => {
+    const role = localStorage.getItem('role');
+    return role === 'Admin' ? '/dashboard' : '/my-dashboard';
+  };
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
@@ -66,7 +71,7 @@ export default function Navbar() {
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-100 bg-white py-2 shadow-xl shadow-gray-200/50 z-50 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
-                    <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                    <Link to={getDashboardLink()} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                       Bảng điều khiển
                     </Link>
                     <Link to="/profile" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600">
@@ -130,7 +135,7 @@ export default function Navbar() {
                 </div>
               </div>
               <Link
-                to="/dashboard"
+                to={getDashboardLink()}
                 onClick={() => setOpen(false)}
                 className="block rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-orange-50"
               >

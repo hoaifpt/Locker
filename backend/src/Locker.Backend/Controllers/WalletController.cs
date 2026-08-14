@@ -270,11 +270,12 @@ public class WalletController : ControllerBase
         }
 
         // =========================================================
-        // 5. LẤY SEPAY PAYMENT CODE VÀ BÓC TÁCH MÃ ĐƠN HÀNG GỐC (GUID/ID)
+        // 5. LẤY SEPAY PAYMENT CODE (LẤY MÃ TRỰC TIẾP TỪ SEPAY)
         // =========================================================
 
         Console.WriteLine($"Searching SePay payment code from webhook...");
 
+        // Lấy mã SePayCode sạch (Ví dụ: PAY28336A7F2F1DA6E16)
         var sepayCode = request.Code?.Trim();
         Console.WriteLine($"SePayCode: {sepayCode}");
 
@@ -287,23 +288,8 @@ public class WalletController : ControllerBase
             });
         }
 
-        // Mặc định giữ chuỗi ban đầu
-        string cleanInvoiceNumber = request.Content ?? "";
-
-        if (!string.IsNullOrWhiteSpace(request.Content))
-        {
-            // Cắt chuỗi theo khoảng trắng (áp dụng cho chuỗi dạng "142250468725 0938110861 PAY...")
-            string[] parts = request.Content.Split(new[] { ' ', '-' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length > 0)
-            {
-                // Lấy chuỗi số đầu tiên đứng ở đầu nội dung chuyển khoản
-                cleanInvoiceNumber = parts[0].Trim();
-                Console.WriteLine($"⚙️ Đã bóc tách mã hóa đơn gốc hệ thống thành công: {cleanInvoiceNumber}");
-            }
-        }
-
         // =========================================================
-        // 6. TẠO REQUEST CHO MEDIATR (Sử dụng mã hóa đơn hệ thống)
+        // 6. TẠO REQUEST CHO MEDIATR 
         // =========================================================
 
         var ipnRequest = new SepayIpnRequest
@@ -312,8 +298,8 @@ public class WalletController : ControllerBase
 
             Order = new SepayIpnOrder
             {
-                // Gán mã hóa đơn hệ thống sạch đã bóc tách được (Ví dụ: 142250468725)
-                OrderInvoiceNumber = cleanInvoiceNumber,
+                // Truyền trực tiếp mã sepayCode sạch xuống handler
+                OrderInvoiceNumber = sepayCode,
                 OrderStatus = "CAPTURED",
 
                 OrderAmount = request.TransferAmount
@@ -333,6 +319,7 @@ public class WalletController : ControllerBase
             },
             Customer = null
         };
+
 
         // =========================================================
         // 7. PROCESS TOP-UP

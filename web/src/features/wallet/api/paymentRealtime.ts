@@ -21,7 +21,7 @@ export function createPaymentRealtimeConnection(
             accessTokenFactory: () => localStorage.getItem('token') ?? '',
         })
         .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
-        .configureLogging(signalR.LogLevel.Warning)
+        .configureLogging(signalR.LogLevel.Information)
         .build();
 
     connection.on('PaymentStatusChanged', (payload: PaymentStatusChangedEvent) => {

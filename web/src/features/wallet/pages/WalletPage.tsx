@@ -153,8 +153,12 @@ export default function WalletPage() {
       },
     });
     realtimeRef.current = conn;
+    conn.onreconnecting(() => console.info('[payment-realtime] reconnecting'));
+    conn.onreconnected(() => console.info('[payment-realtime] reconnected'));
+    conn.onclose((err) => console.warn('[payment-realtime] closed', err));
     try {
       await conn.start();
+      console.info('[payment-realtime] connected, paymentId=', paymentId);
     } catch (err) {
       console.warn('[payment-realtime] start failed', err);
     }

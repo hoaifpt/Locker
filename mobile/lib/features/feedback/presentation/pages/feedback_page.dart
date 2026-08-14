@@ -71,6 +71,16 @@ class _FeedbackViewState extends State<_FeedbackView> {
       content: content,
     );
     if (!mounted || !succeeded) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Cảm ơn bạn! Phản hồi đã được gửi thành công.'),
+          backgroundColor: Color(0xFFEC5B13),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
     Navigator.of(context).pop(true);
   }
 

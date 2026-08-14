@@ -221,6 +221,26 @@ public class WalletController : ControllerBase
 
         Console.WriteLine("==================================");
 
+        Console.WriteLine("========== SEPAY AUTH DEBUG ==========");
+        Console.WriteLine(
+            $"X-Secret-Key exists: {!string.IsNullOrWhiteSpace(providedSecret)}"
+        );
+        Console.WriteLine(
+            $"Received secret length: {providedSecret?.Length ?? 0}"
+        );
+
+        if (!_sepayService.IsValidIpnSecret(providedSecret))
+        {
+            Console.WriteLine("❌ SEPAY SECRET INVALID");
+
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Invalid SePay IPN secret"
+            });
+        }
+
+        Console.WriteLine("✅ SEPAY SECRET VALID");
 
 
         var result = await _sender.Send(

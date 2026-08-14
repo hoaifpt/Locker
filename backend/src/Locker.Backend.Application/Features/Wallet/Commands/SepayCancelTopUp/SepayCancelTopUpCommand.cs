@@ -26,13 +26,16 @@ public class SepayCancelTopUpCommandHandler
 {
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPaymentRealtimeNotifier _paymentRealtimeNotifier;
+    private readonly IWalletTransactionRepository _walletTransactionRepository;
 
     public SepayCancelTopUpCommandHandler(
         IPaymentRepository paymentRepository,
-        IPaymentRealtimeNotifier paymentRealtimeNotifier)
+        IPaymentRealtimeNotifier paymentRealtimeNotifier,
+        IWalletTransactionRepository walletTransactionRepository)
     {
         _paymentRepository = paymentRepository;
         _paymentRealtimeNotifier = paymentRealtimeNotifier;
+        _walletTransactionRepository = walletTransactionRepository;
     }
 
     public async Task<SepayCancelTopUpResponse> Handle(
@@ -111,7 +114,29 @@ public class SepayCancelTopUpCommandHandler
                 payment.Id);
         }
 
-        // 4. Notify realtime → FE nhận event, đóng modal, show toast
+        // 4. Ghi WalletTransaction Cancelled để user thấy trong lịch sử ví.
+        //    Idempotent: nếu đã có record Cancelled cho payment này thì không tạo lại.
+        var existingCancelled = await _walletTransactionRepository.GetByUserIdAsync(cancelled.UserId, cancellationToken);
+        var alreadyRecorded = existingCancelled.Any(t =>
+            t.ReferenceId == cancelled.Id.ToString() && t.Status == TransactionStatus.Cancelled);
+
+        if (!alreadyRecorded)
+        {
+            var walletTransaction = new WalletTransaction
+            {
+                UserId = cancelled.UserId,
+                Amount = cancelled.Amount,
+                Type = TransactionType.TopUp,
+                Status = TransactionStatus.Cancelled,
+                Description = $"Huỷ giao dịch nạp tiền #{cancelled.Id:N}",
+                ReferenceId = cancelled.Id.ToString(),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            await _walletTransactionRepository.CreateAsync(walletTransaction, cancellationToken);
+        }
+
+        // 5. Notify realtime → FE nhận event, đóng modal, show toast
         await _paymentRealtimeNotifier.NotifyStatusChangedAsync(
             cancelled.UserId,
             new PaymentStatusChangedEvent

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wallet, Plus, ArrowUpRight, ArrowDownLeft, ShieldCheck, Clock, CreditCard, Sparkles,
@@ -43,7 +43,14 @@ interface PaymentStatus {
 }
 
 const TRANSACTION_TYPE_LABELS = ['Nạp tiền', 'Chuyển khoản', 'Thanh toán', 'Hoàn tiền'];
-const TRANSACTION_STATUS_LABELS = ['Đang xử lý', 'Hoàn thành', 'Thất bại'];
+const TRANSACTION_STATUS_LABELS = ['Đang xử lý', 'Hoàn thành', 'Thất bại', 'Đã huỷ'];
+const TRANSACTION_STATUS_FILTERS = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'pending', label: 'Đang xử lý' },
+  { value: 'completed', label: 'Hoàn thành' },
+  { value: 'failed', label: 'Thất bại' },
+  { value: 'cancelled', label: 'Đã huỷ' },
+] as const;
 const TOP_UP_AMOUNTS = [50_000, 100_000, 200_000, 500_000, 1_000_000, 2_000_000];
 const POLL_INTERVAL_MS = 3000;
 const PAYMENT_STORAGE_KEY = 'locker:pending-topup';
@@ -93,6 +100,24 @@ export default function WalletPage() {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+
+  type StatusFilter = (typeof TRANSACTION_STATUS_FILTERS)[number]['value'];
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  const filteredTransactions = useMemo(() => {
+    if (statusFilter === 'all') return transactions;
+    return transactions.filter((t) => {
+      const s = String(t.status).toLowerCase();
+      const type = String(t.type).toLowerCase();
+      if (statusFilter === 'cancelled') return s === '3' || s === 'cancelled';
+      if (statusFilter === 'pending') return s === '0' || s === 'pending';
+      if (statusFilter === 'completed') return s === '1' || s === 'completed';
+      if (statusFilter === 'failed') return s === '2' || s === 'failed';
+      // Reference-only transactions (Cancelled/Refunded/...) should still appear under "all"
+      // even if Type is empty. The statusFilter='all' short-circuit above handles that.
+      return type === statusFilter;
+    });
+  }, [transactions, statusFilter]);
 
   const [step, setStep] = useState<TopupStep>('idle');
   const [topupAmount, setTopupAmount] = useState('100000');
@@ -424,7 +449,38 @@ export default function WalletPage() {
 
   const getTransactionStatusLabel = (status: number | string) => {
     if (typeof status === 'number') return TRANSACTION_STATUS_LABELS[status] ?? String(status);
+    if (typeof status === 'string') {
+      const key = status.toLowerCase();
+      if (key === 'pending') return 'Đang xử lý';
+      if (key === 'completed') return 'Hoàn thành';
+      if (key === 'failed') return 'Thất bại';
+      if (key === 'cancelled') return 'Đã huỷ';
+    }
     return status;
+  };
+
+  const getStatusBgClass = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === '3' || s === 'cancelled') return 'bg-slate-100 dark:bg-slate-800/60';
+    if (s === '2' || s === 'failed') return 'bg-red-50 dark:bg-red-950/40';
+    if (s === '1' || s === 'completed') return 'bg-emerald-50 dark:bg-emerald-950/40';
+    return 'bg-amber-50 dark:bg-amber-950/40';
+  };
+
+  const getStatusAmountClass = (status: string, amount: number) => {
+    const s = status.toLowerCase();
+    if (s === '3' || s === 'cancelled') return 'text-slate-400 line-through dark:text-slate-500';
+    if (s === '2' || s === 'failed') return 'text-slate-400 line-through dark:text-slate-500';
+    if (s === '1' || s === 'completed') return amount > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white';
+    return 'text-amber-600 dark:text-amber-400';
+  };
+
+  const getStatusLabelClass = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === '3' || s === 'cancelled') return 'text-slate-500 dark:text-slate-400';
+    if (s === '2' || s === 'failed') return 'text-red-500 dark:text-red-400';
+    if (s === '1' || s === 'completed') return 'text-emerald-600 dark:text-emerald-400';
+    return 'text-amber-600 dark:text-amber-400';
   };
 
   const expired = secondsLeft <= 0 && step === 'paying';
@@ -1084,23 +1140,52 @@ export default function WalletPage() {
 
         {/* Transactions */}
         <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-7 dark:border-slate-800 dark:bg-slate-900">
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-extrabold text-slate-950 dark:text-white">Lịch sử giao dịch</h3>
               <p className="mt-1 text-xs text-slate-400">Các giao dịch gần đây của ví</p>
             </div>
-            {!loading && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">{transactions.length} giao dịch</span>}
+            {!loading && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">{filteredTransactions.length} giao dịch</span>}
           </div>
+
+          {/* Status filter tabs */}
+          <div className="mb-4 flex flex-wrap items-center gap-1.5">
+            {TRANSACTION_STATUS_FILTERS.map((f) => {
+              const isActive = statusFilter === f.value;
+              return (
+                <button
+                  key={f.value}
+                  type="button"
+                  onClick={() => setStatusFilter(f.value)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    isActive
+                      ? 'bg-orange-500 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
+
           {loading ? (
             <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />)}</div>
-          ) : transactions.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 py-12 text-center dark:border-slate-700"><Clock size={26} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" /><p className="text-sm text-slate-400">Chưa có giao dịch nào.</p></div>
+          ) : filteredTransactions.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 py-12 text-center dark:border-slate-700">
+              <Clock size={26} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+              <p className="text-sm text-slate-400">
+                {statusFilter === 'all'
+                  ? 'Chưa có giao dịch nào.'
+                  : `Không có giao dịch "${TRANSACTION_STATUS_FILTERS.find((f) => f.value === statusFilter)?.label}".`}
+              </p>
+            </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {transactions.map(tx => (
+              {filteredTransactions.map(tx => (
                 <div key={tx.id} className="flex items-center justify-between gap-3 py-4 first:pt-0 last:pb-0">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${tx.amount > 0 ? 'bg-emerald-50 dark:bg-emerald-950/40' : 'bg-red-50 dark:bg-red-950/40'}`}>
+                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${getStatusBgClass(String(tx.status))}`}>
                       {getIcon(String(tx.type), tx.amount)}
                     </div>
                     <div className="min-w-0">
@@ -1109,10 +1194,10 @@ export default function WalletPage() {
                     </div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className={`font-extrabold ${tx.amount > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}>
+                    <p className={`font-extrabold ${getStatusAmountClass(String(tx.status), tx.amount)}`}>
                       {tx.amount > 0 ? '+' : ''}{formatVnd(tx.amount)}
                     </p>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{getTransactionStatusLabel(tx.status)}</span>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${getStatusLabelClass(String(tx.status))}`}>{getTransactionStatusLabel(tx.status)}</span>
                   </div>
                 </div>
               ))}

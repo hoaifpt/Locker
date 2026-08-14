@@ -55,18 +55,21 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
             request.Amount,
             sepayCode);
 
+
+        // SỬA CẤU TRÚC URL THEO CHUẨN API MỚI NHẤT CỦA VIETQR.IO
         // =========================================================
-        // CẬP NHẬT MÃ NGÂN HÀNG CHUẨN ĐÃ TEST CHẠY THÀNH CÔNG
-        // =========================================================
-        string bankId = "TPB"; // Đổi từ "TPBank" thành "TPB" theo link chuẩn của bạn
+        string bankId = "TPB"; 
         string accountNo = "84519828888"; 
         string accountName = "PHAM DUC HUNG"; 
 
-        // Hệ thống tự động gán mã QR động cho từng khách hàng
-        string cleanVietQrUrl = $"https://img.vietqr.io/image/{bankId}-{accountNo}-compact.png" +
+        // Chuẩn mới: .../image/TÊN_NGÂN_HÀNG/SỐ_TÀI_KHOẢN/generate
+        // Đồng thời thêm tham số &template=compact để ép kiểu hiển thị thu gọn
+        string cleanVietQrUrl = $"https://vietqr.io{bankId}/{accountNo}/generate" +
                                 $"?amount={decimal.Truncate(request.Amount).ToString("0")}" +
                                 $"&addInfo={System.Net.WebUtility.UrlEncode(sepayCode)}" +
-                                $"&accountName={System.Net.WebUtility.UrlEncode(accountName)}";
+                                $"&accountName={System.Net.WebUtility.UrlEncode(accountName)}" +
+                                $"&template=compact";
+
 
         var expiresAt = payment.CreatedAt.AddMinutes(_sepaySettings.PaymentTimeoutMinutes);
 

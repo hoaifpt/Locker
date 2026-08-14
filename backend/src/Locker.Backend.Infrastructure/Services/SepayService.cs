@@ -32,10 +32,11 @@ public class SepayService : ISepayService
     }
 
     public SepayCheckoutData CreateTopUpCheckout(
-     Guid paymentId,
-     Guid userId,
-     decimal amount,
-     string? paymentMethod = null)
+    Guid paymentId,
+    Guid userId,
+    decimal amount,
+    string sepayCode,
+    string? paymentMethod = null)
     {
         var checkoutUrl = GetCheckoutUrl();
         var merchantId = GetMerchantId();
@@ -55,13 +56,11 @@ public class SepayService : ISepayService
 
         // Đây là mã dùng để liên kết giao dịch SePay
         // với Payment trong database của Locker.
-        var invoiceNumber = CreateTopUpInvoiceNumber(paymentId);
-
         var fields = new Dictionary<string, string>
         {
             ["order_amount"] =
-                decimal.Truncate(amount)
-                    .ToString("0", CultureInfo.InvariantCulture),
+        decimal.Truncate(amount)
+            .ToString("0", CultureInfo.InvariantCulture),
 
             ["merchant"] = merchantId,
 
@@ -69,20 +68,14 @@ public class SepayService : ISepayService
 
             ["operation"] = "PURCHASE",
 
-            // Quan trọng:
-            // Đưa TOPUP_<GUID> vào description.
-            ["order_description"] =
-                $"TOPUP_{paymentId:N}",
+            ["order_description"] = sepayCode,
 
-            // Vẫn giữ invoice là TOPUP_<GUID>
-            ["order_invoice_number"] =
-                invoiceNumber,
+            ["order_invoice_number"] = sepayCode,
 
-            ["customer_id"] =
-                userId.ToString("N"),
+            ["customer_id"] = userId.ToString("N"),
 
             ["payment_method"] =
-                paymentMethod ?? "BANK_TRANSFER",
+        paymentMethod ?? "BANK_TRANSFER",
 
             ["success_url"] = _settings.SuccessUrl,
 
@@ -90,7 +83,6 @@ public class SepayService : ISepayService
 
             ["cancel_url"] = _settings.CancelUrl
         };
-
         var signedString = BuildSignedString(fields);
 
         var signature = Sign(
@@ -101,7 +93,6 @@ public class SepayService : ISepayService
 
         Console.WriteLine("========== SEPAY CHECKOUT ==========");
         Console.WriteLine($"PaymentId: {paymentId}");
-        Console.WriteLine($"InvoiceNumber: {invoiceNumber}");
         Console.WriteLine($"OrderDescription: {fields["order_description"]}");
         Console.WriteLine($"Amount: {fields["order_amount"]}");
         Console.WriteLine($"PaymentMethod: {fields["payment_method"]}");
@@ -166,7 +157,7 @@ public class SepayService : ISepayService
 
         var match = System.Text.RegularExpressions.Regex.Match(
             content,
-            @"TOPUP_[A-Fa-f0-9]{32}",
+            @"\bDH[A-Z0-9]{3,10}\b",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
         return match.Success

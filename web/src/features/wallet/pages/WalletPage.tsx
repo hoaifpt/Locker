@@ -11,6 +11,7 @@ import { apiFetch } from '../../../lib/api';
 import { useToast } from '../../../context/ToastContext';
 import { formatVnd, formatVndInput, normalizeVndInput } from '../utils/currency';
 import { createPaymentRealtimeConnection } from '../api/paymentRealtime';
+import InlineAlert from '../../../components/ui/InlineAlert';
 
 interface WalletOverview {
   balance: number;
@@ -250,7 +251,6 @@ export default function WalletPage() {
       paymentStatus?.status !== 2;   // 2 = Failed
 
     if (hasPendingPayment) {
-      showToast('Bạn cần hoàn thành giao dịch đang chờ trước khi tạo giao dịch mới.', 'warning');
       setStep('paying');
       return;
     }
@@ -656,6 +656,12 @@ export default function WalletPage() {
                       transition={{ duration: 0.25 }}
                       className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8"
                     >
+                      <InlineAlert
+                        variant="warning"
+                        title="Bạn đang có giao dịch chưa hoàn tất"
+                        description="Hoàn thành giao dịch hiện tại trước khi tạo giao dịch mới. Quét QR bên dưới để tiếp tục thanh toán."
+                        onDismiss={handleCloseTopup}
+                      />
                       {/* LEFT — instructions + amount + bank info */}
                       <div className="order-2 space-y-5 lg:order-1 lg:col-span-7">
                         {/* Amount — hero of left column */}

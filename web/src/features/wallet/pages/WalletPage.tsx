@@ -152,8 +152,13 @@ export default function WalletPage() {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const realtimeRef = useRef<HubConnection | null>(null);
   const currentPaymentIdRef = useRef<string | null>(null);
+  // Sequence counter để chống race giữa các lần loadWallet đồng thời
+  // (useEffect mount-twice trong StrictMode + realtime + cancel handler).
+  // Mỗi lần gọi tăng seq; chỉ response của seq mới nhất được áp dụng state.
+  const loadSeqRef = useRef(0);
 
   const loadWallet = useCallback(async () => {
+    const seq = ++loadSeqRef.current;
     try {
       const [overviewResponse, transactionsResponse] = await Promise.all([
         apiFetch('/wallet/overview'),
@@ -169,15 +174,21 @@ export default function WalletPage() {
         transactionsResponse.json() as Promise<WalletTransaction[]>,
       ]);
 
+      // Bỏ qua response cũ nếu đã có call mới hơn bắt đầu sau
+      if (seq !== loadSeqRef.current) return;
+
       setBalance(overview.balance);
       setTransactions(walletTransactions.sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       ));
     } catch (error) {
+      if (seq !== loadSeqRef.current) return;
       const message = error instanceof Error ? error.message : 'Không thể tải thông tin ví.';
       showToast(message, 'error');
     } finally {
-      setLoading(false);
+      if (seq === loadSeqRef.current) {
+        setLoading(false);
+      }
     }
   }, [showToast]);
 

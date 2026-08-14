@@ -163,7 +163,7 @@ public class SepayService : ISepayService
         // Regex này sẽ tìm chuỗi nào có tiền tố TOPUP_, DH, hoặc PAY theo sau là ký tự chữ/số
         var match = System.Text.RegularExpressions.Regex.Match(
             content,
-            @"\b(TOPUP_[a-zA-Z0-9]+|DH[A-Z0-9]+|PAY[A-Z0-9]+)\b",
+            @"\b(TOPUP_?[A-Z0-9]+|DH[A-Z0-9]+|PAY[A-Z0-9]+)\b",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
         return match.Success

@@ -660,7 +660,6 @@ export default function WalletPage() {
                         variant="warning"
                         title="Bạn đang có giao dịch chưa hoàn tất"
                         description="Hoàn thành giao dịch hiện tại trước khi tạo giao dịch mới. Quét QR bên dưới để tiếp tục thanh toán."
-                        onDismiss={handleCloseTopup}
                       />
                       {/* LEFT — instructions + amount + bank info */}
                       <div className="order-2 space-y-5 lg:order-1 lg:col-span-7">

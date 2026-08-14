@@ -196,6 +196,33 @@ public class WalletController : ControllerBase
 
         Console.WriteLine("====================================");
 
+
+        Console.WriteLine("========== SEPAY HEADERS ==========");
+
+        foreach (var header in Request.Headers)
+        {
+            if (header.Key.Equals("X-Secret-Key", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine(
+                    $"HEADER: {header.Key} = {(string.IsNullOrEmpty(header.Value) ? "<empty>" : "***")}"
+                );
+            }
+            else if (header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine(
+                    $"HEADER: {header.Key} = {(string.IsNullOrEmpty(header.Value) ? "<empty>" : "***")}"
+                );
+            }
+            else
+            {
+                Console.WriteLine($"HEADER: {header.Key}");
+            }
+        }
+
+        Console.WriteLine("==================================");
+
+
+
         var result = await _sender.Send(
             new SepayProcessIpnCommand(request),
             cancellationToken);

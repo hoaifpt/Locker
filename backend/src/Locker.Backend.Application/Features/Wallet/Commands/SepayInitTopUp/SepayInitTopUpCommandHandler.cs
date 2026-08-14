@@ -55,30 +55,27 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
             request.Amount,
             sepayCode);
 
-                // =========================================================
-        // 💡 GIẢI PHÁP TỰ SINH LINK VIETQR ĐỘNG THEO MẪU CỦA BẠN
         // =========================================================
-        string bankId = "TPBank"; 
-        string accountNo = "84519828888"; 
-        string accountName = "PHAM DUC HUNG"; 
+        // 💡 GIẢI PHÁP TẠO MÃ QR ĐỘNG CHUẨN QUỐC GIA (API VIETQR.IO)
+        // =========================================================
+        string bankId = "TPBank";
+        string accountNo = "84519828888";
+        string accountName = "PHAM DUC HUNG";
 
-        // Ghép thêm tham số số tiền (amount) và nội dung chuyển khoản (memo = sepayCode) vào link vietqr.app
-        string cleanVietQrUrl = $"https://vietqr.app/img?bank={bankId}" +
-                                $"&acc={accountNo}" +
-                                $"&template=standee" +
-                                $"&fullacc=true" +
-                                $"&holder={System.Net.WebUtility.UrlEncode(accountName)}" +
-                                $"&amount={decimal.Truncate(request.Amount).ToString("0")}" +
-                                $"&memo={System.Net.WebUtility.UrlEncode(sepayCode)}";
+        // Sử dụng template 'qr_only' hoặc 'compact2' của VietQR để hiển thị ảnh động mượt mà
+        string cleanVietQrUrl = $"https://vietqr.io{bankId}-{accountNo}-compact2.png" +
+                                $"?amount={decimal.Truncate(request.Amount).ToString("0")}" +
+                                $"&addInfo={System.Net.WebUtility.UrlEncode(sepayCode)}" +
+                                $"&accountName={System.Net.WebUtility.UrlEncode(accountName)}";
 
         var expiresAt = payment.CreatedAt.AddMinutes(_sepaySettings.PaymentTimeoutMinutes);
 
-        Console.WriteLine($"[VIETQR] Đã tạo link QR động chứa mã {sepayCode}: {cleanVietQrUrl}");
+        Console.WriteLine($"[VIETQR] Đã tạo link QR động chuẩn: {cleanVietQrUrl}");
 
         return new SepayInitTopUpResponse(
             Succeeded: true,
             Message: "VietQR dynamic checkout generated successfully.",
-            PaymentUrl: cleanVietQrUrl, // Trả link QR động về cho App hiển thị
+            PaymentUrl: cleanVietQrUrl, // Trả link ảnh QR chuẩn về cho Front-end
             PaymentId: payment.Id,
             Amount: request.Amount,
             ExpiresAt: expiresAt,
@@ -86,3 +83,4 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
             FormFields: checkout.Fields);
     }
 }
+

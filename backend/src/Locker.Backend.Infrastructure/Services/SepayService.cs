@@ -159,11 +159,9 @@ public class SepayService : ISepayService
         if (string.IsNullOrWhiteSpace(content))
             return null;
 
-        // Thay đổi Regex để tìm cả 3 loại mã: TOPUP_, DH, hoặc PAY
-        // Regex này sẽ tìm chuỗi nào có tiền tố TOPUP_, DH, hoặc PAY theo sau là ký tự chữ/số
         var match = System.Text.RegularExpressions.Regex.Match(
             content,
-            @"\b(TOPUP_?[A-Z0-9]+|DH[A-Z0-9]+|PAY[A-Z0-9]+)\b",
+            @"\b(TOPUP_?[A-Za-z0-9]+|DH[A-Za-z0-9]+|PAY[A-Za-z0-9]+)\b",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
         return match.Success

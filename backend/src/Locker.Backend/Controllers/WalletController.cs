@@ -497,13 +497,18 @@ public class SepayBankWebhookRequest
 static partial class SepayWebhookHelpers
 {
     private static readonly Regex TopUpRegex = new(
-        @"TOPUP_([0-9a-fA-F]{32})",
+        @"(?<![A-Za-z0-9])TOPUP_?[0-9a-fA-F]{32}(?![A-Za-z0-9])",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public static string? ExtractTopUpCodeFromContent(string? content)
     {
-        if (string.IsNullOrWhiteSpace(content)) return null;
+        if (string.IsNullOrWhiteSpace(content))
+            return null;
+
         var match = TopUpRegex.Match(content);
-        return match.Success ? match.Value.ToUpperInvariant() : null;
+
+        return match.Success
+            ? match.Value.ToUpperInvariant()
+            : null;
     }
 }

@@ -22,13 +22,16 @@ public class SepayProcessIpnCommandHandler
 {
     private readonly IPaymentRepository _paymentRepository;
     private readonly IWalletTransactionRepository _walletTransactionRepository;
+    private readonly IRealtimeNotificationService _notificationService;
 
     public SepayProcessIpnCommandHandler(
         IPaymentRepository paymentRepository,
-        IWalletTransactionRepository walletTransactionRepository)
+        IWalletTransactionRepository walletTransactionRepository,
+        IRealtimeNotificationService notificationService)
     {
         _paymentRepository = paymentRepository;
         _walletTransactionRepository = walletTransactionRepository;
+        _notificationService = notificationService;
     }
 
     public async Task<SepayProcessIpnResponse> Handle(
@@ -156,59 +159,62 @@ public class SepayProcessIpnCommandHandler
                 paymentId);
         }
 
-        // 8. Chống xử lý trùng
-        if (payment.Status == PaymentStatus.Completed)
-        {
-            return new SepayProcessIpnResponse(
-                true,
-                "Payment already processed.",
-                paymentId);
-        }
-
-        if (payment.Status != PaymentStatus.Pending)
-        {
-            return new SepayProcessIpnResponse(
-                false,
-                $"Payment is not pending. Status={payment.Status}",
-                paymentId);
-        }
-
-        // 9. Kiểm tra WalletTransaction
-        var existingWalletTransaction =
-            await _walletTransactionRepository.FindOneAsync(
-                x =>
-                    x.ReferenceId == payment.Id.ToString()
-                    && x.Type == TransactionType.TopUp,
-                cancellationToken);
-
-        // 10. Transaction ID của SePay
+        // 8. Chống xử lý trùng bằng atomic transition Pending -> Completed
         var gatewayTransactionId =
             FirstNotEmpty(
                 ipn.Transaction.TransactionId,
                 ipn.Transaction.Id,
                 ipn.Order.OrderId);
 
-        // 11. Update Payment
-        payment.Status = PaymentStatus.Completed;
-
-        payment.TransactionId = gatewayTransactionId;
-
-        payment.PaidAt =
+        var paidAt =
             ParseSepayDate(ipn.Transaction.TransactionDate)
             ?? DateTime.UtcNow;
 
-        await _paymentRepository.UpdateAsync(
-            payment,
-            cancellationToken);
+        var completedPayment =
+            await _paymentRepository.TryCompletePendingAsync(
+                payment.Id,
+                gatewayTransactionId,
+                paidAt,
+                cancellationToken);
 
-        // 12. Tạo WalletTransaction
+        if (completedPayment is null)
+        {
+            // Caller này không phải người thắng — kiểm tra trạng thái hiện tại
+            var refreshed = await _paymentRepository.GetByIdAsync(
+                payment.Id,
+                cancellationToken);
+
+            if (refreshed is not null
+                && refreshed.Status == PaymentStatus.Completed)
+            {
+                return new SepayProcessIpnResponse(
+                    true,
+                    "Payment already processed.",
+                    paymentId);
+            }
+
+            return new SepayProcessIpnResponse(
+                false,
+                $"Payment is not pending. Status={refreshed?.Status}",
+                paymentId);
+        }
+
+        // 9. Kiểm tra WalletTransaction (sau khi đã atomic claim xong)
+        var existingWalletTransaction =
+            await _walletTransactionRepository.FindOneAsync(
+                x =>
+                    x.ReferenceId == completedPayment.Id.ToString()
+                    && x.Type == TransactionType.TopUp,
+                cancellationToken);
+
+        // 10. Tạo WalletTransaction
         if (existingWalletTransaction == null)
         {
             var walletTransaction = new WalletTransaction
             {
-                UserId = payment.UserId,
+                UserId = completedPayment.UserId,
 
-                Amount = payment.Amount,
+                Amount = completedPayment.Amount,
 
                 Type = TransactionType.TopUp,
 
@@ -218,10 +224,10 @@ public class SepayProcessIpnCommandHandler
                     $"Nap tien vi qua SePay. " +
                     $"Ma GD: {gatewayTransactionId}",
 
-                ReferenceId = payment.Id.ToString(),
+                ReferenceId = completedPayment.Id.ToString(),
 
                 CreatedAt =
-                    payment.PaidAt ?? DateTime.UtcNow,
+                    completedPayment.PaidAt ?? DateTime.UtcNow,
 
                 UpdatedAt = DateTime.UtcNow
             };
@@ -233,8 +239,14 @@ public class SepayProcessIpnCommandHandler
 
         Console.WriteLine(
             $"SEPAY PAYMENT COMPLETED: " +
-            $"PaymentId={payment.Id}, " +
+            $"PaymentId={completedPayment.Id}, " +
             $"TransactionId={gatewayTransactionId}");
+
+        await _notificationService.NotifyUserAsync(
+            completedPayment.UserId,
+            "Nạp tiền thành công",
+            $"Ví E-Box Pay của bạn đã được cộng {completedPayment.Amount:N0} đ.",
+            cancellationToken);
 
         return new SepayProcessIpnResponse(
             true,

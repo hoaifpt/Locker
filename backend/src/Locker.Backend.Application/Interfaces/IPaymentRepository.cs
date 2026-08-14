@@ -15,4 +15,16 @@ public interface IPaymentRepository : IGenericRepository<Payment>
     Task<Payment?> GetBySepayCodeAsync(
         string sepayCode,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Atomically transitions a payment from <see cref="PaymentStatus.Pending"/> to
+    /// <see cref="PaymentStatus.Completed"/>. Returns the updated payment when this
+    /// caller owned the transition; returns <c>null</c> when another concurrent caller
+    /// has already completed the payment.
+    /// </summary>
+    Task<Payment?> TryCompletePendingAsync(
+        Guid paymentId,
+        string transactionId,
+        DateTime paidAt,
+        CancellationToken cancellationToken);
 }

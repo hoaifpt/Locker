@@ -1,5 +1,35 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
+export function getApiOrigin(): string {
+    if (typeof window === 'undefined') {
+        return '';
+    }
+
+    const baseUrl = API_BASE_URL.replace(/\/$/, '');
+
+    if (baseUrl.startsWith('http://') || baseUrl.startsWith('https://')) {
+        const lastSlash = baseUrl.lastIndexOf('/');
+        if (lastSlash <= baseUrl.indexOf('://') + 2) {
+            return baseUrl;
+        }
+        const lastSegment = baseUrl.substring(lastSlash + 1);
+        if (lastSegment === 'api') {
+            return baseUrl.substring(0, lastSlash);
+        }
+        return baseUrl;
+    }
+
+    if (baseUrl === '/api' || baseUrl === 'api') {
+        return window.location.origin;
+    }
+
+    if (baseUrl.startsWith('/')) {
+        return `${window.location.origin}${baseUrl}`;
+    }
+
+    return `${window.location.origin}/${baseUrl}`;
+}
+
 export type FetchOptions = RequestInit & {
     data?: unknown;
 };

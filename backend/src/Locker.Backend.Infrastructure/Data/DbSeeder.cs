@@ -32,7 +32,6 @@ public static class DbSeeder
         var orderRepo = sp.GetRequiredService<IOrderRepository>();
         var paymentRepo = sp.GetRequiredService<IPaymentRepository>();
         var lockerEventRepo = sp.GetRequiredService<ILockerEventRepository>();
-        var notificationRepo = sp.GetRequiredService<INotificationRepository>();
         var passwordHasher = sp.GetRequiredService<IPasswordHasher>();
 
         var defaultPassword = config["Seed:DefaultPassword"] ?? "Password123!";
@@ -452,38 +451,6 @@ public static class DbSeeder
                     CreatedAt = now2
                 };
                 await sendReceiveRepo.CreateAsync(sr, default);
-            }
-
-            // 7e. Generate Notifications for customers
-            var notificationTitles = new[]
-            {
-                "Welcome to Locker App!",
-                "Your order has been confirmed",
-                "Delivery arrived at locker",
-                "Package ready for pickup",
-                "Reminder: Locker booking expires soon"
-            };
-            var notificationMessages = new[]
-            {
-                "Thank you for registering. Start using our locker services today!",
-                "Your locker reservation has been confirmed. Please proceed to payment.",
-                "Your delivery has been dropped off at the locker. Use your PIN to open.",
-                "Your package is ready for pickup at the locker.",
-                "Your locker booking will expire in 30 minutes. Don't forget your items."
-            };
-
-            for (int i = 0; i < customerIds.Count && i < notificationTitles.Length; i++)
-            {
-                var notif = new Notification
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = customerIds[i],
-                    Title = notificationTitles[i],
-                    Message = notificationMessages[i],
-                    IsRead = i % 2 == 0,
-                    CreatedAt = now.AddMinutes(-i * 5)
-                };
-                await notificationRepo.CreateAsync(notif, default);
             }
         }
     }

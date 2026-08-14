@@ -421,38 +421,17 @@ export const SEED_SEND_RECEIVE_ORDERS: SeedSendReceiveOrder[] = [
   { id: 'sr-004', senderId: 'u-004', receiverPhone: '0956789012', lockerId: 'lk-006', slotIndex: 10, status: 'Cancelled', pinCode: '6789', notes: 'Đã hủy — người nhận không lấy', createdAt: '2026-06-20T16:00:00Z' },
 ];
 
-// ─── NOTIFICATIONS (matching NotificationDto) ─────────────
-export interface SeedNotification {
-  id: string;
-  userId: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-}
-
-export const SEED_NOTIFICATIONS: SeedNotification[] = [
-  { id: 'noti-001', userId: 'u-001', title: 'Đơn hàng đã kích hoạt', message: 'Đơn hàng ORD-001 tại Tủ Khóa Vincom Đồng Khởi đã được kích hoạt thành công.', isRead: false, createdAt: '2026-06-22T08:00:00Z' },
-  { id: 'noti-002', userId: 'u-001', title: 'Thanh toán thành công', message: 'Bạn đã thanh toán 52.800đ cho đơn hàng ORD-001 qua VNPay.', isRead: true, createdAt: '2026-06-22T07:50:00Z' },
-  { id: 'noti-003', userId: 'u-001', title: 'Gửi hàng thành công', message: 'Bạn đã gửi hàng cho SĐT 0912345678 tại ô tủ số 6, Vincom Đồng Khởi.', isRead: false, createdAt: '2026-06-22T10:00:00Z' },
-  { id: 'noti-004', userId: 'u-002', title: 'Có hàng chờ nhận', message: 'Bạn có kiện hàng chờ nhận tại Tủ Khóa Vincom Đồng Khởi. Mã PIN: 4567', isRead: false, createdAt: '2026-06-22T10:01:00Z' },
-  { id: 'noti-005', userId: 'u-001', title: 'Đơn hàng hoàn thành', message: 'Đơn hàng ORD-002 đã hoàn thành. Tổng phí: 100.600đ.', isRead: true, createdAt: '2026-06-20T17:05:00Z' },
-  { id: 'noti-006', userId: 's-001', title: 'Có đơn giao mới', message: 'Bạn có 2 đơn giao hàng mới cần xử lý hôm nay.', isRead: false, createdAt: '2026-06-22T07:30:00Z' },
-  { id: 'noti-007', userId: 's-001', title: 'Giao hàng thành công', message: 'Đơn DEL-002 đã được giao vào tủ Landmark 81 thành công.', isRead: true, createdAt: '2026-06-22T09:45:00Z' },
-  { id: 'noti-008', userId: 'u-004', title: 'Sắp hết thời gian thuê', message: 'Đơn ORD-004 tại Sân Bay TSN T2 sẽ hết hạn lúc 04:00 ngày mai. Hãy gia hạn nếu cần.', isRead: false, createdAt: '2026-06-22T22:00:00Z' },
-];
-
 // ─── HELPERS ──────────────────────────────────────────────
 export const getUserById = (id: string) => SEED_USERS.find(u => u.id === id);
 
 export type MockLoginError = 'NOT_FOUND' | 'WRONG_PASSWORD' | 'INACTIVE' | 'EMAIL_NOT_VERIFIED';
 export function mockLogin(identifier: string, password: string): { user: SeedUser } | { error: MockLoginError } {
-  const user = SEED_USERS.find(u => u.username === identifier || u.email === identifier);
-  if (!user) return { error: 'NOT_FOUND' };
-  if (user._mockPassword !== password) return { error: 'WRONG_PASSWORD' };
-  if (!user.isActive) return { error: 'INACTIVE' };
-  if (!user.isEmailVerified) return { error: 'EMAIL_NOT_VERIFIED' };
-  return { user };
+    const user = SEED_USERS.find(u => u.username === identifier || u.email === identifier);
+    if (!user) return { error: 'NOT_FOUND' };
+    if (user._mockPassword !== password) return { error: 'WRONG_PASSWORD' };
+    if (!user.isActive) return { error: 'INACTIVE' };
+    if (!user.isEmailVerified) return { error: 'EMAIL_NOT_VERIFIED' };
+    return { user };
 }
 
 export const getLockerById = (id: string) => SEED_LOCKERS.find(l => l.id === id);
@@ -466,7 +445,6 @@ export const getOrdersByUser = (userId: string) => SEED_ORDERS.filter(o => o.use
 export const getPaymentsByUser = (userId: string) => SEED_PAYMENTS.filter(p => p.userId === userId);
 export const getDeliveryRequestsByUser = (userId: string) => SEED_DELIVERY_REQUESTS.filter(d => d.userId === userId);
 export const getSendReceiveByUser = (userId: string) => SEED_SEND_RECEIVE_ORDERS.filter(s => s.senderId === userId);
-export const getNotificationsByUser = (userId: string) => SEED_NOTIFICATIONS.filter(n => n.userId === userId);
 export const getAvailableLockers = () => SEED_LOCKERS.filter(l => l.slots.some(s => s.status === 'Available'));
 export const getBookingsByStatus = (status: BookingStatus) => SEED_BOOKINGS.filter(b => b.status === status);
 export const getUsersByRole = (role: UserRole) => SEED_USERS.filter(u => u.role === role);

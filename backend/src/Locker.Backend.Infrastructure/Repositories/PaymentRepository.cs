@@ -1,5 +1,6 @@
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Domain.Entities;
+using Locker.Backend.Domain.Enums;
 using Locker.Backend.Infrastructure.Mongo;
 using MongoDB.Driver;
 
@@ -44,5 +45,30 @@ public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
             cancellationToken: cancellationToken);
 
         return await cursor.FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<Payment?> TryCompletePendingAsync(
+        Guid paymentId,
+        string transactionId,
+        DateTime paidAt,
+        CancellationToken cancellationToken)
+    {
+        var filter = Builders<Payment>.Filter.And(
+            Builders<Payment>.Filter.Eq(x => x.Id, paymentId),
+            Builders<Payment>.Filter.Eq(x => x.Status, PaymentStatus.Pending));
+
+        var update = Builders<Payment>.Update
+            .Set(x => x.Status, PaymentStatus.Completed)
+            .Set(x => x.TransactionId, transactionId)
+            .Set(x => x.PaidAt, paidAt);
+
+        return await _collection.FindOneAndUpdateAsync(
+            filter,
+            update,
+            new FindOneAndUpdateOptions<Payment>
+            {
+                ReturnDocument = ReturnDocument.After,
+            },
+            cancellationToken);
     }
 }

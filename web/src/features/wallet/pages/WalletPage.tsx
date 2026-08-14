@@ -105,8 +105,13 @@ export default function WalletPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const filteredTransactions = useMemo(() => {
-    if (statusFilter === 'all') return transactions;
-    return transactions.filter((t) => {
+    // Sort DESC by createdAt — same contract whether filter applied or not.
+    // Using slice() so we don't mutate the source array (useState requires non-mutation).
+    const sorted = [...transactions].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+    if (statusFilter === 'all') return sorted;
+    return sorted.filter((t) => {
       const s = String(t.status).toLowerCase();
       const type = String(t.type).toLowerCase();
       if (statusFilter === 'cancelled') return s === '3' || s === 'cancelled';

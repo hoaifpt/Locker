@@ -8,4 +8,5 @@ public record SepayInitTopUpResponse(
     decimal? Amount = null,
     DateTime? ExpiresAt = null,
     string? CheckoutUrl = null,
+    string? SepayCode = null,
     IReadOnlyDictionary<string, string>? FormFields = null);

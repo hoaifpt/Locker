@@ -15,6 +15,7 @@ using Locker.Backend.Application.Features.Wallet.Commands.VnPayProcessReturn;
 using Locker.Backend.Application.Features.Wallet.Queries.GetBalance;
 using Locker.Backend.Application.Features.Wallet.Queries.GetOverview;
 using Locker.Backend.Application.Features.Wallet.Queries.GetTransactions;
+using System.Text.RegularExpressions;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Application.Models;
 using MediatR;
@@ -276,7 +277,13 @@ public class WalletController : ControllerBase
         Console.WriteLine($"Searching SePay payment code from webhook...");
 
         // Lấy mã SePayCode sạch (Ví dụ: PAY28336A7F2F1DA6E16)
+        // SePay bank webhook KHÔNG có `code` khi user CK tự do qua QR tĩnh — chỉ có `content`.
+        // Fallback: trích xuất `TOPUP_<guid>` từ `content` bằng regex.
         var sepayCode = request.Code?.Trim();
+        if (string.IsNullOrWhiteSpace(sepayCode))
+        {
+            sepayCode = SepayWebhookHelpers.ExtractTopUpCodeFromContent(request.Content);
+        }
         Console.WriteLine($"SePayCode: {sepayCode}");
 
         if (string.IsNullOrWhiteSpace(sepayCode))
@@ -483,4 +490,20 @@ public class SepayBankWebhookRequest
 
     [JsonPropertyName("referenceCode")]
     public string? ReferenceCode { get; set; }
+}
+
+// Trích xuất mã TOPUP_<32 hex> từ nội dung chuyển khoản của SePay bank webhook.
+// Ví dụ content: "TOPUP_5f3c8a9e1b2d4e7f8a9b0c1d2e3f4a5b" hoặc "KHONG CO  TOPUP_xxx..."
+static partial class SepayWebhookHelpers
+{
+    private static readonly Regex TopUpRegex = new(
+        @"TOPUP_([0-9a-fA-F]{32})",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    public static string? ExtractTopUpCodeFromContent(string? content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return null;
+        var match = TopUpRegex.Match(content);
+        return match.Success ? match.Value.ToUpperInvariant() : null;
+    }
 }

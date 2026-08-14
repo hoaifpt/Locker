@@ -9,65 +9,45 @@ namespace Locker.Backend.Application.Features.Wallet.Commands.SepayInitTopUp;
 
 public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpCommand, SepayInitTopUpResponse>
 {
-    private readonly ISepayService _sepayService;
     private readonly SepaySettings _sepaySettings;
     private readonly IPaymentRepository _paymentRepository;
 
     public SepayInitTopUpCommandHandler(
-        ISepayService sepayService,
         IOptions<SepaySettings> sepaySettings,
         IPaymentRepository paymentRepository)
     {
-        _sepayService = sepayService;
         _sepaySettings = sepaySettings.Value;
         _paymentRepository = paymentRepository;
     }
 
-    private static string CreateSepayCode()
-    {
-        var suffix = Guid.NewGuid()
-        .ToString("N")
-        .Substring(0, 8)
-        .ToUpperInvariant();
-
-        return $"DH{suffix}";
-    }
-
     public async Task<SepayInitTopUpResponse> Handle(SepayInitTopUpCommand request, CancellationToken cancellationToken)
     {
-        var sepayCode = CreateSepayCode();
-
         var payment = new Payment
         {
+            Id = Guid.NewGuid(),
             UserId = request.UserId,
             Amount = request.Amount,
             Method = "sepay",
             Status = PaymentStatus.Pending,
-            SepayCode = sepayCode,
             CreatedAt = DateTime.UtcNow
         };
 
+        // Mã chuyển khoản = TOPUP_<guid không gạch> để IPN parse trực tiếp ra payment.Id
+        payment.SepayCode = $"TOPUP_{payment.Id:N}";
+
         await _paymentRepository.CreateAsync(payment, cancellationToken);
 
-        var checkout = _sepayService.CreateTopUpCheckout(
-            payment.Id,
-            request.UserId,
-            request.Amount,
-            sepayCode);
-
-        string bankId = "TPBank";
+        // =========================================================
+        // CẬP NHẬT MÃ NGÂN HÀNG CHUẨN ĐÃ TEST CHẠY THÀNH CÔNG
+        // =========================================================
+        string bankId = "TPB";
         string accountNo = "84519828888";
         string accountName = "PHAM DUC HUNG";
 
-        // Sử dụng đúng các tham số: &amount=... và &memo=... theo tài liệu của vietqr.app
-        string cleanVietQrUrl = $"https://vietqr.app/img" +
-                                $"?bank={bankId}" +
-                                $"&acc={accountNo}" +
-                                $"&template=standee" +
-                                $"&fullacc=true" +
-                                $"&holder={System.Net.WebUtility.UrlEncode(accountName)}" +
-                                $"&amount={decimal.Truncate(request.Amount).ToString("0")}" +
-                                $"&memo={System.Net.WebUtility.UrlEncode(sepayCode)}";
+        string cleanVietQrUrl = $"https://img.vietqr.io/image/{bankId}-{accountNo}-compact.png" +
+                                $"?amount={decimal.Truncate(request.Amount).ToString("0")}" +
+                                $"&addInfo={System.Net.WebUtility.UrlEncode(payment.SepayCode)}" +
+                                $"&accountName={System.Net.WebUtility.UrlEncode(accountName)}";
 
         var expiresAt = payment.CreatedAt.AddMinutes(_sepaySettings.PaymentTimeoutMinutes);
 
@@ -75,14 +55,13 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
 
         return new SepayInitTopUpResponse(
             Succeeded: true,
-            Message: "VietQR standee generated successfully.",
-            PaymentUrl: cleanVietQrUrl, // Trả link QR động hoàn chỉnh về cho Frontend hiển thị
+            Message: "VietQR dynamic checkout generated successfully.",
+            PaymentUrl: cleanVietQrUrl,
             PaymentId: payment.Id,
             Amount: request.Amount,
             ExpiresAt: expiresAt,
             CheckoutUrl: cleanVietQrUrl,
-            FormFields: checkout.Fields);
+            SepayCode: payment.SepayCode,
+            FormFields: new Dictionary<string, string>());
     }
 }
-
-

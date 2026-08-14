@@ -4,6 +4,7 @@ import { Lock, User, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { apiFetch } from '../../../lib/api';
+import Logo from '../../../components/ui/Logo';
 
 const ERROR_MSG: Record<string, string> = {
   NOT_FOUND: 'Tên đăng nhập hoặc email không tồn tại.',
@@ -73,11 +74,9 @@ export default function LoginPage() {
 
       {/* Navbar */}
       <header className="relative z-10">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
-              <Lock size={16} />
-            </span>
+            <Logo size={64} showText={false} />
             E-Box
           </Link>
           <Link

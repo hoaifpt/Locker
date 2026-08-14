@@ -1,4 +1,5 @@
-import { Globe, Lock, Mail, Phone } from 'lucide-react';
+import { Globe, Mail, Phone } from 'lucide-react';
+import Logo from '../../../components/ui/Logo';
 
 export default function Footer() {
   return (
@@ -8,10 +9,8 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <a href="#" className="flex items-center gap-2 text-xl font-bold text-white">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500">
-                <Lock size={16} className="text-white" />
-              </span>
-              E-Box
+              <Logo size={72} showText={false} />
+              <span>E-Box</span>
             </a>
             <p className="mt-4 text-sm leading-relaxed">
               Hệ sinh thái tủ khóa thông minh hàng đầu, kết nối và bảo vệ cuộc sống hiện đại.

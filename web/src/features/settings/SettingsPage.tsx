@@ -1,19 +1,24 @@
 import { ArrowLeft, Settings } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AppearanceCard from './components/AppearanceCard';
 import NotificationCard from './components/NotificationCard';
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
+  const role = localStorage.getItem('role') ?? 'User';
+  const backTo = role === 'Admin' ? '/dashboard' : role === 'Shipper' ? '/dashboard' : '/my-dashboard';
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20 dark:bg-slate-950">
       <header className="sticky top-0 z-10 flex items-center gap-3 bg-white/80 px-4 py-3 backdrop-blur-md dark:bg-slate-950/80">
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
           aria-label="Quay lại"
           className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white/80 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-400 dark:hover:border-orange-500/60 dark:hover:bg-slate-800 dark:hover:text-orange-400"
         >
           <ArrowLeft aria-hidden="true" size={18} />
-        </Link>
+        </button>
         <div className="flex items-center gap-2">
           <Settings className="size-5 text-orange-500" aria-hidden="true" />
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Cài đặt</h1>

@@ -6,7 +6,6 @@ import AdminSidebar from '../components/AdminSidebar';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { apiFetch } from '../../../lib/api';
 import { useToast } from '../../../context/ToastContext';
-import { SEED_ORDERS, SEED_BOOKINGS, SEED_PAYMENTS } from '../../../mocks/seed';
 
 type AdminUser = {
   id: string;
@@ -66,10 +65,10 @@ export default function AdminDashboardPage() {
 
   const otherStats = {
     users: users.length,
-    orders: SEED_ORDERS.length,
-    bookings: SEED_BOOKINGS.length,
-    payments: SEED_PAYMENTS.length,
-    revenue: SEED_PAYMENTS.filter(p => p.status === 'Completed').reduce((sum, p) => sum + p.amount, 0),
+    orders: 0,
+    bookings: 0,
+    payments: 0,
+    revenue: 0,
   };
 
   const recentUsers = [...users]
@@ -81,7 +80,7 @@ export default function AdminDashboardPage() {
     orders: otherStats.orders,
     bookings: otherStats.bookings,
     payments: otherStats.payments,
-    revenue: (otherStats.revenue / 1000000).toFixed(1) + 'M',
+    revenue: otherStats.revenue.toLocaleString('vi-VN'),
   };
 
   return (

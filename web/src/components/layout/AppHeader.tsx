@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Lock, Menu, X, User, LogOut, ChevronDown, LayoutDashboard, MessageSquareText, Settings } from 'lucide-react';
+import { Menu, X, User, LogOut, ChevronDown, LayoutDashboard, MessageSquareText, Settings } from 'lucide-react';
 import NotificationsDropdown from '../../features/notifications/components/NotificationsDropdown';
 import { useFeedback } from '../../features/feedback/context/FeedbackContext';
 import ThemeToggle from '../ui/ThemeToggle';
+import Logo from '../ui/Logo';
 
 export default function AppHeader() {
   const location = useLocation();
@@ -52,13 +53,11 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/85">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6">
         {/* Logo */}
-        <Link to={role === 'User' ? '/' : '/dashboard'} className="flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm shadow-orange-200">
-            <Lock size={16} />
-          </span>
-          E-box
+        <Link to={role === 'User' ? '/' : '/dashboard'} className="flex items-center gap-2">
+          <Logo size={72} showText={false} />
+          <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">E-Box</span>
         </Link>
 
         {/* Desktop nav */}

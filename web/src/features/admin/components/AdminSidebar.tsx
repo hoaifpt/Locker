@@ -1,10 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, MessageSquare, Settings, LogOut } from 'lucide-react';
+import Logo from '../../../components/ui/Logo';
 
 const adminNav = [
   { to: '/dashboard', label: 'Bảng điều khiển', icon: LayoutDashboard },
   { to: '/users', label: 'Quản lý Users', icon: Users },
   { to: '/feedbacks', label: 'Feedback', icon: MessageSquare },
+  { to: '/settings', label: 'Cài đặt', icon: Settings },
 ];
 
 export default function AdminSidebar() {
@@ -21,10 +23,8 @@ export default function AdminSidebar() {
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-gray-100 px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-md shadow-orange-200/50">
-          <span className="text-sm font-extrabold text-white">EB</span>
-        </div>
+      <div className="flex h-24 items-center gap-3 border-b border-gray-100 px-6">
+        <Logo size={72} showText={false} />
         <div>
           <h1 className="text-sm font-bold text-gray-900">E-Box Admin</h1>
           <p className="text-xs text-gray-400">Quản trị hệ thống</p>

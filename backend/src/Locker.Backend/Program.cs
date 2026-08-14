@@ -162,7 +162,18 @@ builder.Services.AddAuthentication(options =>
         {
             if (context.Request.Path.StartsWithSegments("/hubs/notifications", StringComparison.OrdinalIgnoreCase))
             {
+                // Token may arrive via query string (WebSocket frames cannot carry
+                // custom headers) or via Bearer header (HTTP negotiate roundtrips).
                 var accessToken = context.Request.Query["access_token"].ToString();
+                if (string.IsNullOrWhiteSpace(accessToken))
+                {
+                    var bearer = context.Request.Headers.Authorization.ToString();
+                    if (bearer.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        accessToken = bearer["Bearer ".Length..].Trim();
+                    }
+                }
+
                 if (!string.IsNullOrWhiteSpace(accessToken))
                 {
                     context.Token = accessToken;

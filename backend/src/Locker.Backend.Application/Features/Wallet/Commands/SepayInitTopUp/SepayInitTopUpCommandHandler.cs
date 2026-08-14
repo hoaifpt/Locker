@@ -13,8 +13,6 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
     private readonly SepaySettings _sepaySettings;
     private readonly IPaymentRepository _paymentRepository;
 
-
-
     public SepayInitTopUpCommandHandler(
         ISepayService sepayService,
         IOptions<SepaySettings> sepaySettings,
@@ -52,20 +50,39 @@ public class SepayInitTopUpCommandHandler : IRequestHandler<SepayInitTopUpComman
         await _paymentRepository.CreateAsync(payment, cancellationToken);
 
         var checkout = _sepayService.CreateTopUpCheckout(
-    payment.Id,
-    request.UserId,
-    request.Amount,
-    sepayCode);
+            payment.Id,
+            request.UserId,
+            request.Amount,
+            sepayCode);
+
+                // =========================================================
+        // 💡 GIẢI PHÁP TỰ SINH LINK VIETQR ĐỘNG THEO MẪU CỦA BẠN
+        // =========================================================
+        string bankId = "TPBank"; 
+        string accountNo = "84519828888"; 
+        string accountName = "PHAM DUC HUNG"; 
+
+        // Ghép thêm tham số số tiền (amount) và nội dung chuyển khoản (memo = sepayCode) vào link vietqr.app
+        string cleanVietQrUrl = $"https://vietqr.app/img?bank={bankId}" +
+                                $"&acc={accountNo}" +
+                                $"&template=standee" +
+                                $"&fullacc=true" +
+                                $"&holder={System.Net.WebUtility.UrlEncode(accountName)}" +
+                                $"&amount={decimal.Truncate(request.Amount).ToString("0")}" +
+                                $"&memo={System.Net.WebUtility.UrlEncode(sepayCode)}";
+
         var expiresAt = payment.CreatedAt.AddMinutes(_sepaySettings.PaymentTimeoutMinutes);
+
+        Console.WriteLine($"[VIETQR] Đã tạo link QR động chứa mã {sepayCode}: {cleanVietQrUrl}");
 
         return new SepayInitTopUpResponse(
             Succeeded: true,
-            Message: "SEPAY checkout form generated successfully.",
-            PaymentUrl: checkout.CheckoutUrl,
+            Message: "VietQR dynamic checkout generated successfully.",
+            PaymentUrl: cleanVietQrUrl, // Trả link QR động về cho App hiển thị
             PaymentId: payment.Id,
             Amount: request.Amount,
             ExpiresAt: expiresAt,
-            CheckoutUrl: checkout.CheckoutUrl,
+            CheckoutUrl: cleanVietQrUrl,
             FormFields: checkout.Fields);
     }
 }

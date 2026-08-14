@@ -281,33 +281,29 @@ public class WalletController : ControllerBase
         }
 
         // =========================================================
-        // 5. LẤY TOP-UP CODE
+        // 5. LẤY SEPAY PAYMENT CODE
         // =========================================================
 
         Console.WriteLine(
-            $"Searching TOPUP invoice from content: {request.Content}"
+            $"Searching SePay payment code from webhook..."
         );
 
-        var invoiceNumber =
-            SepayService.ExtractInvoiceNumberFromContent(
-                request.Content
-            );
+        var sepayCode = request.Code?.Trim();
 
         Console.WriteLine(
-            $"InvoiceNumber: {invoiceNumber}"
+            $"SePayCode: {sepayCode}"
         );
 
-        if (string.IsNullOrWhiteSpace(invoiceNumber))
+        if (string.IsNullOrWhiteSpace(sepayCode))
         {
             Console.WriteLine(
-                "❌ Cannot find TOPUP invoice number"
+                "❌ Cannot find SePay payment code"
             );
 
             return BadRequest(new
             {
                 success = false,
-                message =
-                    "Cannot find TOPUP invoice number in transfer content"
+                message = "Cannot find SePay payment code"
             });
         }
 
@@ -321,7 +317,7 @@ public class WalletController : ControllerBase
 
             Order = new SepayIpnOrder
             {
-                OrderInvoiceNumber = invoiceNumber,
+                OrderInvoiceNumber = sepayCode,
                 OrderStatus = "CAPTURED",
 
                 OrderAmount = request.TransferAmount

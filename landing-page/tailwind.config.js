@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -13,7 +14,10 @@ export default {
           500: '#F97316',
           600: '#EA580C',
         },
-        cream: '#FFFBF2',
+        cream: {
+          DEFAULT: '#FFFBF2',
+          dark: '#0B1220',
+        },
       },
     },
   },

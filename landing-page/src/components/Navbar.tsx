@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { GOOGLE_PLAY_URL } from '../lib/constants';
+import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
   { href: '#features', label: 'Tính năng' },
@@ -57,7 +58,7 @@ export default function Navbar() {
               className="h-7 sm:h-12 md:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
             <div className="block">
-              <span className="text-lg sm:text-xl md:text-2xl font-black text-gray-800">E</span>
+              <span className="text-lg sm:text-xl md:text-2xl font-black text-gray-800 dark:text-white">E</span>
               <span className="text-lg sm:text-xl md:text-2xl font-black gradient-text">-BOX</span>
             </div>
           </a>
@@ -73,7 +74,12 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
-            
+
+            {/* Theme Toggle */}
+            <div className="ml-2 md:ml-3">
+              <ThemeToggle />
+            </div>
+
             {/* Download Button - Rounded Liquid Glass */}
             <a
               href={GOOGLE_PLAY_URL}
@@ -132,7 +138,13 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
-            <div className="mt-3 pt-3 border-t border-white/20">
+            <div className="mt-3 pt-3 border-t border-white/20 dark:border-slate-700/50 flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">
+                Chế độ
+              </span>
+              <ThemeToggle />
+            </div>
+            <div className="mt-3 pt-3 border-t border-white/20 dark:border-slate-700/50">
               <a
                 href={GOOGLE_PLAY_URL}
                 target="_blank"

@@ -34,7 +34,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-cream font-sans antialiased">
+    <div className="min-h-screen bg-cream dark:bg-[#0B1220] font-sans antialiased transition-colors duration-300">
       <ParticleBackground />
       <Navbar />
       <main>

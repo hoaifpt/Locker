@@ -61,5 +61,24 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Anti-FOUC: Apply saved/system theme before React renders
+      (function () {
+        try {
+          var stored = localStorage.getItem('ebox-theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = stored === 'light' || stored === 'dark' ? stored : (prefersDark ? 'dark' : 'light');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {
+          /* no-op */
+        }
+      })();
+    </script>
   </body>
 </html>

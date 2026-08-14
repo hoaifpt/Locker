@@ -177,10 +177,10 @@ export default function Footer() {
         <div className="liquid-glass-accent mt-12 sm:mt-16 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
             <div className="text-center md:text-left">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Tải ứng dụng E-BOX
               </h3>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">
                 Trải nghiệm ngay hôm nay trên Android
               </p>
             </div>

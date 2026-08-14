@@ -8,7 +8,7 @@ export default function HeroSection() {
   const colCenterBottom = Array.from({ length: 6 }, (_, i) => i + 13); // A13-A18
 
   return (
-    <section className="relative min-h-screen flex items-center pt-28 sm:pt-32 md:pt-20 pb-16 overflow-hidden" style={{ backgroundColor: '#FFFBF7' }}>
+    <section className="relative min-h-screen flex items-center pt-28 sm:pt-32 md:pt-20 pb-16 overflow-hidden bg-[#FFFBF7] dark:bg-[#0B1220] transition-colors duration-300">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 h-[700px] w-[700px] rounded-full bg-gradient-to-br from-orange-300/40 to-orange-500/20 blur-3xl" style={{ animation: 'float 6s ease-in-out infinite' }} />
         <div className="absolute -bottom-40 -left-40 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-orange-200/30 to-orange-400/20 blur-3xl" style={{ animation: 'float-delayed 5s ease-in-out infinite', animationDelay: '1s' }} />
@@ -34,15 +34,15 @@ export default function HeroSection() {
             </span>
 
             <h1 className="mt-6 sm:mt-8 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight tracking-tight">
-              <span className="block text-gray-900">CHỦ ĐỘNG</span>
+              <span className="block text-gray-900 dark:text-white">CHỦ ĐỘNG</span>
               <span className="block" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>MỌI LÚC</span>
-              <span className="block text-gray-900">TIỆN LỢI</span>
-              <span className="block text-gray-900">MỌI</span>
+              <span className="block text-gray-900 dark:text-white">TIỆN LỢI</span>
+              <span className="block text-gray-900 dark:text-white">MỌI</span>
               <span className="block" style={{ background: 'linear-gradient(135deg, #F97316, #DC2626)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>NƠI</span>
             </h1>
 
-            <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-base sm:text-lg md:text-xl leading-relaxed text-gray-600 lg:mx-0">
-              <span className="font-semibold text-gray-800">E-BOX</span> mang đến giải pháp gửi nhận hàng,
+            <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-base sm:text-lg md:text-xl leading-relaxed text-gray-600 dark:text-gray-300 lg:mx-0">
+              <span className="font-semibold text-gray-800 dark:text-gray-100">E-BOX</span> mang đến giải pháp gửi nhận hàng,
               lưu trữ đồ cá nhân và đặt đồ ăn
               <span className="font-semibold text-orange-500"> tiện lợi dành cho sinh viên </span>
               với công nghệ tủ thông minh tiên tiến nhất.
@@ -67,8 +67,8 @@ export default function HeroSection() {
                   </svg>
                 </div>
                 <div>
-                  <div className="font-bold text-gray-800 text-xs sm:text-sm">Bảo mật</div>
-                  <div className="text-[10px] sm:text-xs text-gray-500">256-bit AES</div>
+                  <div className="font-bold text-gray-800 dark:text-gray-100 text-xs sm:text-sm">Bảo mật</div>
+                  <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">256-bit AES</div>
                 </div>
               </div>
               <div className="glass-trust-badge">
@@ -78,8 +78,8 @@ export default function HeroSection() {
                   </svg>
                 </div>
                 <div>
-                  <div className="font-bold text-gray-800 text-xs sm:text-sm">Tốc độ</div>
-                  <div className="text-[10px] sm:text-xs text-gray-500">&lt; 1s</div>
+                  <div className="font-bold text-gray-800 dark:text-gray-100 text-xs sm:text-sm">Tốc độ</div>
+                  <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">&lt; 1s</div>
                 </div>
               </div>
               <div className="glass-trust-badge hidden sm:flex">
@@ -89,8 +89,8 @@ export default function HeroSection() {
                   </svg>
                 </div>
                 <div>
-                  <div className="font-bold text-gray-800 text-sm">Hỗ trợ</div>
-                  <div className="text-xs text-gray-500">24/7</div>
+                  <div className="font-bold text-gray-800 dark:text-gray-100 text-sm">Hỗ trợ</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">24/7</div>
                 </div>
               </div>
             </div>

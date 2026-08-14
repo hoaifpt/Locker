@@ -91,24 +91,24 @@ export default function BenefitsSection() {
   return (
     <section ref={sectionRef} id="benefits" className="relative py-16 sm:py-24 overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-orange-50/50 to-white" />
+      <div className="absolute inset-0 bg-gradient-to-b from-orange-50/50 to-white dark:from-[#0F1729] dark:to-[#0B1220]" />
       <div className="absolute inset-0 grid-bg opacity-20" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section Header */}
         <div className="text-center mb-12 sm:mb-16 scroll-animate">
-          <span className="inline-flex items-center gap-2 rounded-full border-2 border-orange-200 bg-white px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-orange-600 shadow-lg">
+          <span className="inline-flex items-center gap-2 rounded-full border-2 border-orange-200 dark:border-orange-500/40 bg-white dark:bg-orange-500/10 px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400 shadow-lg">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Lợi Ích
           </span>
           <h2 className="mt-6 sm:mt-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight">
-            <span className="text-gray-900">Tại Sao Chọn</span>
+            <span className="text-gray-900 dark:text-gray-100">Tại Sao Chọn</span>
             <br />
             <span className="gradient-text">E-BOX?</span>
           </h2>
-          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-gray-600 px-4 sm:px-0">
+          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-gray-600 dark:text-gray-300 px-4 sm:px-0">
             E-BOX mang đến những lợi ích vượt trội so với phương thức truyền thống
           </p>
         </div>
@@ -135,17 +135,17 @@ export default function BenefitsSection() {
                   {/* Content */}
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100">
                         {benefit.title}
                       </h3>
-                      <span className="text-xs sm:text-sm font-black text-orange-500 bg-orange-100 px-2 sm:px-3 py-1 rounded-full">
+                      <span className="text-xs sm:text-sm font-black text-orange-500 bg-orange-100 dark:bg-orange-500/20 px-2 sm:px-3 py-1 rounded-full">
                         {benefit.improvement}
                       </span>
                     </div>
-                    <p className="text-xs sm:text-base text-gray-600 leading-relaxed mb-2">
+                    <p className="text-xs sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-2">
                       {benefit.description}
                     </p>
-                    <span className="text-[10px] sm:text-xs text-gray-400 font-medium">
+                    <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-medium">
                       {benefit.improvementLabel}
                     </span>
                   </div>
@@ -156,16 +156,16 @@ export default function BenefitsSection() {
 
           {/* Right: Comparison */}
           <div className="liquid-glass-v2 p-4 sm:p-6 md:p-8" style={{ animationDelay: '200ms' }}>
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 sm:mb-8 text-center">
               So Sánh Ngay
             </h3>
 
               {/* Comparison Table */}
               <div className="space-y-3 sm:space-y-4">
                 {/* Header */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-4 pb-3 sm:pb-4 border-b border-gray-200">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4 pb-3 sm:pb-4 border-b border-gray-200 dark:border-slate-700">
                   <div className="text-left">
-                    <span className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                       <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -185,25 +185,25 @@ export default function BenefitsSection() {
 
                 {/* Comparison Items */}
                 {comparisonData.traditional.map((item, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-2 sm:gap-4 py-2 sm:py-3 border-b border-gray-100 last:border-0">
+                  <div key={index} className="grid grid-cols-2 gap-2 sm:gap-4 py-2 sm:py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0">
                     <div className="flex items-start gap-1 sm:gap-2">
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      <span className="text-xs sm:text-sm text-gray-600">{item}</span>
+                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{item}</span>
                     </div>
                     <div className="flex items-start gap-1 sm:gap-2">
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className="text-xs sm:text-sm text-gray-800 font-medium">{comparisonData.ebox[index]}</span>
+                      <span className="text-xs sm:text-sm text-gray-800 dark:text-gray-100 font-medium">{comparisonData.ebox[index]}</span>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* CTA */}
-              <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-100">
+              <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-100 dark:border-slate-700/50">
                 <a
                   href="#simulator"
                   className="glass-btn-primary w-full justify-center text-sm sm:text-base"

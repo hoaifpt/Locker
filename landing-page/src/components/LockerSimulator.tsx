@@ -89,7 +89,7 @@ export default function LockerSimulator() {
   const isSelected = (lockerId: number) => selectedLocker?.id === lockerId;
 
   return (
-    <section id="simulator" className="relative py-16 sm:py-24 overflow-hidden" style={{ backgroundColor: '#FFFBF7' }}>
+    <section id="simulator" className="relative py-16 sm:py-24 overflow-hidden bg-[#FFFBF7] dark:bg-[#0B1220] transition-colors duration-300">
       {/* Closed Notification Toast */}
       {showClosedNotification && (
         <div className="fixed top-20 sm:top-6 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
@@ -119,9 +119,9 @@ export default function LockerSimulator() {
           <h2 className="mt-4 sm:mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight">
             <span className="gradient-text">Trải Nghiệm</span>
             <br />
-            <span className="text-gray-900">Tủ E-BOX Thông Minh</span>
+            <span className="text-gray-900 dark:text-white">Tủ E-BOX Thông Minh</span>
           </h2>
-          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-gray-600 px-4 sm:px-0">
+          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-gray-600 dark:text-gray-300 px-4 sm:px-0">
             Chọn tủ trên cabinet, sau đó quét QR hoặc nhập OTP để mở
           </p>
         </div>
@@ -308,23 +308,23 @@ export default function LockerSimulator() {
 
         {/* Instructions */}
         <div className="mt-12 sm:mt-16 text-center">
-          <div className="inline-flex flex-wrap justify-center gap-3 sm:gap-6 bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl px-4 sm:px-8 py-3 sm:py-4 shadow-lg">
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+          <div className="inline-flex flex-wrap justify-center gap-3 sm:gap-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl sm:rounded-2xl px-4 sm:px-8 py-3 sm:py-4 shadow-lg border border-white/30 dark:border-slate-700/40">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500 text-white text-xs sm:text-sm font-bold">1</span>
               <span className="hidden sm:inline">Chọn tủ trống</span>
               <span className="sm:hidden">Chọn tủ</span>
             </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-orange-500 text-white text-xs sm:text-sm font-bold">2</span>
               <span className="hidden sm:inline">Quét QR hoặc nhập OTP</span>
               <span className="sm:hidden">Quét QR/OTP</span>
             </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-green-500 text-white text-xs sm:text-sm font-bold">3</span>
               <span className="hidden sm:inline">Tủ tự động mở</span>
               <span className="sm:hidden">Tủ mở</span>
             </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white text-xs sm:text-sm font-bold">4</span>
               <span className="hidden sm:inline">Đóng tủ khi lấy xong</span>
               <span className="sm:hidden">Đóng tủ</span>

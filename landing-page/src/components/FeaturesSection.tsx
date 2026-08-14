@@ -94,7 +94,7 @@ export default function FeaturesSection() {
   return (
     <section ref={sectionRef} id="features" className="relative py-16 sm:py-24 overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white to-orange-50/50" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white to-orange-50/50 dark:from-[#0B1220] dark:to-[#0F1729]" />
       <div className="absolute inset-0 grid-bg opacity-20" />
       
       {/* Decorative elements */}
@@ -104,18 +104,18 @@ export default function FeaturesSection() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section Header */}
         <div className="text-center mb-12 sm:mb-16 scroll-animate">
-          <span className="inline-flex items-center gap-2 rounded-full border-2 border-orange-200 bg-white px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-orange-600 shadow-lg">
+          <span className="inline-flex items-center gap-2 rounded-full border-2 border-orange-200 dark:border-orange-500/40 bg-white dark:bg-orange-500/10 px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400 shadow-lg">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
             </svg>
             Tính Năng Nổi Bật
           </span>
           <h2 className="mt-6 sm:mt-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight">
-            <span className="text-gray-900">Giải Pháp</span>
+            <span className="text-gray-900 dark:text-gray-100">Giải Pháp</span>
             <br />
             <span className="gradient-text">Thông Minh</span>
           </h2>
-          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-gray-600 px-4 sm:px-0">
+          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-gray-600 dark:text-gray-300 px-4 sm:px-0">
             E-BOX tích hợp công nghệ tiên tiến nhất để mang đến trải nghiệm tốt nhất cho sinh viên
           </p>
         </div>
@@ -174,21 +174,21 @@ export default function FeaturesSection() {
         {/* Bottom highlight */}
         <div className="mt-12 sm:mt-16 text-center">
           <div className="feature-highlight flex-wrap justify-center">
-            <div className="flex items-center gap-2 text-orange-600">
+            <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
               <svg className="w-5 h-5 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
               <span className="font-bold text-xs sm:text-sm">Công nghệ tiên tiến</span>
             </div>
-            <span className="text-gray-400 hidden sm:block">|</span>
-            <div className="flex items-center gap-2 text-gray-600">
+            <span className="text-gray-400 dark:text-gray-500 hidden sm:block">|</span>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
               <svg className="w-5 h-5 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
               <span className="font-medium text-xs sm:text-sm">App thông minh</span>
             </div>
-            <span className="text-gray-400 hidden sm:block">|</span>
-            <div className="flex items-center gap-2 text-gray-600">
+            <span className="text-gray-400 dark:text-gray-500 hidden sm:block">|</span>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
               <svg className="w-5 h-5 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>

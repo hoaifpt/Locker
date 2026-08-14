@@ -52,6 +52,12 @@ export function SingleToast({ toast, onClose }: SingleToastProps) {
     return () => clearTimeout(t);
   }, [toast.pulseAt]);
 
+  useEffect(() => {
+    if (!toast.duration) return;
+    const timer = setTimeout(() => onClose(), toast.duration);
+    return () => clearTimeout(timer);
+  }, [toast.id, toast.duration, onClose]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape') onClose();

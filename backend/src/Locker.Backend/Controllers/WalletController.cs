@@ -152,19 +152,19 @@ public class WalletController : ControllerBase
     [HttpPost("top-up/sepay/ipn")]
     [AllowAnonymous]
     public async Task<IActionResult> SepayIpn(
-        [FromBody] SepayIpnRequest request,
-        CancellationToken cancellationToken)
+    [FromBody] SepayIpnRequest request,
+    CancellationToken cancellationToken)
     {
+        // Xác thực Secret Key của SePay Payment Gateway
+        var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
 
-        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-
-        // 2. Định dạng SePay gửi là: "Apikey <API_KEY_CUA_BAN>"
-        // Chúng ta cần trích xuất phần API_KEY_CUA_BAN
-        var providedKey = authHeader?.Replace("Apikey ", "").Trim();
-
-        if (!_sepayService.IsValidIpnSecret(providedKey))
+        if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
-            return Unauthorized("Invalid API Key");
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Invalid SePay IPN secret"
+            });
         }
 
         Console.WriteLine("========== SEPAY IPN START ==========");
@@ -187,16 +187,6 @@ public class WalletController : ControllerBase
         Console.WriteLine($"PaymentMethod: {request.Transaction?.PaymentMethod}");
 
         Console.WriteLine("====================================");
-
-        var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
-        if (!_sepayService.IsValidIpnSecret(providedSecret))
-        {
-            return Unauthorized(new
-            {
-                success = false,
-                message = "Invalid SePay IPN secret"
-            });
-        }
 
         var result = await _sender.Send(
             new SepayProcessIpnCommand(request),

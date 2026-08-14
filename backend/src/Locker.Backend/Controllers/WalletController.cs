@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Locker.Backend.Infrastructure.Services;
 using Locker.Backend.Application.Features.Wallet.Commands.TopUp;
 using Locker.Backend.Application.Features.Wallet.Commands.Transfer;
@@ -151,168 +152,246 @@ public class WalletController : ControllerBase
     }
 
     [HttpPost("top-up/sepay/ipn")]
-[AllowAnonymous]
-public async Task<IActionResult> SepayIpn(
+    [AllowAnonymous]
+    public async Task<IActionResult> SepayIpn(
     CancellationToken cancellationToken)
-{
-    Request.EnableBuffering();
-
-    using var reader = new StreamReader(Request.Body);
-    var rawBody = await reader.ReadToEndAsync(cancellationToken);
-
-    Console.WriteLine("========== RAW SEPAY IPN ==========");
-    Console.WriteLine(rawBody);
-    Console.WriteLine("====================================");
-
-    // =========================
-    // AUTH
-    // =========================
-
-    var authorization = Request.Headers["Authorization"].FirstOrDefault();
-
-    var providedSecret = Request.Headers["X-Secret-Key"].FirstOrDefault();
-
-    if (string.IsNullOrWhiteSpace(providedSecret) &&
-        !string.IsNullOrWhiteSpace(authorization))
     {
-        var parts = authorization.Split(' ', 2);
+        Request.EnableBuffering();
 
-        if (parts.Length == 2 &&
-            parts[0].Equals("Apikey", StringComparison.OrdinalIgnoreCase))
+        using var reader = new StreamReader(Request.Body);
+        var rawBody = await reader.ReadToEndAsync(cancellationToken);
+
+        Console.WriteLine("========== RAW SEPAY IPN ==========");
+        Console.WriteLine(rawBody);
+        Console.WriteLine("====================================");
+
+        // =====================================================
+        // 1. AUTHENTICATION
+        // =====================================================
+
+        var authorization = Request.Headers["Authorization"].FirstOrDefault();
+
+        string? providedSecret = null;
+
+        if (!string.IsNullOrWhiteSpace(authorization))
         {
-            providedSecret = parts[1].Trim();
+            var parts = authorization.Split(' ', 2);
+
+            if (parts.Length == 2 &&
+                parts[0].Equals("Apikey", StringComparison.OrdinalIgnoreCase))
+            {
+                providedSecret = parts[1].Trim();
+            }
         }
-    }
 
-    Console.WriteLine($"Provided secret length: {providedSecret?.Length ?? 0}");
+        Console.WriteLine("========== SEPAY AUTH DEBUG ==========");
+        Console.WriteLine($"Authorization exists: {!string.IsNullOrWhiteSpace(authorization)}");
+        Console.WriteLine($"Authorization length: {authorization?.Length ?? 0}");
+        Console.WriteLine($"Provided secret length: {providedSecret?.Length ?? 0}");
+        Console.WriteLine("======================================");
 
-    if (!_sepayService.IsValidIpnSecret(providedSecret))
-    {
-        Console.WriteLine("❌ SEPAY SECRET INVALID");
-
-        return Unauthorized(new
+        if (!_sepayService.IsValidIpnSecret(providedSecret))
         {
-            success = false,
-            message = "Invalid SePay IPN secret"
-        });
-    }
+            Console.WriteLine("❌ SEPAY SECRET INVALID");
 
-    Console.WriteLine("✅ SEPAY SECRET VALID");
+            return Unauthorized(new
+            {
+                success = false,
+                message = "Invalid SePay IPN secret"
+            });
+        }
 
-    // =========================
-    // PARSE BANK NOTIFY
-    // =========================
+        Console.WriteLine("✅ SEPAY SECRET VALID");
 
-    var fields = rawBody
-        .Split(
-            new[] { '\r', '\n' },
-            StringSplitOptions.RemoveEmptyEntries
-        )
-        .Select(x => x.Split(':', 2))
-        .Where(x => x.Length == 2)
-        .ToDictionary(
-            x => x[0].Trim(),
-            x => x[1].Trim(),
+
+        // =====================================================
+        // 2. PARSE SEPAY BANK WEBHOOK
+        // =====================================================
+
+        var knownKeys = new[]
+        {
+        "gateway",
+        "transactionDate",
+        "accountNumber",
+        "subAccount",
+        "code",
+        "content",
+        "transferType",
+        "description",
+        "transferAmount",
+        "referenceCode",
+        "accumulated",
+        "id"
+    };
+
+        var keyPattern = string.Join("|", knownKeys);
+
+        var regex = new System.Text.RegularExpressions.Regex(
+            $@"(?<key>{keyPattern}):\s*(?<value>.*?)(?=\s+(?:{keyPattern}):|$)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        );
+
+        var fields = new Dictionary<string, string>(
             StringComparer.OrdinalIgnoreCase
         );
 
-    fields.TryGetValue("content", out var content);
-    fields.TryGetValue("transferAmount", out var transferAmountText);
-    fields.TryGetValue("id", out var transactionId);
-    fields.TryGetValue("transactionDate", out var transactionDate);
-
-    Console.WriteLine("========== PARSED SEPAY ==========");
-    Console.WriteLine($"Content: {content}");
-    Console.WriteLine($"TransferAmount: {transferAmountText}");
-    Console.WriteLine($"TransactionId: {transactionId}");
-    Console.WriteLine($"TransactionDate: {transactionDate}");
-    Console.WriteLine("==================================");
-
-    if (!decimal.TryParse(
-            transferAmountText,
-            System.Globalization.NumberStyles.Any,
-            System.Globalization.CultureInfo.InvariantCulture,
-            out var transferAmount))
-    {
-        return BadRequest(new
+        foreach (System.Text.RegularExpressions.Match match in regex.Matches(rawBody))
         {
-            success = false,
-            message = "Invalid transfer amount"
-        });
-    }
+            var key = match.Groups["key"].Value.Trim();
+            var value = match.Groups["value"].Value.Trim();
 
-    // =========================
-    // FIND TOPUP CODE
-    // =========================
+            fields[key] = value;
+        }
 
-    var invoiceNumber =
-        SepayService.ExtractInvoiceNumberFromContent(content);
+        fields.TryGetValue("gateway", out var gateway);
+        fields.TryGetValue("transactionDate", out var transactionDate);
+        fields.TryGetValue("accountNumber", out var accountNumber);
+        fields.TryGetValue("code", out var code);
+        fields.TryGetValue("content", out var content);
+        fields.TryGetValue("transferType", out var transferType);
+        fields.TryGetValue("description", out var description);
+        fields.TryGetValue("transferAmount", out var transferAmountText);
+        fields.TryGetValue("referenceCode", out var referenceCode);
+        fields.TryGetValue("id", out var transactionId);
 
-    Console.WriteLine($"InvoiceNumber: {invoiceNumber}");
+        Console.WriteLine("========== PARSED SEPAY ==========");
+        Console.WriteLine($"Gateway: {gateway}");
+        Console.WriteLine($"TransactionDate: {transactionDate}");
+        Console.WriteLine($"AccountNumber: {accountNumber}");
+        Console.WriteLine($"Code: {code}");
+        Console.WriteLine($"Content: {content}");
+        Console.WriteLine($"TransferType: {transferType}");
+        Console.WriteLine($"Description: {description}");
+        Console.WriteLine($"TransferAmount: {transferAmountText}");
+        Console.WriteLine($"ReferenceCode: {referenceCode}");
+        Console.WriteLine($"TransactionId: {transactionId}");
+        Console.WriteLine("==================================");
 
-    if (string.IsNullOrWhiteSpace(invoiceNumber))
-    {
-        return BadRequest(new
+
+        // =====================================================
+        // 3. CHECK MONEY IN
+        // =====================================================
+
+        if (!string.Equals(
+                transferType,
+                "in",
+                StringComparison.OrdinalIgnoreCase))
         {
-            success = false,
-            message = "Cannot find TOPUP invoice number in transfer content"
-        });
-    }
+            Console.WriteLine("⚠️ IGNORE: transaction is not money-in");
 
-    // =========================
-    // PROCESS PAYMENT
-    // =========================
-
-    var result = await _sender.Send(
-        new SepayProcessIpnCommand(
-            new SepayIpnRequest
+            return Ok(new
             {
-                NotificationType = "ORDER_PAID",
+                success = true,
+                message = "Ignored outgoing transaction"
+            });
+        }
 
-                Order = new SepayIpnOrder
-                {
-                    OrderInvoiceNumber = invoiceNumber,
-                    OrderStatus = "CAPTURED",
-                    OrderAmount = transferAmount.ToString(
-                        System.Globalization.CultureInfo.InvariantCulture)
-                },
 
-                Transaction = new SepayIpnTransaction
-                {
-                    TransactionId = transactionId ?? "",
-                    TransactionStatus = "APPROVED",
-                    TransactionAmount = transferAmount.ToString(
-                        System.Globalization.CultureInfo.InvariantCulture),
-                    TransactionDate = transactionDate ?? "",
-                    PaymentMethod = "BANK_TRANSFER"
-                }
-            }),
-        cancellationToken
-    );
+        // =====================================================
+        // 4. PARSE AMOUNT
+        // =====================================================
 
-    if (!result.Success)
-    {
-        Console.WriteLine(
-            $"❌ SEPAY PROCESS FAILED: {result.Message}");
-
-        return BadRequest(new
+        if (!decimal.TryParse(
+                transferAmountText,
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var transferAmount))
         {
-            success = false,
+            Console.WriteLine("❌ INVALID TRANSFER AMOUNT");
+
+            return BadRequest(new
+            {
+                success = false,
+                message = "Invalid transfer amount"
+            });
+        }
+
+
+        // =====================================================
+        // 5. FIND PAYMENT CODE
+        // =====================================================
+
+        // Quan trọng:
+        // SePay đã extract payment code cho bạn.
+        //
+        // Ví dụ:
+        // code = PAY28336A7EFE658BB59
+
+        var invoiceNumber = code;
+
+        Console.WriteLine($"Payment Code: {invoiceNumber}");
+
+        if (string.IsNullOrWhiteSpace(invoiceNumber))
+        {
+            Console.WriteLine("❌ PAYMENT CODE NOT FOUND");
+
+            return BadRequest(new
+            {
+                success = false,
+                message = "Cannot find payment code"
+            });
+        }
+
+
+        // =====================================================
+        // 6. PROCESS PAYMENT
+        // =====================================================
+
+        var result = await _sender.Send(
+            new SepayProcessIpnCommand(
+                new SepayIpnRequest
+                {
+                    NotificationType = "ORDER_PAID",
+
+                    Order = new SepayIpnOrder
+                    {
+                        OrderInvoiceNumber = invoiceNumber,
+                        OrderStatus = "CAPTURED",
+                        OrderAmount = transferAmount.ToString(
+                            System.Globalization.CultureInfo.InvariantCulture)
+                    },
+
+                    Transaction = new SepayIpnTransaction
+                    {
+                        TransactionId = transactionId ?? "",
+                        TransactionStatus = "APPROVED",
+                        TransactionAmount = transferAmount.ToString(
+                            System.Globalization.CultureInfo.InvariantCulture),
+                        TransactionDate = transactionDate ?? "",
+                        PaymentMethod = "BANK_TRANSFER"
+                    }
+                }),
+            cancellationToken
+        );
+
+
+        // =====================================================
+        // 7. RESULT
+        // =====================================================
+
+        if (!result.Success)
+        {
+            Console.WriteLine(
+                $"❌ SEPAY PROCESS FAILED: {result.Message}");
+
+            return BadRequest(new
+            {
+                success = false,
+                message = result.Message,
+                paymentId = result.PaymentId
+            });
+        }
+
+        Console.WriteLine(
+            $"✅ SEPAY PROCESS SUCCESS: {result.Message}");
+
+        return Ok(new
+        {
+            success = true,
             message = result.Message,
             paymentId = result.PaymentId
         });
     }
-
-    Console.WriteLine(
-        $"✅ SEPAY PROCESS SUCCESS: {result.Message}");
-
-    return Ok(new
-    {
-        success = true,
-        message = result.Message,
-        paymentId = result.PaymentId
-    });
-}
 
     [HttpPost("top-up/sepay/bank-notify")]
     [AllowAnonymous]

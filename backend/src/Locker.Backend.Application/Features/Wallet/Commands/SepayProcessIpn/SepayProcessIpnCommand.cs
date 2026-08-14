@@ -23,15 +23,18 @@ public class SepayProcessIpnCommandHandler
     private readonly IPaymentRepository _paymentRepository;
     private readonly IWalletTransactionRepository _walletTransactionRepository;
     private readonly IRealtimeNotificationService _notificationService;
+    private readonly IPaymentRealtimeNotifier _paymentRealtimeNotifier;
 
     public SepayProcessIpnCommandHandler(
         IPaymentRepository paymentRepository,
         IWalletTransactionRepository walletTransactionRepository,
-        IRealtimeNotificationService notificationService)
+        IRealtimeNotificationService notificationService,
+        IPaymentRealtimeNotifier paymentRealtimeNotifier)
     {
         _paymentRepository = paymentRepository;
         _walletTransactionRepository = walletTransactionRepository;
         _notificationService = notificationService;
+        _paymentRealtimeNotifier = paymentRealtimeNotifier;
     }
 
     public async Task<SepayProcessIpnResponse> Handle(
@@ -263,6 +266,18 @@ public class SepayProcessIpnCommandHandler
             completedPayment.UserId,
             "Nạp tiền thành công",
             $"Ví E-Box Pay của bạn đã được cộng {completedPayment.Amount:N0} đ.",
+            cancellationToken);
+
+        await _paymentRealtimeNotifier.NotifyStatusChangedAsync(
+            completedPayment.UserId,
+            new PaymentStatusChangedEvent
+            {
+                PaymentId = completedPayment.Id,
+                Amount = completedPayment.Amount,
+                Status = completedPayment.Status.ToString(),
+                PaidAt = completedPayment.PaidAt,
+                TransactionId = completedPayment.TransactionId,
+            },
             cancellationToken);
 
         return new SepayProcessIpnResponse(

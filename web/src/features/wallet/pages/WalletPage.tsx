@@ -4,11 +4,13 @@ import {
   Wallet, Plus, ArrowUpRight, ArrowDownLeft, ShieldCheck, Clock, CreditCard, Sparkles,
   QrCode, Copy, CheckCircle, XCircle, Building2, Hash, ChevronLeft, Loader2,
 } from 'lucide-react';
+import type { HubConnection } from '@microsoft/signalr';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { apiFetch } from '../../../lib/api';
 import { useToast } from '../../../context/ToastContext';
 import { formatVnd, formatVndInput, normalizeVndInput } from '../utils/currency';
+import { createPaymentRealtimeConnection } from '../api/paymentRealtime';
 
 interface WalletOverview {
   balance: number;
@@ -43,6 +45,7 @@ const TRANSACTION_TYPE_LABELS = ['Nạp tiền', 'Chuyển khoản', 'Thanh toá
 const TRANSACTION_STATUS_LABELS = ['Đang xử lý', 'Hoàn thành', 'Thất bại'];
 const TOP_UP_AMOUNTS = [50_000, 100_000, 200_000, 500_000, 1_000_000, 2_000_000];
 const POLL_INTERVAL_MS = 3000;
+const PAYMENT_STORAGE_KEY = 'locker:pending-topup';
 
 type TopupStep = 'idle' | 'select-amount' | 'paying';
 
@@ -62,6 +65,7 @@ export default function WalletPage() {
   const [copied, setCopied] = useState(false);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const realtimeRef = useRef<HubConnection | null>(null);
 
   const loadWallet = useCallback(async () => {
     try {
@@ -107,6 +111,82 @@ export default function WalletPage() {
     }
   };
 
+  const persistPendingPayment = (p: SepayInitResponse | null) => {
+    try {
+      if (p) {
+        sessionStorage.setItem(PAYMENT_STORAGE_KEY, JSON.stringify(p));
+      } else {
+        sessionStorage.removeItem(PAYMENT_STORAGE_KEY);
+      }
+    } catch {
+      /* sessionStorage unavailable */
+    }
+  };
+
+  const openRealtime = useCallback(async () => {
+    if (realtimeRef.current) return;
+    const conn = createPaymentRealtimeConnection({
+      onPaymentStatusChanged: (payload) => {
+        if (!payment || payload.paymentId !== payment.paymentId) return;
+        const numericStatus =
+          payload.status === 'Completed' ? 1 :
+          payload.status === 'Failed' ? 2 :
+          String(payload.status).toLowerCase() === 'completed' ? 1 :
+          String(payload.status).toLowerCase() === 'failed' ? 2 : 0;
+        setPaymentStatus({
+          id: payload.paymentId,
+          amount: payload.amount,
+          status: numericStatus,
+          paidAt: payload.paidAt ?? null,
+        });
+        if (numericStatus === 1) {
+          stopPolling();
+          showToast('Nạp tiền thành công!', 'success');
+          void loadWallet();
+          setTimeout(() => handleCloseTopup(), 1500);
+        } else if (numericStatus === 2) {
+          stopPolling();
+          showToast('Thanh toán thất bại.', 'error');
+        }
+      },
+    });
+    realtimeRef.current = conn;
+    try {
+      await conn.start();
+    } catch (err) {
+      console.warn('[payment-realtime] start failed', err);
+    }
+  }, [payment, showToast, loadWallet]);
+
+  const closeRealtime = useCallback(async () => {
+    const conn = realtimeRef.current;
+    realtimeRef.current = null;
+    if (conn) {
+      try { await conn.stop(); } catch { /* noop */ }
+    }
+  }, []);
+
+  // Hydrate pending payment from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(PAYMENT_STORAGE_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw) as SepayInitResponse;
+      if (!p?.paymentId || !p?.expiresAt) return;
+      const expiredByTime = new Date(p.expiresAt).getTime() <= Date.now();
+      if (expiredByTime) {
+        sessionStorage.removeItem(PAYMENT_STORAGE_KEY);
+        return;
+      }
+      setPayment(p);
+      setStep('paying');
+      void openRealtime();
+    } catch {
+      sessionStorage.removeItem(PAYMENT_STORAGE_KEY);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleOpenTopup = () => {
     setStep('select-amount');
     setPayment(null);
@@ -119,6 +199,8 @@ export default function WalletPage() {
     setPayment(null);
     setPaymentStatus(null);
     setProcessing(false);
+    persistPendingPayment(null);
+    void closeRealtime();
   };
 
   const handleSubmitAmount = async (e: React.FormEvent) => {
@@ -144,8 +226,11 @@ export default function WalletPage() {
         throw new Error('Không nhận được dữ liệu thanh toán từ server.');
       }
 
+      persistPendingPayment(result);
       setPayment(result);
+      setPaymentStatus(null);
       setStep('paying');
+      void openRealtime();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Đã có lỗi xảy ra.';
       showToast(errorMessage, 'error');
@@ -211,7 +296,6 @@ export default function WalletPage() {
 
   const handleCreateNew = () => {
     stopPolling();
-    setPayment(null);
     setPaymentStatus(null);
     setStep('select-amount');
   };

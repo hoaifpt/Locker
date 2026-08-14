@@ -58,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
         services.AddScoped<IRealtimeNotificationService, RealtimeNotificationService>();
+        services.AddScoped<IPaymentRealtimeNotifier, PaymentRealtimeNotifier>();
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();

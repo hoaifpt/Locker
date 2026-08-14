@@ -99,13 +99,25 @@ public class SepayService : ISepayService
     {
         var webhookSecret = _settings.WebhookApiKey;
 
+        Console.WriteLine("========== SEPAY SECRET CHECK ==========");
+        Console.WriteLine($"Provided exists: {!string.IsNullOrWhiteSpace(providedSecret)}");
+        Console.WriteLine($"Provided length: {providedSecret?.Length ?? 0}");
+
+        Console.WriteLine($"Configured exists: {!string.IsNullOrWhiteSpace(webhookSecret)}");
+        Console.WriteLine($"Configured length: {webhookSecret?.Length ?? 0}");
+
+        Console.WriteLine(
+            $"Secret match: {providedSecret == webhookSecret}"
+        );
+
+        Console.WriteLine("========================================");
+
         return !string.IsNullOrWhiteSpace(webhookSecret)
             && !string.IsNullOrWhiteSpace(providedSecret)
             && CryptographicOperations.FixedTimeEquals(
                 Encoding.UTF8.GetBytes(providedSecret),
                 Encoding.UTF8.GetBytes(webhookSecret));
     }
-
     public static string CreateTopUpInvoiceNumber(Guid paymentId)
     {
         return $"TOPUP_{paymentId:N}";

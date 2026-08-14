@@ -5,6 +5,9 @@ import type { NotificationDto } from '../types';
 export type NotificationsConnectionOptions = {
     onNotification: (notification: NotificationDto) => void;
     onReconnected: () => void;
+    onConnectionStateChanged?: (
+        state: 'connecting' | 'connected' | 'reconnecting' | 'closed'
+    ) => void;
 };
 
 export function createNotificationsConnection(
@@ -24,9 +27,23 @@ export function createNotificationsConnection(
         options.onNotification(notification);
     });
 
+    connection.onreconnecting(() => {
+        console.info('[notifications] reconnecting...');
+        options.onConnectionStateChanged?.('reconnecting');
+    });
+
     connection.onreconnected(() => {
+        console.info('[notifications] reconnected');
+        options.onConnectionStateChanged?.('connected');
         options.onReconnected();
     });
+
+    connection.onclose((err) => {
+        console.warn('[notifications] connection closed', err);
+        options.onConnectionStateChanged?.('closed');
+    });
+
+    options.onConnectionStateChanged?.('connecting');
 
     return connection;
 }

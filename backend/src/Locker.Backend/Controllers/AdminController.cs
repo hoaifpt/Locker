@@ -1,9 +1,11 @@
 using Locker.Backend.Application.Features.Admin.Commands.ActivateUser;
+using Locker.Backend.Application.Features.Admin.Commands.CreateUser;
 using Locker.Backend.Application.Features.Admin.Commands.DeactivateUser;
 using Locker.Backend.Application.Features.Admin.Commands.UpdateUserRole;
 using Locker.Backend.Application.Features.Admin.Queries.GetAllBookings;
 using Locker.Backend.Application.Features.Admin.Queries.GetAllPayments;
 using Locker.Backend.Application.Features.Admin.Queries.GetAllUsers;
+using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -17,10 +19,42 @@ namespace Locker.Backend.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly IIdentityService _identityService;
 
-    public AdminController(ISender sender)
+    public AdminController(ISender sender, IIdentityService identityService)
     {
         _sender = sender;
+        _identityService = identityService;
+    }
+
+    [HttpPost("users")]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
+    {
+        var (user, error) = await _sender.Send(new CreateUserCommand(
+            request.Username,
+            request.Email,
+            request.Password,
+            request.Role,
+            request.FullName,
+            request.PhoneNumber
+        ), cancellationToken);
+
+        if (user == null) return BadRequest(new { error });
+
+        var roles = await _identityService.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? request.Role;
+
+        return CreatedAtAction(nameof(GetAllUsers), new { id = user.Id }, new
+        {
+            user.Id,
+            user.UserName,
+            user.Email,
+            user.FullName,
+            user.PhoneNumber,
+            Role = role,
+            user.IsActive,
+            user.CreatedAt
+        });
     }
 
     // ── Users ──────────────────────────────────────────────
@@ -83,4 +117,14 @@ public class AdminController : ControllerBase
 public class UpdateUserRoleRequest
 {
     public string Role { get; set; } = string.Empty;
+}
+
+public class CreateUserRequest
+{
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string Role { get; set; } = "User";
+    public string? FullName { get; set; }
+    public string? PhoneNumber { get; set; }
 }

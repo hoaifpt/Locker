@@ -104,6 +104,10 @@ export default function WalletPage() {
   const [copied, setCopied] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  // Increment mỗi lần user CHỦ ĐỘNG mở lại modal QR trong khi còn pending payment.
+  // -0 = chưa user-action nào → banner không hiện (tránh hiển thị lúc auto-restore on mount)
+  // >0 = user vừa click → banner hiện + shake để phản hồi
+  const [resumePendingNonce, setResumePendingNonce] = useState(0);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const realtimeRef = useRef<HubConnection | null>(null);
@@ -239,10 +243,9 @@ export default function WalletPage() {
   }, []);
 
   const handleOpenTopup = () => {
-    // Nếu đang có payment pending còn hạn → thông báo cho user biết cần hoàn thành giao dịch cũ,
-    // đồng thời mở lại QR cũ để user tiếp tục thanh toán (không reset, không tạo mới).
-    // Tránh trường hợp user click "Nạp tiền vào ví" lần 2 khi giao dịch trước chưa xong
-    // sẽ bị clear state và tạo payment mới (lãng phí SepayCode + có thể đè IPN cũ).
+    // Nếu đang có payment pending còn hạn → user chủ động click "Nạp tiền vào ví" lần 2:
+    //   1. bump nonce để trigger InlineAlert + shake animation cho user biết hệ thống vừa respond
+    //   2. mở lại QR cũ thay vì tạo payment mới (tránh lãng phí SepayCode + đè IPN cũ)
     const hasPendingPayment =
       payment &&
       payment.expiresAt &&
@@ -251,6 +254,7 @@ export default function WalletPage() {
       paymentStatus?.status !== 2;   // 2 = Failed
 
     if (hasPendingPayment) {
+      setResumePendingNonce((n) => n + 1);
       setStep('paying');
       return;
     }
@@ -258,6 +262,7 @@ export default function WalletPage() {
     setStep('select-amount');
     setPayment(null);
     setPaymentStatus(null);
+    setResumePendingNonce(0);
   };
 
   const handleCloseTopup = () => {
@@ -267,6 +272,7 @@ export default function WalletPage() {
     setPaymentStatus(null);
     setProcessing(false);
     persistPendingPayment(null);
+    setResumePendingNonce(0);
     void closeRealtime();
   };
 
@@ -656,12 +662,15 @@ export default function WalletPage() {
                       transition={{ duration: 0.25 }}
                       className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8"
                     >
-                      <InlineAlert
-                        variant="warning"
-                        title="Bạn đang có giao dịch chưa hoàn tất"
-                        description="Hoàn thành giao dịch hiện tại trước khi tạo giao dịch mới. Quét QR bên dưới để tiếp tục thanh toán."
-                        className="mb-2 lg:col-span-12"
-                      />
+                      {resumePendingNonce > 0 && (
+                        <InlineAlert
+                          variant="warning"
+                          title="Bạn đang có giao dịch chưa hoàn tất"
+                          description="Hoàn thành giao dịch hiện tại trước khi tạo giao dịch mới. Quét QR bên dưới để tiếp tục thanh toán."
+                          className="mb-2 lg:col-span-12"
+                          shakeKey={resumePendingNonce}
+                        />
+                      )}
                       {/* LEFT — instructions + amount + bank info */}
                       <div className="order-2 space-y-5 lg:order-1 lg:col-span-7">
                         {/* Amount — hero of left column */}

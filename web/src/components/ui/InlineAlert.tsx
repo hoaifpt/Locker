@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { TriangleAlert, Info, X, type LucideIcon } from 'lucide-react';
 
 interface InlineAlertProps {
@@ -7,6 +8,8 @@ interface InlineAlertProps {
   action?: { label: string; onClick: () => void };
   onDismiss?: () => void;
   className?: string;
+  /** Run a one-shot shake animation when this flag flips to true. */
+  shakeKey?: number;
 }
 
 const VARIANT_STYLES: Record<InlineAlertProps['variant'], {
@@ -36,19 +39,29 @@ const VARIANT_STYLES: Record<InlineAlertProps['variant'], {
   },
 };
 
-export function InlineAlert({ variant, title, description, action, onDismiss, className }: InlineAlertProps) {
+export function InlineAlert({ variant, title, description, action, onDismiss, className, shakeKey }: InlineAlertProps) {
   const styles = VARIANT_STYLES[variant];
   const Icon = styles.Icon;
+  const [shaking, setShaking] = useState(false);
+
+  useEffect(() => {
+    if (shakeKey === undefined) return;
+    setShaking(true);
+    const t = setTimeout(() => setShaking(false), 600);
+    return () => clearTimeout(t);
+  }, [shakeKey]);
 
   return (
     <div
       role="alert"
+      data-shake={shaking ? 'true' : 'false'}
       className={[
         'flex flex-col gap-2 rounded-xl border border-l-4 px-5 py-4',
         styles.container,
         styles.accent,
+        shaking ? 'animate-inline-alert-shake' : '',
         className ?? '',
-      ].join(' ')}
+      ].filter(Boolean).join(' ')}
     >
       <div className="flex items-start gap-3">
         <Icon size={20} className={`mt-0.5 shrink-0 ${styles.iconColor}`} aria-hidden="true" />

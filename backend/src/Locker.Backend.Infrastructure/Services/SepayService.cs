@@ -54,14 +54,13 @@ public class SepayService : ISepayService
             throw new InvalidOperationException(
                 "Sepay secret key is not configured.");
 
-        // Đây là mã dùng để liên kết giao dịch SePay
-        // với Payment trong database của Locker.
         var invoiceNumber = CreateTopUpInvoiceNumber(paymentId);
+
         var fields = new Dictionary<string, string>
         {
             ["order_amount"] =
-        decimal.Truncate(amount)
-            .ToString("0", CultureInfo.InvariantCulture),
+                decimal.Truncate(amount)
+                    .ToString("0", CultureInfo.InvariantCulture),
 
             ["merchant"] = merchantId,
 
@@ -69,14 +68,17 @@ public class SepayService : ISepayService
 
             ["operation"] = "PURCHASE",
 
-            ["order_description"] = invoiceNumber,
+            // QUAN TRỌNG:
+            // Đây là mã mà người dùng cần chuyển khoản.
+            ["order_description"] = sepayCode,
 
+            // Invoice nội bộ của Locker
             ["order_invoice_number"] = invoiceNumber,
 
             ["customer_id"] = userId.ToString("N"),
 
             ["payment_method"] =
-        paymentMethod ?? "BANK_TRANSFER",
+                paymentMethod ?? "BANK_TRANSFER",
 
             ["success_url"] = _settings.SuccessUrl,
 
@@ -84,6 +86,7 @@ public class SepayService : ISepayService
 
             ["cancel_url"] = _settings.CancelUrl
         };
+
         var signedString = BuildSignedString(fields);
 
         var signature = Sign(
@@ -94,9 +97,10 @@ public class SepayService : ISepayService
 
         Console.WriteLine("========== SEPAY CHECKOUT ==========");
         Console.WriteLine($"PaymentId: {paymentId}");
+        Console.WriteLine($"SepayCode: {sepayCode}");
+        Console.WriteLine($"InvoiceNumber: {invoiceNumber}");
         Console.WriteLine($"OrderDescription: {fields["order_description"]}");
         Console.WriteLine($"Amount: {fields["order_amount"]}");
-        Console.WriteLine($"PaymentMethod: {fields["payment_method"]}");
         Console.WriteLine("====================================");
 
         return new SepayCheckoutData(
@@ -105,7 +109,6 @@ public class SepayService : ISepayService
             signedString,
             signature);
     }
-
     public bool IsValidIpnSecret(string? providedSecret)
     {
         var webhookSecret = _settings.WebhookApiKey;

@@ -1,6 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle, AlertCircle, Info, Bell } from 'lucide-react';
+import {
+  X,
+  CheckCircle2,
+  CircleX,
+  TriangleAlert,
+  Info,
+  Bell,
+  type LucideIcon,
+} from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning' | 'notification';
 
@@ -11,96 +19,105 @@ export interface ToastMessage {
   duration?: number;
 }
 
-interface ToastProps {
-  toast: ToastMessage;
+interface SingleToastProps {
+  toast: ToastMessage & { pulseAt?: number };
   onClose: () => void;
 }
 
-const ICON_MAP: Record<ToastType, React.ReactNode> = {
-  success: <CheckCircle size={18} className="text-green-500" />,
-  error: <AlertCircle size={18} className="text-red-500" />,
-  info: <Info size={18} className="text-blue-500" />,
-  warning: <AlertCircle size={18} className="text-yellow-500" />,
-  notification: <Bell size={18} className="text-orange-500" />,
+const ICON_MAP: Record<ToastType, LucideIcon> = {
+  success: CheckCircle2,
+  error: CircleX,
+  warning: TriangleAlert,
+  info: Info,
+  notification: Bell,
 };
 
-const BG_MAP: Record<ToastType, string> = {
-  success: 'bg-green-50 border-green-200',
-  error: 'bg-red-50 border-red-200',
-  info: 'bg-blue-50 border-blue-200',
-  warning: 'bg-yellow-50 border-yellow-200',
-  notification: 'bg-orange-50 border-orange-200',
+const ACCENT_MAP: Record<ToastType, string> = {
+  success: 'text-emerald-500 border-l-emerald-500',
+  error: 'text-red-500 border-l-red-500',
+  warning: 'text-amber-500 border-l-amber-500',
+  info: 'text-blue-500 border-l-blue-500',
+  notification: 'text-orange-500 border-l-orange-500',
 };
 
-const TEXT_MAP: Record<ToastType, string> = {
-  success: 'text-green-800',
-  error: 'text-red-800',
-  info: 'text-blue-800',
-  warning: 'text-yellow-800',
-  notification: 'text-orange-800',
-};
+export function SingleToast({ toast, onClose }: SingleToastProps) {
+  const Icon = ICON_MAP[toast.type];
+  const accent = ACCENT_MAP[toast.type];
+  const [pulsing, setPulsing] = useState(false);
 
-function SingleToast({ toast, onClose }: ToastProps) {
   useEffect(() => {
-    const timer = setTimeout(onClose, toast.duration || 4000);
-    return () => clearTimeout(timer);
-  }, [toast.duration, onClose]);
+    if (!toast.pulseAt) return;
+    setPulsing(true);
+    const t = setTimeout(() => setPulsing(false), 220);
+    return () => clearTimeout(t);
+  }, [toast.pulseAt]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    },
+    [onClose],
+  );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
-      className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium shadow-lg ${BG_MAP[toast.type]} ${TEXT_MAP[toast.type]}`}
+    <div
+      role="status"
+      aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+      data-pulse={pulsing ? 'true' : 'false'}
+      className={[
+        'flex w-full min-w-[280px] max-w-[420px] items-start gap-3 overflow-hidden rounded-xl border border-l-4 px-4 py-3 shadow-lg backdrop-blur-sm transition-opacity duration-200',
+        // Light theme
+        'border-slate-200 bg-white text-slate-900 shadow-slate-200/50',
+        // Dark theme
+        'dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-black/40',
+        // Pulse
+        pulsing ? 'opacity-70' : 'opacity-100',
+        accent,
+      ].join(' ')}
     >
-      {ICON_MAP[toast.type]}
-      <span className="flex-1">{toast.message}</span>
+      <Icon size={20} className={`mt-0.5 shrink-0 ${accent.split(' ')[0]}`} aria-hidden="true" />
+      <span className="flex-1 text-sm leading-relaxed">{toast.message}</span>
       <button
+        type="button"
         onClick={onClose}
-        className="opacity-60 transition hover:opacity-100"
+        aria-label="Đóng"
+        className="-mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
       >
-        <X size={16} />
+        <X size={16} aria-hidden="true" />
       </button>
-    </motion.div>
+    </div>
   );
 }
 
 interface ToastContainerProps {
-  toasts: ToastMessage[];
+  toasts: (ToastMessage & { pulseAt?: number })[];
   onRemove: (id: string) => void;
 }
 
 export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   return (
-    <div className="pointer-events-none fixed right-4 top-20 z-50 flex flex-col gap-2 md:right-6">
-      <AnimatePresence>
+    <div
+      role="region"
+      aria-label="Notifications"
+      className="pointer-events-none fixed left-4 right-4 top-4 z-[100] flex flex-col gap-2.5 sm:left-auto sm:right-6 sm:top-24"
+    >
+      <AnimatePresence initial={false}>
         {toasts.map((toast) => (
-          <div key={toast.id} className="pointer-events-auto">
+          <motion.div
+            key={toast.id}
+            layout
+            initial={{ opacity: 0, x: 16, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 8, transition: { duration: 0.15 } }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="pointer-events-auto"
+          >
             <SingleToast toast={toast} onClose={() => onRemove(toast.id)} />
-          </div>
+          </motion.div>
         ))}
       </AnimatePresence>
     </div>
   );
 }
-
-// Context hook for easy toast usage
-let toastId = 0;
-
-export const useToast = () => {
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
-  const show = (message: string, type: ToastType = 'info', duration?: number) => {
-    const id = `toast-${toastId++}`;
-    const toast: ToastMessage = { id, message, type, duration };
-    setToasts((prev) => [...prev, toast]);
-    return id;
-  };
-
-  const remove = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  return { toasts, show, remove };
-};

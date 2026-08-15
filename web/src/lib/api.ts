@@ -108,7 +108,8 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}): Pr
     let response = await fetch(url, config);
 
     // 401 → attempt token refresh + retry once
-    if (!_noRetry && response.status === 401) {
+    const shouldRefreshOnUnauthorized = !_noRetry && endpoint !== '/auth/login';
+    if (shouldRefreshOnUnauthorized && response.status === 401) {
         const refreshed = await getOrCreateRefreshPromise();
 
         if (refreshed) {

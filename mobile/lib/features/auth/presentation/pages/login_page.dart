@@ -75,15 +75,10 @@ class _LoginViewState extends State<_LoginView> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Logo is centered and constrained in BOTH width and
-                    // height so that BoxFit.contain produces a square
-                    // bounding box — previously the SizedBox was height-
-                    // only, which let the asset overflow horizontally and
-                    // look misaligned against the centered form below.
-                    Center(
+                    Align(
+                      alignment: const Alignment(-1.0, 0.0),
                       child: SizedBox(
-                        height: 200,
-                        width: 200,
+                        height: 320, // Giảm chiều cao để không bị tràn
                         child: Image.asset(
                           'assets/ebox_logo.png',
                           fit: BoxFit.contain,

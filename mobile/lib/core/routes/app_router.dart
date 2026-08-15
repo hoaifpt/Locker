@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:locker_mobile/core/routes/injection.dart';
 import '../../features/wallet/presentation/controllers/wallet_cubit.dart';
+import '../../features/wallet/presentation/controllers/wallet_state.dart';
+import '../../features/wallet/widgets/wallet_transactions_section.dart';
+import '../../features/wallet/data/wallet_repository.dart';
+import '../../features/wallet/domain/services/payment_realtime_service.dart';
+import '../../features/wallet/domain/usecases/get_wallet_overview_usecase.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/sign_up/presentation/pages/sign_up_page.dart';
@@ -22,6 +27,7 @@ import '../../features/send_receive/presentation/pages/payment_page.dart';
 import '../../features/delivery/presentation/pages/send_receive_page.dart'
     as delivery;
 import '../../features/wallet/presentation/pages/wallet_page.dart';
+import '../../features/wallet/presentation/pages/wallet_transactions_page.dart';
 import '../../features/locker/presentation/locker_screen.dart';
 import '../../features/locker_detail/presentation/pages/locker_detail_page.dart';
 import '../../features/locker_map/presentation/pages/locker_map_page.dart';
@@ -50,6 +56,22 @@ class AppRouter {
     '/home': (context) => const HomePage(),
     '/profile': (context) => const ProfilePage(),
     '/wallet': (context) => const WalletPage(),
+    '/wallet/transactions': (context) {
+      final walletCubit =
+          ModalRoute.of(context)?.settings.arguments as WalletCubit?;
+      if (walletCubit != null) return WalletTransactionsPage(cubit: walletCubit);
+      // Fallback for deep-link / hot reload — build a fresh cubit so the
+      // user can still browse their history.
+      final repo = WalletRepository();
+      return BlocProvider(
+        create: (_) => WalletCubit(
+          getWalletOverview: GetWalletOverviewUseCase(repository: repo),
+          walletRepository: repo,
+          realtimeService: getIt<IPaymentRealtimeService>(),
+        )..load(),
+        child: const _FallbackTransactionsPage(),
+      );
+    },
     '/top-up': (context) {
       final walletCubit =
           ModalRoute.of(context)?.settings.arguments as WalletCubit?;
@@ -117,4 +139,60 @@ class AppRouter {
       child: const ResetPasswordPage(),
     ),
   };
+}
+
+/// Renders the transactions list using the nearest BlocProvider — used
+/// when the route is opened without an explicit cubit argument (e.g. via
+/// deep-link or hot reload).
+class _FallbackTransactionsPage extends StatefulWidget {
+  const _FallbackTransactionsPage();
+
+  @override
+  State<_FallbackTransactionsPage> createState() =>
+      _FallbackTransactionsPageState();
+}
+
+class _FallbackTransactionsPageState extends State<_FallbackTransactionsPage> {
+  String _statusFilter = 'all';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F7F8),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF7F7F8),
+        elevation: 0,
+        foregroundColor: const Color(0xFF0F172A),
+        title: const Text(
+          'Lịch sử giao dịch',
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: BlocBuilder<WalletCubit, WalletState>(
+          builder: (context, state) {
+            final transactions = state.overview?.transactions ?? [];
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              child: WalletTransactionsSection(
+                transactions: transactions,
+                statusFilter: _statusFilter,
+                onStatusFilterChanged: (v) =>
+                    setState(() => _statusFilter = v),
+                onViewAll: () {},
+                onRefresh: () async {
+                  await context.read<WalletCubit>().load();
+                },
+                isLoading: state.isLoading,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:locker_mobile/core/network/api_client.dart';
 import 'package:locker_mobile/features/auth/data/auth_repository.dart';
 import 'package:locker_mobile/features/notifications/data/notification_repository.dart';
 import 'package:locker_mobile/features/notifications/domain/repositories/i_notification_repository.dart';
@@ -24,8 +25,11 @@ import 'package:locker_mobile/features/sign_up/domain/usecases/sign_up_usecase.d
 import 'package:locker_mobile/features/sign_up/presentation/controllers/sign_up_cubit.dart';
 
 import '../../features/notifications/presentation/controllers/notification_cubit.dart';
+import 'package:locker_mobile/core/constants/app_constants.dart';
+import 'package:locker_mobile/features/wallet/data/signalr_payment_realtime_service.dart';
 import 'package:locker_mobile/features/wallet/data/wallet_repository.dart';
 import 'package:locker_mobile/features/wallet/domain/repositories/i_wallet_repository.dart';
+import 'package:locker_mobile/features/wallet/domain/services/payment_realtime_service.dart';
 import 'package:locker_mobile/features/wallet/domain/usecases/get_wallet_overview_usecase.dart';
 import 'package:locker_mobile/features/wallet/presentation/controllers/wallet_cubit.dart';
 
@@ -113,6 +117,23 @@ void configureDependencies() {
   // Repositories
   getIt.registerLazySingleton<IWalletRepository>(() => WalletRepository());
 
+  // SignalR realtime service for wallet top-up.
+  // Registered as a lazy singleton so its `tokenProvider` closure always
+  // reads the freshest token from the shared ApiClient (works across
+  // login/logout/token-refresh). The hub URL mirrors
+  // `web/src/features/wallet/api/paymentRealtime.ts` — strip `/api` from
+  // apiBaseUrl, then append `/hubs/notifications`.
+  getIt.registerLazySingleton<IPaymentRealtimeService>(() {
+    final apiBase = AppConstants.apiBaseUrl;
+    var base = apiBase;
+    if (base.endsWith('/api')) base = base.substring(0, base.length - 4);
+    if (base.endsWith('/')) base = base.substring(0, base.length - 1);
+    return SignalRPaymentRealtimeService(
+      hubUrl: '$base/hubs/notifications',
+      tokenProvider: () async => ApiClient().accessToken,
+    );
+  });
+
   // Use Cases
   getIt.registerLazySingleton(
     () => GetWalletOverviewUseCase(repository: getIt()),
@@ -120,7 +141,11 @@ void configureDependencies() {
 
   // Cubits
   getIt.registerFactory(
-    () => WalletCubit(getWalletOverview: getIt(), walletRepository: getIt()),
+    () => WalletCubit(
+      getWalletOverview: getIt(),
+      walletRepository: getIt(),
+      realtimeService: getIt<IPaymentRealtimeService>(),
+    ),
   );
 
   //========================================================================

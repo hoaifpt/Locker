@@ -847,12 +847,6 @@ final List<_ServiceItem> _services = [
     route: '/send-receive',
     onTap: _noop,
   ),
-  const _ServiceItem(
-    label: 'Ví E-BOX',
-    icon: Icons.account_balance_wallet_outlined,
-    route: '/wallet',
-    onTap: _noop,
-  ),
 ];
 
 void _noop() {}

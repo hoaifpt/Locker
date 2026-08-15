@@ -121,6 +121,17 @@ class ApiClient {
 
   Dio get client => _dio;
 
+  /// Returns the bearer token currently configured on the underlying Dio,
+  /// or null if no token is set. Used by SignalR's `accessTokenFactory`
+  /// so realtime uses the same auth as REST.
+  String? get accessToken {
+    final raw = _dio.options.headers['Authorization'];
+    if (raw is String && raw.startsWith('Bearer ')) {
+      return raw.substring('Bearer '.length);
+    }
+    return null;
+  }
+
   void setToken(String token) {
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }

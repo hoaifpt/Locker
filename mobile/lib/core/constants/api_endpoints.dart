@@ -76,8 +76,10 @@ class ApiEndpoints {
   static const String walletTopUp = '/wallet/top-up';
   static const String walletTransfer = '/wallet/transfer';
   static const String walletTopUpSePayInit = '/wallet/top-up/sepay/init';
+  static const String walletTopUpSePayCancel = '/wallet/top-up/sepay/cancel';
   static String walletTopUpSePayReturn() => '/wallet/top-up/sepay/return';
 
+  // Notifications
   // Notifications
   static const String notificationsMy = '/notifications/my';
   static String notificationMarkAsRead(String id) =>

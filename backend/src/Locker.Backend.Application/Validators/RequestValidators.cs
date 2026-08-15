@@ -185,8 +185,8 @@ public class CreatePaymentRequestValidator : AbstractValidator<CreatePaymentRequ
 
         RuleFor(x => x.Method)
             .NotEmpty().WithMessage("Payment method is required.")
-            .Must(m => new[] { "cash", "card", "momo", "vnpay", "zalopay","wallet" }.Contains(m.ToLower()))
-            .WithMessage("Invalid payment method. Allowed: cash, card, momo, vnpay, zzalopay, wallet.");
+            .Must(m => new[] { "cash", "card", "momo", "vnpay", "zalopay" }.Contains(m.ToLower()))
+            .WithMessage("Invalid payment method. Allowed: cash, card, momo, vnpay, zalopay.");
     }
 }
 

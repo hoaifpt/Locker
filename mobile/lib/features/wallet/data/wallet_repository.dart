@@ -2,9 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/exceptions/app_exception.dart';
 import '../../../core/constants/api_endpoints.dart';
-import '../domain/entities/payment_status.dart';
-import '../domain/entities/sepay_cancel_response.dart';
-import '../domain/entities/sepay_init_response.dart';
+import '../../../core/constants/app_constants.dart';
 import '../domain/entities/wallet_overview.dart';
 import '../domain/entities/wallet_transaction.dart';
 import '../domain/repositories/i_wallet_repository.dart';
@@ -14,7 +12,7 @@ import 'models/wallet_transaction_model.dart';
 class WalletRepository implements IWalletRepository {
   final ApiClient _apiClient = ApiClient();
 
-  String _url(String endpoint) => endpoint;
+  String _url(String endpoint) => '${AppConstants.apiBaseUrl}$endpoint';
 
   @override
   Future<WalletOverview> getWalletOverview() async {
@@ -73,7 +71,7 @@ class WalletRepository implements IWalletRepository {
   Future<void> transfer(String receiverId, double amount) async {
     try {
       await _apiClient.client.post(
-        _url(ApiEndpoints.walletTransfer),
+        _url(AppConstants.apiBaseUrl + ApiEndpoints.walletTransfer),
         data: {'receiverId': receiverId, 'amount': amount},
       );
     } catch (e) {
@@ -82,7 +80,7 @@ class WalletRepository implements IWalletRepository {
   }
 
   @override
-  Future<SepayInitResponse> initSePayTopUp(double amount) async {
+  Future<String> initSePayTopUp(double amount) async {
     try {
       final response = await _apiClient.client.post(
         _url(ApiEndpoints.walletTopUpSePayInit),
@@ -90,58 +88,19 @@ class WalletRepository implements IWalletRepository {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        return SepayInitResponse.fromJson(response.data as Map<String, dynamic>);
+        // Backend trả về trường 'checkoutUrl' hoặc 'paymentUrl'
+        final String? url = response.data['checkoutUrl'] ?? response.data['paymentUrl'];
+
+        if (url != null && url.isNotEmpty) {
+          return url;
+        }
+        throw AppException('Hệ thống chưa tạo được liên kết thanh toán. Vui lòng thử lại.');
       }
       throw NetworkException('Lỗi kết nối thanh toán (Mã: ${response.statusCode})');
     } on DioException catch (e) {
       throw AppException('Lỗi mạng: ${e.message}');
     } catch (e) {
       throw AppException('Không thể bắt đầu thanh toán: $e');
-    }
-  }
-
-  @override
-  Future<PaymentStatusResponse> checkPaymentStatus(String paymentId) async {
-    try {
-      final response = await _apiClient.client.get(
-        _url(ApiEndpoints.paymentById(paymentId)),
-      );
-
-      if (response.statusCode == 200 && response.data != null) {
-        return PaymentStatusResponse.fromJson(
-          response.data as Map<String, dynamic>,
-        );
-      }
-      throw NetworkException(
-        'Failed to check payment status (code: ${response.statusCode})',
-      );
-    } on DioException catch (e) {
-      throw AppException('Lỗi mạng khi kiểm tra thanh toán: ${e.message}');
-    } catch (e) {
-      throw AppException('Không thể kiểm tra trạng thái thanh toán: $e');
-    }
-  }
-
-  @override
-  Future<SepayCancelResponse> cancelSepayTopUp(String paymentId) async {
-    try {
-      final response = await _apiClient.client.post(
-        _url(ApiEndpoints.walletTopUpSePayCancel),
-        data: {'paymentId': paymentId},
-      );
-
-      if (response.statusCode == 200 && response.data != null) {
-        return SepayCancelResponse.fromJson(
-          response.data as Map<String, dynamic>,
-        );
-      }
-      throw NetworkException(
-        'Failed to cancel top-up (code: ${response.statusCode})',
-      );
-    } on DioException catch (e) {
-      throw AppException('Lỗi mạng khi huỷ thanh toán: ${e.message}');
-    } catch (e) {
-      throw AppException('Không thể huỷ thanh toán: $e');
     }
   }
 }

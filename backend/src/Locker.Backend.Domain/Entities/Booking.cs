@@ -5,7 +5,6 @@ namespace Locker.Backend.Domain.Entities;
 public class Booking : BaseEntity
 {
     public Guid UserId { get; set; }
-    public Guid OrderId { get; set; } 
     public Guid LockerId { get; set; }
     public int SlotIndex { get; set; }
     public Guid PackageId { get; set; }

@@ -33,13 +33,4 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
             cancellationToken: cancellationToken);
         return await cursor.FirstOrDefaultAsync(cancellationToken);
     }
-
-    public async Task AddAsync(Booking booking, CancellationToken cancellationToken)
-    {
-        // Nếu bạn dùng MongoDB (Collection là _collection):
-        await _collection.InsertOneAsync(booking, null, cancellationToken);
-
-        // HOẶC nếu bạn đang dùng Entity Framework (Context là _context):
-        // await _context.Bookings.AddAsync(booking, cancellationToken);
-    }
 }

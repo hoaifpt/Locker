@@ -37,6 +37,11 @@ class _FakeWalletRepository implements IWalletRepository {
   /// assert that cancelTopUp triggered a follow-up refresh.
   int overviewLoadCount = 0;
 
+  /// Optional transactions list returned by `getTransactions()`. Defaults
+  /// to empty so tests that don't care about history keep working.
+  List<WalletTransaction> nextTransactions = const [];
+  int transactionsLoadCount = 0;
+
   final List<double> initCalls = [];
 
   @override
@@ -70,10 +75,15 @@ class _FakeWalletRepository implements IWalletRepository {
     return nextOverview ?? _notConfigured<WalletOverview>('nextOverview');
   }
 
-  // Unused in these tests:
+  // Used by the cubit now that load() fetches the transaction list
+  // alongside the overview (the backend /wallet/overview endpoint only
+  // returns a count, not the list itself).
   @override
-  Future<List<WalletTransaction>> getTransactions() async =>
-      throw UnimplementedError();
+  Future<List<WalletTransaction>> getTransactions() async {
+    transactionsLoadCount++;
+    return nextTransactions;
+  }
+  // Unused in these tests:
   @override
   Future<double> getBalance() async => throw UnimplementedError();
   @override
@@ -294,27 +304,27 @@ void main() {
 
     test('refreshes overview after cancel so cancelled payment appears in '
         'history', () async {
-      // The first `getWalletOverview` is from the explicit cubit.load()
-      // below; the second is the cancel-triggered refresh. Both will
-      // return the same `nextOverview` payload, which contains a
-      // cancelled transaction — this mirrors what the backend would
-      // hand back after the cancel endpoint commits.
+      // The first `getWalletOverview` + `getTransactions` are from the
+      // explicit cubit.load() below; the second pair is the cancel-
+      // triggered refresh. Both pairs will return the same seeded data
+      // — which contains a cancelled transaction — this mirrors what
+      // the backend would hand back after the cancel endpoint commits.
       repo.nextOverview = const WalletOverview(
         balance: 0,
         monthlyChange: 0,
         points: 0,
-        transactions: [
-          WalletTransaction(
-            id: 'tx-cancelled',
-            amount: -200000,
-            type: 0,
-            status: 3, // 3 == Cancelled
-            description: 'TOPUP CANCELLED',
-            title: 'Nạp tiền vào ví',
-            timeLabel: '15/08/2026 18:50',
-          ),
-        ],
       );
+      repo.nextTransactions = const [
+        WalletTransaction(
+          id: 'tx-cancelled',
+          amount: -200000,
+          type: 0,
+          status: 3, // 3 == Cancelled
+          description: 'TOPUP CANCELLED',
+          title: 'Nạp tiền vào ví',
+          timeLabel: '15/08/2026 18:50',
+        ),
+      ];
       await cubit.load();
       final before = repo.overviewLoadCount;
 

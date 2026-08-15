@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
+using Locker.Backend.Application.Models;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -24,10 +25,18 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<AppSettings>(
+    builder.Configuration.GetSection("AppSettings"));
+Console.WriteLine("========== APP SETTINGS ==========");
+Console.WriteLine($"BaseUrl: {appSettings?.BaseUrl}");
+Console.WriteLine($"FrontendUrl: {appSettings?.FrontendUrl}");
+Console.WriteLine("==================================");
 
 Console.WriteLine("========== ENV ==========");
 Console.WriteLine(builder.Environment.EnvironmentName);
 Console.WriteLine("=========================");
+var builder = WebApplication.CreateBuilder(args);
+
 
 var envFile = Path.Combine(builder.Environment.ContentRootPath, ".env");
 if (File.Exists(envFile))
@@ -263,7 +272,7 @@ if (seedEnabled)
 {
     using var scope = app.Services.CreateScope();
     var serviceProvider = scope.ServiceProvider;
-    
+
     await serviceProvider.UseDatabaseSeeder();
 }
 

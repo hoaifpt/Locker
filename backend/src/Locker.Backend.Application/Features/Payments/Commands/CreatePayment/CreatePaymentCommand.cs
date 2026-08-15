@@ -16,15 +16,15 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
 {
     private readonly IPaymentRepository _paymentRepository;
     private readonly IBookingRepository _bookingRepository;
-    private readonly IOrderRepository _orderRepository; // CẦN THÊM CÁI NÀY
-    private readonly IUnitOfWork _unitOfWork;           // CẦN THÊM CÁI NÀY
+    private readonly IOrderRepository _orderRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly PaymentMapper _paymentMapper;
 
     public CreatePaymentCommandHandler(
         IPaymentRepository paymentRepository,
         IBookingRepository bookingRepository,
-        IOrderRepository orderRepository, // Inject vào
-        IUnitOfWork unitOfWork,           // Inject vào
+        IOrderRepository orderRepository,
+        IUnitOfWork unitOfWork,
         PaymentMapper paymentMapper)
     {
         _paymentRepository = paymentRepository;
@@ -36,11 +36,9 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
 
     public async Task<PaymentDto?> Handle(CreatePaymentCommand request, CancellationToken cancellationToken)
     {
-        // 1. Lấy đơn hàng (Lưu ý: request.BookingId trong trường hợp này thực tế là OrderId của bạn)
         var order = await _orderRepository.GetByIdAsync(request.BookingId, cancellationToken);
         if (order == null || order.UserId != request.UserId) return null;
 
-        // 2. Tạo Booking
         var booking = new Booking
         {
             OrderId = order.Id,
@@ -53,7 +51,6 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
         };
         await _bookingRepository.AddAsync(booking, cancellationToken);
 
-        // 3. Tạo Payment
         var payment = new Payment
         {
             BookingId = booking.Id,
@@ -65,7 +62,6 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
         };
         await _paymentRepository.AddAsync(payment, cancellationToken);
 
-        // 4. Lưu vào Database
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return _paymentMapper.Map(payment);

@@ -8,7 +8,7 @@ public class PaymentMapper : IMapper<Payment, PaymentDto>
     public PaymentDto Map(Payment source) => new()
     {
         Id = source.Id,
-        BookingId = source.BookingId,
+        BookingId = source.BookingId ?? Guid.Empty, 
         UserId = source.UserId,
         Amount = source.Amount,
         Status = source.Status,

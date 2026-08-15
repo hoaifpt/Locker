@@ -37,4 +37,5 @@ public interface IPaymentRepository : IGenericRepository<Payment>
     Task<Payment?> TryCancelPendingAsync(
         Guid paymentId,
         CancellationToken cancellationToken);
+    Task AddAsync(Payment payment, CancellationToken cancellationToken);
 }

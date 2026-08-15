@@ -92,4 +92,13 @@ public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
             },
             cancellationToken);
     }
+
+    public async Task AddAsync(Payment payment, CancellationToken cancellationToken)
+    {
+        // Nếu dùng MongoDB:
+        await _collection.InsertOneAsync(payment, null, cancellationToken);
+
+        // Nếu dùng EF Core (SQL):
+        // await _context.Payments.AddAsync(payment, cancellationToken);
+    }
 }

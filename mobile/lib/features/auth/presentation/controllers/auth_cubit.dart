@@ -26,6 +26,25 @@ class AuthCubit extends Cubit<AuthState> {
     required this.getUserProfileUsecase,
   }) : super(AuthInitial());
 
+  /// Kiểm tra token đã lưu trong SharedPreferences khi app khởi động.
+  /// Nếu còn token → fetch profile → AuthAuthenticated.
+  /// Nếu không → AuthUnauthenticated (show LoginPage).
+  Future<void> checkSession() async {
+    emit(AuthLoading());
+    try {
+      final hasToken = await checkLoginUsecase();
+      if (!hasToken) {
+        emit(const AuthUnauthenticated());
+        return;
+      }
+      final user = await getUserProfileUsecase();
+      emit(AuthAuthenticated(user));
+    } catch (e) {
+      // Token hết hạn / không hợp lệ → trở về login.
+      emit(const AuthUnauthenticated());
+    }
+  }
+
   Future<void> login(String username, String password) async {
     emit(AuthLoading());
 
@@ -55,5 +74,16 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e) {
       emit(AuthError(e.toString()));
     }
+  }
+
+  /// Đăng xuất: xoá token → emit AuthUnauthenticated. AuthGate sẽ tự
+  /// đẩy về LoginPage.
+  Future<void> logout({bool callServer = false}) async {
+    try {
+      await logoutUsecase(callServer: callServer);
+    } catch (_) {
+      // Bỏ qua lỗi — vẫn tiếp tục clear local state.
+    }
+    emit(const AuthUnauthenticated());
   }
 }

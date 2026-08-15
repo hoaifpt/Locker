@@ -11,7 +11,13 @@ abstract class AuthState extends Equatable {
 
 class AuthInitial extends AuthState {}
 
+/// App đang kiểm tra token đã lưu — show splash spinner.
 class AuthLoading extends AuthState {}
+
+/// Không có token hợp lệ — show LoginPage.
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
 
 class AuthAuthenticated extends AuthState {
   final User user;

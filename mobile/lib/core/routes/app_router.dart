@@ -47,9 +47,11 @@ import '../../features/feedback/presentation/pages/feedback_page.dart';
 final _forgotPasswordCubit = getIt<ForgotPasswordCubit>();
 
 class AppRouter {
-  static const initialRoute = '/login';
-
   static Map<String, WidgetBuilder> get routes => {
+    // '/login' kept for backwards compatibility — the LoginPage is now
+    // also rendered directly by the AuthGate in main.dart, so deep-links
+    // to /login still resolve. Prefer emitting AuthCubit.logout() so the
+    // gate swaps automatically.
     '/login': (context) => const LoginPage(),
     '/sign-up': (context) => const SignUpPage(),
     '/home': (context) => const HomePage(),

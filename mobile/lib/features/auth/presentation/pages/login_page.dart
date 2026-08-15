@@ -1,7 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/routes/injection.dart';
 import '../controllers/auth_cubit.dart';
 import '../../../../shared/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_button.dart';
@@ -12,10 +11,9 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<AuthCubit>(),
-      child: const _LoginView(),
-    );
+    // AuthCubit is provided at the root by main.dart (app-wide singleton)
+    // so login/logout state survives route changes.
+    return const _LoginView();
   }
 }
 

@@ -91,7 +91,11 @@ void configureDependencies() {
   // Cubits
   // Cubits are registered as factories because they hold state and a new
   // instance should be created for each feature/screen that needs it.
-  getIt.registerFactory(
+  // Single app-wide instance so the AuthGate in main.dart can listen to
+  // auth changes (login/logout/session-restored) and swap the root route
+  // without re-creating the cubit on every navigation. The cubit auto-runs
+  // `checkSession()` on first creation to restore the saved token.
+  getIt.registerLazySingleton(
     () => AuthCubit(
       loginUsecase: getIt(),
       logoutUsecase: getIt(),
@@ -99,7 +103,7 @@ void configureDependencies() {
       registerDeviceUsecase: getIt(),
       signInWithGoogleUsecase: getIt(),
       getUserProfileUsecase: getIt(),
-    ),
+    )..checkSession(),
   );
   getIt.registerFactory(
     () => VerifyEmailCubit(resendVerificationEmailUseCase: getIt()),

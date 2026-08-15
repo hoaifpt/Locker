@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFBF2),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
@@ -174,13 +174,7 @@ class _HomeHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFFFF7ED), Color(0xFFFFFBF2)],
-        ),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFFF8FAFC)),
       child: Row(
         children: [
           Expanded(

@@ -308,6 +308,36 @@ void main() {
     });
   });
 
+  group('WalletCubit._onRealtimeEvent (cancelled status)', () {
+    test(
+        'polling with cancelled status keeps pendingPayment '
+        'and moves step to cancelled', () async {
+      repo.sepayResponse = SepayInitResponse(
+        paymentId: 'pay-rt',
+        paymentUrl: 'u',
+        amount: 150000,
+        sepayCode: 'c',
+        expiresAt: DateTime.utc(2099, 1, 1),
+      );
+      await cubit.topUp(150000);
+
+      // Simulate the backend eventually reporting cancelled via polling
+      // / SignalR after the user already cancelled.
+      realtime.push(
+        paymentId: 'pay-rt',
+        amount: 150000,
+        status: PaymentStatus.cancelled,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      // pendingPayment must be preserved so the cancelled overlay can
+      // show the QR + bank info. (Regression test for the polling race.)
+      expect(cubit.state.paymentStatus, PaymentStatus.cancelled);
+      expect(cubit.state.topUpStep, TopUpStep.cancelled);
+      expect(cubit.state.pendingPayment?.paymentId, 'pay-rt');
+    });
+  });
+
   group('WalletCubit.restorePending', () {
     test('restores pending payment from prefs on init', () async {
       // Pre-seed prefs as if previous session left a pending top-up

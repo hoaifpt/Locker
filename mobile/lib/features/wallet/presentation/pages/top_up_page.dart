@@ -38,6 +38,12 @@ class _TopUpPageState extends State<TopUpPage> {
   static const _kPresetAmounts = [50000, 100000, 200000, 500000, 1000000, 2000000];
   static const _kMinAmount = 10000;
 
+  /// Sentinel epoch used when the cancelled state exists without a
+  /// pendingPayment (defensive fallback only). Far in the future so the
+  /// countdown shows zeros immediately.
+  static final DateTime _kEpoch =
+      DateTime.utc(2099, 12, 31, 23, 59, 59);
+
   @override
   void dispose() {
     _stopTimers();
@@ -136,6 +142,10 @@ class _TopUpPageState extends State<TopUpPage> {
       ),
     );
     if (confirmed != true) return;
+    // Stop the page's polling timer BEFORE the cubit's await so an
+    // in-flight poll() can't beat `cancelTopUp` to the state machine and
+    // null out `pendingPayment` while the UI is mid-rebuild.
+    _stopTimers();
     await cubit.cancelTopUp();
   }
 
@@ -228,17 +238,27 @@ class _TopUpPageState extends State<TopUpPage> {
                     isLoading: state.isLoading,
                   )
                 else if (state.topUpStep == TopUpStep.paying ||
-                    state.topUpStep == TopUpStep.cancelled)
+                    (state.topUpStep == TopUpStep.cancelled &&
+                        state.pendingPayment == null))
                   _PayingView(
-                    pending: state.pendingPayment!,
+                    pending: state.pendingPayment ??
+                        SepayInitResponse(
+                          paymentId: '',
+                          paymentUrl: '',
+                          amount: 0,
+                          sepayCode: '',
+                          expiresAt: _kEpoch,
+                        ),
                     countdownSeconds: state.countdownSeconds,
                     isCancelling: state.isCancelling,
                     statusInt: _statusInt(state.paymentStatus),
                     isCancelledStep:
                         state.topUpStep == TopUpStep.cancelled,
                     onCancel: _confirmCancel,
-                    onCopyCode: () =>
-                        _copySepayCode(state.pendingPayment!.sepayCode),
+                    onCopyCode: () => state.pendingPayment == null
+                        ? _showSnackBar('Không có mã để sao chép')
+                        : _copySepayCode(
+                            state.pendingPayment!.sepayCode),
                     onCopyAccount: _copyAccount,
                     onCreateNew: () => context
                         .read<WalletCubit>()
@@ -250,6 +270,13 @@ class _TopUpPageState extends State<TopUpPage> {
                     realtimeConnected: state.realtimeConnected,
                     paymentExpired: state.paymentExpired,
                   )
+                else if (state.topUpStep == TopUpStep.cancelled)
+                  // Defensive fallback — should not normally happen because
+                  // `cancelTopUp` and the terminal-status handler both
+                  // preserve `pendingPayment`. If it does (e.g. an external
+                  // race), show a minimal "Đã huỷ" card so the wizard
+                  // doesn't crash.
+                  const _CancelledOnlyView()
                 else if (state.topUpStep == TopUpStep.success &&
                     state.pendingPayment != null)
                   _SuccessView(
@@ -2191,6 +2218,106 @@ class _DetailRow extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Align(alignment: Alignment.centerRight, child: child),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Defensive fallback shown when the wizard is in the `cancelled` step
+/// but `pendingPayment` is somehow `null` (so the `_PayingView` cannot
+/// render the QR / sepay code). Mirrors the minimal "Da huy - Tao ma
+/// moi" pattern used on web for the same edge case.
+class _CancelledOnlyView extends StatelessWidget {
+  const _CancelledOnlyView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: const BoxDecoration(
+              color: Color(0x0F64748B),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.block,
+              color: Color(0xFF64748B),
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Giao dịch đã được huỷ',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Bạn đã huỷ giao dịch nạp tiền này. Bấm "Tạo mã mới" để bắt đầu lại.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: Material(
+              color: const Color(0xFFF97316),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () =>
+                    context.read<WalletCubit>().createNewTopUp(),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 13),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.refresh,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Tạo mã mới',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

@@ -97,15 +97,28 @@ class WalletCubit extends Cubit<WalletState> {
       unawaited(_refreshOverview());
     } else if (payload.status.isTerminal) {
       _stopCountdown();
-      emit(
-        state.copyWith(
-          paymentStatus: payload.status,
-          pendingPayment: null,
-          errorMessage: payload.status == PaymentStatus.cancelled
-              ? 'Thanh toán đã bị huỷ.'
-              : 'Thanh toán thất bại.',
-        ),
-      );
+      if (payload.status == PaymentStatus.cancelled) {
+        // Polling / SignalR caught up AFTER the user explicitly cancelled.
+        // Keep pendingPayment so the overlay can show the QR + the
+        // "Tạo mã mới" CTA, but make sure the step is cancelled too — the
+        // user-confirmed cancel in `cancelTopUp` already set that, but a
+        // race with polling could have left the step at `paying`.
+        emit(
+          state.copyWith(
+            paymentStatus: PaymentStatus.cancelled,
+            topUpStep: TopUpStep.cancelled,
+            errorMessage: null,
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            paymentStatus: payload.status,
+            pendingPayment: null,
+            errorMessage: 'Thanh toán thất bại.',
+          ),
+        );
+      }
       unawaited(_realtimeService.stop());
       unawaited(_clearPersistedPending());
     }

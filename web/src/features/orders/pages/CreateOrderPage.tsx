@@ -51,6 +51,8 @@ export default function CreateOrderPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
 
+    const token = localStorage.getItem('token'); 
+
     try {
       const payload = {
         lockerId: selectedLocker,
@@ -67,6 +69,7 @@ export default function CreateOrderPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload),
       });

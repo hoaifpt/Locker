@@ -19,67 +19,67 @@ class WalletBalanceCardV2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
-      child: Stack(
-        children: [
-          // Base deep-slate background (darker than slate-900 for
-          // maximum contrast against the white page).
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(color: Color(0xFF020617)),
-          ),
-          // Right-top orange glow (subtle, no blur API needed)
-          Positioned(
-            right: -60,
-            top: -60,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFF97316).withValues(alpha: 0.22),
-                    const Color(0xFFF97316).withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Bottom-left secondary glow
-          Positioned(
-            left: 60,
-            bottom: -40,
-            child: Container(
-              width: 130,
-              height: 130,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFF97316).withValues(alpha: 0.12),
-                    const Color(0xFFF97316).withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Subtle hairline border so the card edge reads on light
-          // page backgrounds (the dark fill alone blends into shadows).
-          Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
+      child: SizedBox(
+        width: double.infinity,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Base deep-slate background (darker than slate-900 for
+            // maximum contrast against the white page).
+            const ColoredBox(color: Color(0xFF020617)),
+            // Right-top orange glow (subtle, no blur API needed)
+            Positioned(
+              right: -60,
+              top: -60,
+              child: Container(
+                width: 200,
+                height: 200,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.06),
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFFF97316).withValues(alpha: 0.22),
+                      const Color(0xFFF97316).withValues(alpha: 0.0),
+                    ],
                   ),
                 ),
               ),
             ),
-          ),
-          // Foreground content
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+            // Bottom-left secondary glow
+            Positioned(
+              left: 60,
+              bottom: -40,
+              child: Container(
+                width: 130,
+                height: 130,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFFF97316).withValues(alpha: 0.12),
+                      const Color(0xFFF97316).withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Subtle hairline border so the card edge reads on light
+            // page backgrounds (the dark fill alone blends into shadows).
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Foreground content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -203,7 +203,8 @@ class WalletBalanceCardV2 extends StatelessWidget {
               ],
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

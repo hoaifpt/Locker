@@ -35,14 +35,20 @@ class _TopUpPageState extends State<TopUpPage> {
   static const _kBankAccount = '84519828888';
   static const _kBankName = 'TPBank';
   static const _kBankOwner = 'PHAM DUC HUNG';
-  static const _kPresetAmounts = [50000, 100000, 200000, 500000, 1000000, 2000000];
+  static const _kPresetAmounts = [
+    50000,
+    100000,
+    200000,
+    500000,
+    1000000,
+    2000000,
+  ];
   static const _kMinAmount = 10000;
 
   /// Sentinel epoch used when the cancelled state exists without a
   /// pendingPayment (defensive fallback only). Far in the future so the
   /// countdown shows zeros immediately.
-  static final DateTime _kEpoch =
-      DateTime.utc(2099, 12, 31, 23, 59, 59);
+  static final DateTime _kEpoch = DateTime.utc(2099, 12, 31, 23, 59, 59);
 
   @override
   void dispose() {
@@ -55,21 +61,15 @@ class _TopUpPageState extends State<TopUpPage> {
     _countdownTimer?.cancel();
     _pollingTimer?.cancel();
 
-    _countdownTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) {
-        if (!mounted) return;
-        cubit.tickCountdown();
-      },
-    );
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      cubit.tickCountdown();
+    });
 
-    _pollingTimer = Timer.periodic(
-      const Duration(seconds: 3),
-      (_) {
-        if (!mounted) return;
-        cubit.pollPaymentStatus();
-      },
-    );
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted) return;
+      cubit.pollPaymentStatus();
+    });
   }
 
   void _stopTimers() {
@@ -119,16 +119,14 @@ class _TopUpPageState extends State<TopUpPage> {
         ),
         content: const Text(
           'Nếu bạn đã chuyển khoản, vui lòng liên hệ hỗ trợ để được hoàn tiền. Hệ thống không tự hoàn tiền tự động.',
-          style: TextStyle(
-            color: Color(0xFF475569),
-            fontSize: 13,
-            height: 1.4,
-          ),
+          style: TextStyle(color: Color(0xFF475569), fontSize: 13, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFF475569)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF475569),
+            ),
             child: const Text('Tiếp tục thanh toán'),
           ),
           FilledButton(
@@ -241,7 +239,8 @@ class _TopUpPageState extends State<TopUpPage> {
                     (state.topUpStep == TopUpStep.cancelled &&
                         state.pendingPayment == null))
                   _PayingView(
-                    pending: state.pendingPayment ??
+                    pending:
+                        state.pendingPayment ??
                         SepayInitResponse(
                           paymentId: '',
                           paymentUrl: '',
@@ -252,17 +251,14 @@ class _TopUpPageState extends State<TopUpPage> {
                     countdownSeconds: state.countdownSeconds,
                     isCancelling: state.isCancelling,
                     statusInt: _statusInt(state.paymentStatus),
-                    isCancelledStep:
-                        state.topUpStep == TopUpStep.cancelled,
+                    isCancelledStep: state.topUpStep == TopUpStep.cancelled,
                     onCancel: _confirmCancel,
                     onCopyCode: () => state.pendingPayment == null
                         ? _showSnackBar('Không có mã để sao chép')
-                        : _copySepayCode(
-                            state.pendingPayment!.sepayCode),
+                        : _copySepayCode(state.pendingPayment!.sepayCode),
                     onCopyAccount: _copyAccount,
-                    onCreateNew: () => context
-                        .read<WalletCubit>()
-                        .createNewTopUp(),
+                    onCreateNew: () =>
+                        context.read<WalletCubit>().createNewTopUp(),
                     formatCountdown: _formatCountdown,
                     bankName: _kBankName,
                     bankAccount: _kBankAccount,
@@ -311,13 +307,13 @@ class _StepperHeader extends StatelessWidget {
     final title = step == TopUpStep.paying || step == TopUpStep.cancelled
         ? 'Quét QR để thanh toán'
         : step == TopUpStep.success
-            ? 'Nạp tiền thành công'
-            : 'Chọn số tiền nạp';
+        ? 'Nạp tiền thành công'
+        : 'Chọn số tiền nạp';
     final subtitle = step == TopUpStep.paying || step == TopUpStep.cancelled
         ? 'Hoàn tất giao dịch bằng ứng dụng ngân hàng'
         : step == TopUpStep.success
-            ? 'Giao dịch đã được xác nhận'
-            : 'Chọn mệnh giá hoặc nhập số tiền';
+        ? 'Giao dịch đã được xác nhận'
+        : 'Chọn mệnh giá hoặc nhập số tiền';
     final iconBg = step == TopUpStep.success
         ? const Color(0x1A10B981)
         : const Color(0xFFFEF3C7);
@@ -350,9 +346,7 @@ class _StepperHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFF1F5F9)),
-              ),
+              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
             ),
             child: Row(
               children: [
@@ -416,7 +410,11 @@ class _StepDots extends StatelessWidget {
       children: [
         _Dot(active: true, color: activeColor),
         const SizedBox(width: 4),
-        Container(width: 16, height: 1, color: activeColor.withValues(alpha: 0.4)),
+        Container(
+          width: 16,
+          height: 1,
+          color: activeColor.withValues(alpha: 0.4),
+        ),
         const SizedBox(width: 4),
         reached
             ? Icon(Icons.check, size: 10, color: activeColor)
@@ -808,11 +806,7 @@ class _PresetChip extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 9,
-                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 9),
                 ),
                 const SizedBox(width: 6),
               ],
@@ -877,8 +871,8 @@ class _PayingView extends StatelessWidget {
     final effectiveStatus = isCancelledStep
         ? 3
         : expired
-            ? 4
-            : statusInt;
+        ? 4
+        : statusInt;
 
     return Column(
       children: [
@@ -955,9 +949,21 @@ class _PayingView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _Step(number: '1', text: 'Mở ứng dụng ngân hàng hoặc ví điện tử hỗ trợ VietQR.'),
-                    _Step(number: '2', text: 'Quét mã QR hoặc nhập chính xác nội dung chuyển khoản.'),
-                    _Step(number: '3', text: 'Hoàn tất thanh toán, hệ thống sẽ tự động xác nhận giao dịch.'),
+                    _Step(
+                      number: '1',
+                      text:
+                          'Mở ứng dụng ngân hàng hoặc ví điện tử hỗ trợ VietQR.',
+                    ),
+                    _Step(
+                      number: '2',
+                      text:
+                          'Quét mã QR hoặc nhập chính xác nội dung chuyển khoản.',
+                    ),
+                    _Step(
+                      number: '3',
+                      text:
+                          'Hoàn tất thanh toán, hệ thống sẽ tự động xác nhận giao dịch.',
+                    ),
                   ],
                 ),
               ),
@@ -1028,9 +1034,7 @@ class _PayingView extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0x33F97316),
-                      ),
+                      border: Border.all(color: const Color(0x33F97316)),
                     ),
                     child: Row(
                       children: [
@@ -1122,9 +1126,7 @@ class _PayingView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Color(0xFFF1F5F9)),
-                  ),
+                  border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
                 ),
                 child: Row(
                   children: [
@@ -1334,9 +1336,7 @@ class _ReceiverCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
             decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFF1F5F9)),
-              ),
+              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
             ),
             child: const Text(
               'Thông tin người nhận',
@@ -1432,11 +1432,7 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final Widget child;
   final bool last;
-  const _InfoRow({
-    required this.label,
-    required this.child,
-    this.last = false,
-  });
+  const _InfoRow({required this.label, required this.child, this.last = false});
 
   @override
   Widget build(BuildContext context) {
@@ -1445,19 +1441,14 @@ class _InfoRow extends StatelessWidget {
       decoration: BoxDecoration(
         border: last
             ? null
-            : const Border(
-                bottom: BorderSide(color: Color(0xFFF1F5F9)),
-              ),
+            : const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
       ),
       child: Row(
         children: [
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
             ),
           ),
           child,
@@ -1500,8 +1491,8 @@ class _CountdownRow extends StatelessWidget {
               isCompleted
                   ? 'Mã đã hoàn tất'
                   : isCancelled
-                      ? 'Giao dịch đã được huỷ'
-                      : 'Mã QR hết hạn sau',
+                  ? 'Giao dịch đã được huỷ'
+                  : 'Mã QR hết hạn sau',
               style: const TextStyle(
                 color: Color(0xFF64748B),
                 fontSize: 11,
@@ -1531,21 +1522,14 @@ class _CountdownRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
                 onTap: onCreateNew,
                 child: const Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.refresh,
-                        size: 12,
-                        color: Colors.white,
-                      ),
+                      Icon(Icons.refresh, size: 12, color: Colors.white),
                       SizedBox(width: 4),
                       Text(
-                        'Tạo mã mới',
+                        'Tạo Giao Dịch Mới',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 11,
@@ -1580,27 +1564,18 @@ class _StatusBanner extends StatelessWidget {
       return _Banner(
         bg: const Color(0x0A10B981),
         border: const Color(0x3310B981),
-        icon: const Icon(
-          Icons.check,
-          color: Colors.white,
-          size: 14,
-        ),
+        icon: const Icon(Icons.check, color: Colors.white, size: 14),
         iconBg: const Color(0xFF10B981),
         titleColor: const Color(0xFF059669),
         title: 'Thanh toán thành công',
-        subtitle:
-            'Giao dịch đã được xác nhận tự động.',
+        subtitle: 'Giao dịch đã được xác nhận tự động.',
       );
     }
     if (isCancelled) {
       return _Banner(
         bg: const Color(0x0F64748B),
         border: const Color(0x3364748B),
-        icon: const Icon(
-          Icons.block,
-          color: Colors.white,
-          size: 14,
-        ),
+        icon: const Icon(Icons.block, color: Colors.white, size: 14),
         iconBg: const Color(0xFF64748B),
         titleColor: const Color(0xFF475569),
         title: 'Giao dịch đã được huỷ',
@@ -1612,11 +1587,7 @@ class _StatusBanner extends StatelessWidget {
       return _Banner(
         bg: const Color(0x0FEF4444),
         border: const Color(0x33EF4444),
-        icon: const Icon(
-          Icons.close,
-          color: Colors.white,
-          size: 14,
-        ),
+        icon: const Icon(Icons.close, color: Colors.white, size: 14),
         iconBg: const Color(0xFFEF4444),
         titleColor: const Color(0xFFDC2626),
         title: 'Không thể xác nhận thanh toán',
@@ -1638,8 +1609,7 @@ class _StatusBanner extends StatelessWidget {
       iconBg: const Color(0xFFFEF3C7),
       titleColor: const Color(0xFF0F172A),
       title: 'Đang chờ thanh toán',
-      subtitle:
-          'Hệ thống sẽ tự động xác nhận sau khi nhận được giao dịch.',
+      subtitle: 'Hệ thống sẽ tự động xác nhận sau khi nhận được giao dịch.',
     );
   }
 }
@@ -1678,10 +1648,7 @@ class _Banner extends StatelessWidget {
           Container(
             width: 28,
             height: 28,
-            decoration: BoxDecoration(
-              color: iconBg,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
             alignment: Alignment.center,
             child: icon,
           ),
@@ -1735,11 +1702,8 @@ class _CancelButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final disabled = isCancelling ||
-        isCancelled ||
-        isCompleted ||
-        isFailed ||
-        expired;
+    final disabled =
+        isCancelling || isCancelled || isCompleted || isFailed || expired;
     return Column(
       children: [
         SizedBox(
@@ -1796,11 +1760,7 @@ class _CancelButton extends StatelessWidget {
         const Text(
           'Sau khi huỷ, nếu bạn đã chuyển khoản vui lòng liên hệ hỗ trợ để được hoàn tiền.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 10,
-            height: 1.4,
-          ),
+          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, height: 1.4),
         ),
       ],
     );
@@ -1862,11 +1822,7 @@ class _SuccessView extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              child: const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 28,
-              ),
+              child: const Icon(Icons.check, color: Colors.white, size: 28),
             ),
           ),
           const SizedBox(height: 16),
@@ -1882,10 +1838,7 @@ class _SuccessView extends StatelessWidget {
           const Text(
             'Giao dịch đã được xác nhận và cộng vào ví của bạn.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 13,
-            ),
+            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
           ),
           const SizedBox(height: 22),
           Container(
@@ -2008,7 +1961,9 @@ class _SuccessView extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -2127,11 +2082,7 @@ class _SuccessView extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 16,
-                          ),
+                          Icon(Icons.add, color: Colors.white, size: 16),
                           SizedBox(width: 6),
                           Text(
                             'Nạp thêm',
@@ -2199,9 +2150,7 @@ class _DetailRow extends StatelessWidget {
       decoration: BoxDecoration(
         border: last
             ? null
-            : const Border(
-                bottom: BorderSide(color: Color(0xFFF1F5F9)),
-              ),
+            : const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
       ),
       child: Row(
         children: [
@@ -2209,10 +2158,7 @@ class _DetailRow extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
             ),
           ),
           Expanded(
@@ -2258,11 +2204,7 @@ class _CancelledOnlyView extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Icon(
-              Icons.block,
-              color: Color(0xFF64748B),
-              size: 28,
-            ),
+            child: const Icon(Icons.block, color: Color(0xFF64748B), size: 28),
           ),
           const SizedBox(height: 14),
           const Text(
@@ -2276,7 +2218,7 @@ class _CancelledOnlyView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Bạn đã huỷ giao dịch nạp tiền này. Bấm "Tạo mã mới" để bắt đầu lại.',
+            'Bạn đã huỷ giao dịch nạp tiền này. Bấm "Tạo giao dịch mới" để bắt đầu lại.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Color(0xFF64748B),
@@ -2292,21 +2234,16 @@ class _CancelledOnlyView extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap: () =>
-                    context.read<WalletCubit>().createNewTopUp(),
+                onTap: () => context.read<WalletCubit>().createNewTopUp(),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 13),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.refresh,
-                        color: Colors.white,
-                        size: 16,
-                      ),
+                      Icon(Icons.refresh, color: Colors.white, size: 16),
                       SizedBox(width: 8),
                       Text(
-                        'Tạo mã mới',
+                        'Tạo Giao Dịch Mới',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,

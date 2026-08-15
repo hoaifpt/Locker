@@ -15,7 +15,7 @@ public record CreatePaymentCommand(Guid UserId, Guid BookingId, string Method) :
 public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand, PaymentDto?>
 {
     private readonly IPaymentRepository _paymentRepository;
-    private readonly IBookingRepository _bookingRepository;
+private readonly IBookingRepository _bookingRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly PaymentMapper _paymentMapper;
@@ -36,8 +36,13 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
 
     public async Task<PaymentDto?> Handle(CreatePaymentCommand request, CancellationToken cancellationToken)
     {
+        Console.WriteLine($"DEBUG: Đang xử lý thanh toán cho OrderId: {request.BookingId}");
         var order = await _orderRepository.GetByIdAsync(request.BookingId, cancellationToken);
-        if (order == null || order.UserId != request.UserId) return null;
+        if (order == null || order.UserId != request.UserId) 
+        {
+            Console.WriteLine($"DEBUG: Không tìm thấy đơn hàng hoặc người dùng không hợp lệ. OrderId: {request.BookingId}, UserId: {request.UserId}");
+            return null;
+        }
 
         var booking = new Booking
         {
@@ -50,6 +55,7 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
             Status = BookingStatus.Pending
         };
         await _bookingRepository.AddAsync(booking, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var payment = new Payment
         {

@@ -123,16 +123,19 @@ class WalletCubit extends Cubit<WalletState> {
       );
       if (response.success) {
         _stopCountdown();
+        // Stop realtime but KEEP pendingPayment in state so the page can
+        // render the cancelled overlay with the QR + bank info + a
+        // "Tạo mã mới" CTA — mirrors web pattern (the user explicitly
+        // cancelled this payment; we shouldn't pretend it never existed).
+        unawaited(_realtimeService.stop());
+        await _clearPersistedPending();
         emit(
           state.copyWith(
             isCancelling: false,
             paymentStatus: PaymentStatus.cancelled,
-            topUpStep: TopUpStep.idle,
-            pendingPayment: null,
+            topUpStep: TopUpStep.cancelled,
           ),
         );
-        unawaited(_realtimeService.stop());
-        await _clearPersistedPending();
       } else {
         emit(
           state.copyWith(
@@ -152,6 +155,23 @@ class WalletCubit extends Cubit<WalletState> {
         ),
       );
     }
+  }
+
+  /// Resets the top-up wizard back to the amount-selection step, used by
+  /// the "Tạo mã mới" CTA in the cancelled / expired / failed overlay.
+  /// Mirrors web `handleCreateNew` in WalletPage.tsx.
+  void createNewTopUp() {
+    _stopCountdown();
+    unawaited(_realtimeService.stop());
+    emit(
+      state.copyWith(
+        topUpStep: TopUpStep.selectAmount,
+        pendingPayment: null,
+        paymentStatus: PaymentStatus.pending,
+        countdownSeconds: 0,
+        clearPendingPayment: true,
+      ),
+    );
   }
 
   /// Polls the current payment status via REST as a fallback when the

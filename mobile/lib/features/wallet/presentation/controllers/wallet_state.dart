@@ -4,7 +4,18 @@ import '../../domain/entities/wallet_overview.dart';
 
 /// High-level phase of the top-up wizard. Mirrors web `TopupStep` in
 /// `web/src/features/wallet/pages/WalletPage.tsx`.
-enum TopUpStep { idle, selectAmount, paying, success }
+enum TopUpStep {
+  idle,
+  selectAmount,
+  paying,
+  success,
+
+  /// Distinct step shown after the user explicitly cancels so the UI can
+  /// keep the QR + bank info visible with a "Đã huỷ" badge and a
+  /// "Tạo mã mới" CTA — matches the web `expired`/`failed` overlay pattern
+  /// in WalletPage.tsx (lines 908-1007).
+  cancelled,
+}
 
 class WalletState {
   final bool isLoading;

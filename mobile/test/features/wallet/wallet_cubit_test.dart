@@ -277,6 +277,10 @@ void main() {
 
       expect(repo.cancelCalls, ['pay-6']);
       expect(cubit.state.paymentStatus, PaymentStatus.cancelled);
+      // After cancel, the wizard stays on the cancelled step so the user
+      // can see the QR + "Tạo mã mới" CTA — mirrors web pattern.
+      expect(cubit.state.topUpStep, TopUpStep.cancelled);
+      expect(cubit.state.pendingPayment?.paymentId, 'pay-6');
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('locker:pending-topup'), isNull);
     });

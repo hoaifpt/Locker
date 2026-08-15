@@ -17,7 +17,7 @@ export default function PaymentPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { show: showToast } = useToast();
-  
+
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMethod, setSelectedMethod] = useState('vnpay');
@@ -47,23 +47,28 @@ export default function PaymentPage() {
   const handlePayment = async () => {
     setPaying(true);
     const token = localStorage.getItem('token');
-    
+
     try {
       // 1. Tạo thanh toán
       const payRes = await fetch('https://api.hoaitran.online/api/payments', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-            orderId: orderId,
-            paymentMethod: selectedMethod 
+        body: JSON.stringify({
+          bookingId: orderId, // Backend mong đợi bookingId
+          method: selectedMethod // Backend mong đợi method
         })
       });
-      
+
+      if (!payRes.ok) {
+        const errData = await payRes.json();
+        throw new Error(errData.title || 'Không thể tạo yêu cầu thanh toán');
+      }
+
       const paymentData = await payRes.json();
-      
+
       // 2. Hoàn tất thanh toán
       const completeRes = await fetch(`https://api.hoaitran.online/api/payments/${paymentData.id}/complete`, {
         method: 'POST',
@@ -73,7 +78,7 @@ export default function PaymentPage() {
       if (!completeRes.ok) throw new Error('Thanh toán thất bại');
 
       showToast('✓ Thanh toán thành công!', 'success');
-      navigate('/bookings'); 
+      navigate('/bookings');
     } catch (err: any) {
       showToast(err.message || 'Thanh toán thất bại', 'error');
     } finally {
@@ -128,7 +133,7 @@ export default function PaymentPage() {
             </div>
 
             <button onClick={handleMainAction} disabled={paying} className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-orange-600">
-              {paying ? <Loader2 className="animate-spin" size={16}/> : (selectedMethod === 'wallet' ? 'Xác nhận thanh toán ví' : 'Hiện mã thanh toán')}
+              {paying ? <Loader2 className="animate-spin" size={16} /> : (selectedMethod === 'wallet' ? 'Xác nhận thanh toán ví' : 'Hiện mã thanh toán')}
             </button>
           </>
         ) : (

@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Package, MapPin, Clock, ArrowLeft, ChevronRight, Phone, MessageSquare } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Package, MapPin, ArrowLeft, ChevronRight, Phone, MessageSquare } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
-import { getAvailableLockers, getLockerById, SEED_PACKAGES, SeedLocker, SeedPackage } from '../../../mocks/seed';
-import { API_ENDPOINTS } from '../../../constants/api-endpoints';
 import { useToast } from '../../../context/ToastContext';
-
 
 export default function CreateOrderPage() {
   const navigate = useNavigate();
@@ -16,10 +13,9 @@ export default function CreateOrderPage() {
   const { show: showToast } = useToast();
 
   const [step, setStep] = useState(1);
-  const [lockers, setLockers] = useState<SeedLocker[]>([]);
-  const [packages, setPackages] = useState<SeedPackage[]>([]);
+  const [lockers, setLockers] = useState<any[]>([]); // Dữ liệu thật từ API
+  const [packages, setPackages] = useState<any[]>([]); // Dữ liệu thật từ API
 
-  // Form State
   const [selectedLocker, setSelectedLocker] = useState(defaultLockerId);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [selectedPackage, setSelectedPackage] = useState('');
@@ -28,12 +24,30 @@ export default function CreateOrderPage() {
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // LẤY DỮ LIỆU THẬT TỪ API
   useEffect(() => {
-    setLockers(getAvailableLockers());
-    setPackages(SEED_PACKAGES.filter(p => p.isActive));
-  }, []);
+    const initData = async () => {
+      try {
+        const [lockerRes, pkgRes] = await Promise.all([
+          fetch('https://api.hoaitran.online/api/lockers'),
+          fetch('https://api.hoaitran.online/api/packages')
+        ]);
 
-  const currentLocker = lockers.find(l => l.id === selectedLocker) ?? getLockerById(selectedLocker);
+        const lockerData = await lockerRes.json();
+        const pkgData = await pkgRes.json();
+
+        // Cập nhật state với dữ liệu từ API
+        setLockers(lockerData);
+        setPackages(pkgData.filter((p: any) => p.isActive));
+      } catch (err) {
+        console.error("Lỗi tải dữ liệu:", err);
+        showToast("Không thể tải dữ liệu từ server", "error");
+      }
+    };
+    initData();
+  }, [showToast]);
+
+  const currentLocker = lockers.find(l => l.id === selectedLocker);
   const currentPackage = packages.find(p => p.id === selectedPackage);
 
   const baseRate = currentPackage?.pricePerHour ?? 0;
@@ -50,22 +64,11 @@ export default function CreateOrderPage() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
-
-    const token = localStorage.getItem('token');
-
     try {
-      // SỬA Ở ĐÂY: Dùng defaultLockerId (lấy từ URL) làm lockerId thực tế.
-      // defaultLockerId được lấy từ searchParams, đó chính là Guid chuẩn.
-      const finalLockerId = defaultLockerId || selectedLocker;
-
-      if (!finalLockerId || selectedSlot === null || !selectedPackage) {
-        throw new Error("Vui lòng kiểm tra lại các trường bắt buộc");
-      }
-
       const payload = {
-        lockerId: finalLockerId, // Sử dụng Guid chuẩn từ URL
+        lockerId: selectedLocker, // Guid thật từ API
         slotIndex: Number(selectedSlot),
-        packageId: selectedPackage,
+        packageId: selectedPackage, // Guid thật từ API
         mobileNumber: mobile,
         checkInTime: new Date().toISOString(),
         durationHours: Number(durationHours),
@@ -73,30 +76,25 @@ export default function CreateOrderPage() {
         notes: notes || ""
       };
 
-      console.log("Dữ liệu gửi lên API:", JSON.stringify(payload));
-
       const response = await fetch('https://api.hoaitran.online/api/orders/reserve', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorDetails = await response.json();
-        console.error("Lỗi từ server:", errorDetails);
-        throw new Error(errorDetails.title || 'Đặt tủ thất bại');
+        const err = await response.json();
+        throw new Error(err.title || 'Đặt tủ thất bại');
       }
 
       const result = await response.json();
       showToast('✓ Đã tạo đơn hàng thành công!', 'success');
       navigate(`/payment/${result.orderId || `ord-${Date.now()}`}`);
-
     } catch (error: any) {
-      console.error(error);
-      showToast(error.message || 'Có lỗi xảy ra khi đặt tủ', 'error');
+      showToast(error.message, 'error');
     } finally {
       setSubmitting(false);
     }
@@ -155,8 +153,8 @@ export default function CreateOrderPage() {
             <div className="space-y-4">
               <h2 className="font-bold text-gray-900">Bước 2: Chọn ô tủ tại {currentLocker.name}</h2>
               <div className="grid grid-cols-4 gap-2">
-                {currentLocker.slots.map(slot => {
-                  const isAvailable = slot.status === 'Available';
+                {currentLocker.slots.map((slot: any) => { // <--- Thêm : any vào đây
+                  const isAvailable = slot.status === 0;
                   return (
                     <button key={slot.index} disabled={!isAvailable} onClick={() => setSelectedSlot(slot.index)}
                       className={`flex flex-col items-center rounded-xl border-2 py-3 text-xs font-semibold transition ${selectedSlot === slot.index ? 'border-orange-500 bg-orange-50 text-orange-600' : isAvailable ? 'border-gray-200 hover:border-orange-300' : 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'}`}>

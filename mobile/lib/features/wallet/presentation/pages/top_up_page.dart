@@ -5,7 +5,6 @@ import '../controllers/wallet_cubit.dart';
 import '../controllers/wallet_state.dart';
 import '../../../payment_failed/domain/entities/payment_failed_info.dart';
 import '../../../payment_success/domain/entities/payment_success_info.dart';
-
 class TopUpPage extends StatefulWidget {
   const TopUpPage({super.key});
 
@@ -48,12 +47,14 @@ class _TopUpPageState extends State<TopUpPage> {
     }
 
     final cubit = context.read<WalletCubit>();
-    final url = await cubit.topUp(
-      amount,
-    ); // Note: Should check if WalletCubit.topUp needs updating to call initSePayTopUp
+    // Returns SepayInitResponse? (paymentId, paymentUrl, amount, sepayCode, expiresAt)
+    // so callers can poll status, copy transfer content, and show countdown.
+    final sepayResponse = await cubit.topUp(amount);
 
-    if (url != null) {
-      final uri = Uri.parse(url);
+    if (!mounted) return;
+
+    if (sepayResponse != null) {
+      final uri = Uri.parse(sepayResponse.paymentUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
 
@@ -63,7 +64,7 @@ class _TopUpPageState extends State<TopUpPage> {
             '/payment-success',
             arguments: PaymentSuccessRequest(
               paidAmount: amount.toInt(),
-              orderCode: 'TOPUP-${DateTime.now().millisecondsSinceEpoch}',
+              orderCode: sepayResponse.sepayCode,
             ),
           );
         }
@@ -82,22 +83,19 @@ class _TopUpPageState extends State<TopUpPage> {
         }
       }
     } else {
-      final currentState = context.read<WalletCubit>().state;
       final errorMessage =
-          currentState.errorMessage ?? 'Khởi tạo thanh toán thất bại';
+          cubit.state.errorMessage ?? 'Khởi tạo thanh toán thất bại';
 
-      if (mounted) {
-        _showSnackBar(errorMessage);
-        Navigator.pushNamed(
-          context,
-          '/payment-failed',
-          arguments: PaymentFailedRequest(
-            amount: amount.toInt(),
-            paymentMethod: _selectedPaymentMethod,
-            reason: errorMessage,
-          ),
-        );
-      }
+      _showSnackBar(errorMessage);
+      Navigator.pushNamed(
+        context,
+        '/payment-failed',
+        arguments: PaymentFailedRequest(
+          amount: amount.toInt(),
+          paymentMethod: _selectedPaymentMethod,
+          reason: errorMessage,
+        ),
+      );
     }
   }
 

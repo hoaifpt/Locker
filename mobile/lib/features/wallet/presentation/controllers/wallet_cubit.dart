@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../domain/entities/sepay_init_response.dart';
 import '../../domain/repositories/i_wallet_repository.dart';
 import '../../domain/usecases/get_wallet_overview_usecase.dart';
 import 'wallet_state.dart';
@@ -31,12 +32,15 @@ class WalletCubit extends Cubit<WalletState> {
     }
   }
 
-  Future<String?> topUp(double amount) async {
+  /// Starts a SePay top-up and returns the full backend payload
+  /// (paymentId, paymentUrl, amount, sepayCode, expiresAt) so callers
+  /// can poll status, show a countdown, and copy the transfer content.
+  Future<SepayInitResponse?> topUp(double amount) async {
     try {
       emit(state.copyWith(isLoading: true, clearError: true));
-      final url = await _walletRepository.initSePayTopUp(amount);
+      final response = await _walletRepository.initSePayTopUp(amount);
       emit(state.copyWith(isLoading: false));
-      return url;
+      return response;
     } catch (e) {
       emit(
         state.copyWith(

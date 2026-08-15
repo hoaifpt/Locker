@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/exceptions/app_exception.dart';
 import '../../../core/constants/api_endpoints.dart';
-import '../../../core/constants/app_constants.dart';
+import '../domain/entities/sepay_init_response.dart';
 import '../domain/entities/wallet_overview.dart';
 import '../domain/entities/wallet_transaction.dart';
 import '../domain/repositories/i_wallet_repository.dart';
@@ -12,7 +12,7 @@ import 'models/wallet_transaction_model.dart';
 class WalletRepository implements IWalletRepository {
   final ApiClient _apiClient = ApiClient();
 
-  String _url(String endpoint) => '${AppConstants.apiBaseUrl}$endpoint';
+  String _url(String endpoint) => endpoint;
 
   @override
   Future<WalletOverview> getWalletOverview() async {
@@ -71,7 +71,7 @@ class WalletRepository implements IWalletRepository {
   Future<void> transfer(String receiverId, double amount) async {
     try {
       await _apiClient.client.post(
-        _url(AppConstants.apiBaseUrl + ApiEndpoints.walletTransfer),
+        _url(ApiEndpoints.walletTransfer),
         data: {'receiverId': receiverId, 'amount': amount},
       );
     } catch (e) {
@@ -80,7 +80,7 @@ class WalletRepository implements IWalletRepository {
   }
 
   @override
-  Future<String> initSePayTopUp(double amount) async {
+  Future<SepayInitResponse> initSePayTopUp(double amount) async {
     try {
       final response = await _apiClient.client.post(
         _url(ApiEndpoints.walletTopUpSePayInit),
@@ -88,13 +88,7 @@ class WalletRepository implements IWalletRepository {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        // Backend trả về trường 'checkoutUrl' hoặc 'paymentUrl'
-        final String? url = response.data['checkoutUrl'] ?? response.data['paymentUrl'];
-
-        if (url != null && url.isNotEmpty) {
-          return url;
-        }
-        throw AppException('Hệ thống chưa tạo được liên kết thanh toán. Vui lòng thử lại.');
+        return SepayInitResponse.fromJson(response.data as Map<String, dynamic>);
       }
       throw NetworkException('Lỗi kết nối thanh toán (Mã: ${response.statusCode})');
     } on DioException catch (e) {

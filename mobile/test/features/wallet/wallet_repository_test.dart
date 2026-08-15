@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:locker_mobile/core/network/api_client.dart';
 import 'package:locker_mobile/features/wallet/data/wallet_repository.dart';
+import 'package:locker_mobile/features/wallet/domain/entities/payment_status.dart';
 
 /// Test-only adapter that wraps ApiClient + Dio with an HTTP mock interceptor
 /// so we can assert exact request paths/URLs without touching the network.
@@ -97,6 +98,55 @@ void main() {
         capturedRequests.map((r) => r.path).toList(),
         ['/wallet/top-up/sepay/init', '/wallet/top-up/sepay/init'],
       );
+    });
+  });
+
+  group('WalletRepository.checkPaymentStatus', () {
+    test('GETs /payments/{id} and parses int status', () async {
+      // Replace mock to respond with /payments payload
+      final api = ApiClient();
+      api.client.httpClientAdapter = _MockAdapter((options) async {
+        capturedRequests.add(options);
+        return _okJson({
+          'id': 'pay-uuid-123',
+          'amount': 200000,
+          'status': 1, // Completed
+          'method': 'sepay',
+          'paidAt': '2026-08-15T10:05:00Z',
+        });
+      });
+
+      final response = await repository.checkPaymentStatus('pay-uuid-123');
+
+      expect(capturedRequests, hasLength(1));
+      expect(capturedRequests.single.method, 'GET');
+      expect(capturedRequests.single.path, '/payments/pay-uuid-123');
+      expect(response.status, PaymentStatus.completed);
+      expect(response.amount, 200000);
+    });
+  });
+
+  group('WalletRepository.cancelSepayTopUp', () {
+    test('POSTs /wallet/top-up/sepay/cancel with paymentId', () async {
+      final api = ApiClient();
+      api.client.httpClientAdapter = _MockAdapter((options) async {
+        capturedRequests.add(options);
+        return _okJson({
+          'success': true,
+          'message': 'Top-up cancelled.',
+          'newStatus': 'Cancelled',
+          'paymentId': 'pay-uuid-456',
+        });
+      });
+
+      final response = await repository.cancelSepayTopUp('pay-uuid-456');
+
+      expect(capturedRequests, hasLength(1));
+      expect(capturedRequests.single.method, 'POST');
+      expect(capturedRequests.single.path, '/wallet/top-up/sepay/cancel');
+      expect(capturedRequests.single.data, {'paymentId': 'pay-uuid-456'});
+      expect(response.success, isTrue);
+      expect(response.newStatus, 'Cancelled');
     });
   });
 

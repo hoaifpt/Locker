@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/exceptions/app_exception.dart';
 import '../../../core/constants/api_endpoints.dart';
+import '../domain/entities/payment_status.dart';
+import '../domain/entities/sepay_cancel_response.dart';
 import '../domain/entities/sepay_init_response.dart';
 import '../domain/entities/wallet_overview.dart';
 import '../domain/entities/wallet_transaction.dart';
@@ -95,6 +97,51 @@ class WalletRepository implements IWalletRepository {
       throw AppException('Lỗi mạng: ${e.message}');
     } catch (e) {
       throw AppException('Không thể bắt đầu thanh toán: $e');
+    }
+  }
+
+  @override
+  Future<PaymentStatusResponse> checkPaymentStatus(String paymentId) async {
+    try {
+      final response = await _apiClient.client.get(
+        _url(ApiEndpoints.paymentById(paymentId)),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return PaymentStatusResponse.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+      }
+      throw NetworkException(
+        'Failed to check payment status (code: ${response.statusCode})',
+      );
+    } on DioException catch (e) {
+      throw AppException('Lỗi mạng khi kiểm tra thanh toán: ${e.message}');
+    } catch (e) {
+      throw AppException('Không thể kiểm tra trạng thái thanh toán: $e');
+    }
+  }
+
+  @override
+  Future<SepayCancelResponse> cancelSepayTopUp(String paymentId) async {
+    try {
+      final response = await _apiClient.client.post(
+        _url(ApiEndpoints.walletTopUpSePayCancel),
+        data: {'paymentId': paymentId},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return SepayCancelResponse.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+      }
+      throw NetworkException(
+        'Failed to cancel top-up (code: ${response.statusCode})',
+      );
+    } on DioException catch (e) {
+      throw AppException('Lỗi mạng khi huỷ thanh toán: ${e.message}');
+    } catch (e) {
+      throw AppException('Không thể huỷ thanh toán: $e');
     }
   }
 }

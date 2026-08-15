@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/network/api_client.dart';
+import '../../data/signalr_payment_realtime_service.dart';
 import '../../data/wallet_repository.dart';
 // ...existing code...
 import '../../domain/entities/wallet_transaction.dart';
+import '../../domain/services/payment_realtime_service.dart';
 import '../../domain/usecases/get_wallet_overview_usecase.dart';
 import '../controllers/wallet_cubit.dart';
 import '../controllers/wallet_state.dart';
 import '../widgets/index.dart';
+
+/// Builds the realtime service used by the wallet cubit.
+///
+/// Looks up the JWT from the shared ApiClient (the same one WalletRepository
+/// uses), then constructs the hub URL by stripping `/api` from apiBaseUrl
+/// and appending `/hubs/notifications` (matches backend Program.cs).
+IPaymentRealtimeService _buildRealtimeService(ApiClient apiClient) {
+  final apiBase = AppConstants.apiBaseUrl;
+  // Strip trailing /api or /, then append `/hubs/notifications`.
+  String base = apiBase;
+  if (base.endsWith('/api')) base = base.substring(0, base.length - 4);
+  if (base.endsWith('/')) base = base.substring(0, base.length - 1);
+  return SignalRPaymentRealtimeService(
+    hubUrl: '$base/hubs/notifications',
+    tokenProvider: () async => apiClient.accessToken,
+  );
+}
 
 class WalletPage extends StatelessWidget {
   const WalletPage({super.key});
@@ -15,12 +36,15 @@ class WalletPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => WalletCubit(
-        getWalletOverview: GetWalletOverviewUseCase(
-          repository: WalletRepository(),
-        ),
-        walletRepository: WalletRepository(),
-      )..load(),
+      create: (_) {
+        final api = ApiClient();
+        final repo = WalletRepository();
+        return WalletCubit(
+          getWalletOverview: GetWalletOverviewUseCase(repository: repo),
+          walletRepository: repo,
+          realtimeService: _buildRealtimeService(api),
+        )..load()..restorePending();
+      },
       child: const _WalletView(),
     );
   }

@@ -421,8 +421,8 @@ class _StepDots extends StatelessWidget {
             : Container(
                 width: 6,
                 height: 6,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFCBD5E1),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -630,19 +630,19 @@ class _AmountForm extends StatelessWidget {
               if (value.text.isEmpty || amount >= minAmount) {
                 return const SizedBox(height: 0);
               }
-              return Padding(
-                padding: const EdgeInsets.only(top: 8),
+              return const Padding(
+                padding: EdgeInsets.only(top: 8),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
                       color: Color(0xFFEF4444),
                       size: 13,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
                       'Số tiền tối thiểu là 10.000 ₫',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Color(0xFFEF4444),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -936,10 +936,10 @@ class _PayingView extends StatelessWidget {
                   color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Column(
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Hướng dẫn thanh toán',
                       style: TextStyle(
                         color: Color(0xFF64748B),
@@ -948,7 +948,7 @@ class _PayingView extends StatelessWidget {
                         letterSpacing: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     _Step(
                       number: '1',
                       text:
@@ -1061,9 +1061,9 @@ class _PayingView extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.content_copy,
                                 size: 13,
@@ -1412,6 +1412,7 @@ class _ReceiverCard extends StatelessWidget {
           ),
           _InfoRow(
             label: 'Số tiền',
+            last: true,
             child: Text(
               formatVnd(amount),
               style: const TextStyle(
@@ -1420,7 +1421,6 @@ class _ReceiverCard extends StatelessWidget {
                 fontWeight: FontWeight.w800,
               ),
             ),
-            last: true,
           ),
         ],
       ),
@@ -1561,44 +1561,44 @@ class _StatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isCompleted) {
-      return _Banner(
-        bg: const Color(0x0A10B981),
-        border: const Color(0x3310B981),
-        icon: const Icon(Icons.check, color: Colors.white, size: 14),
-        iconBg: const Color(0xFF10B981),
-        titleColor: const Color(0xFF059669),
+      return const _Banner(
+        bg: Color(0x0A10B981),
+        border: Color(0x3310B981),
+        icon: Icon(Icons.check, color: Colors.white, size: 14),
+        iconBg: Color(0xFF10B981),
+        titleColor: Color(0xFF059669),
         title: 'Thanh toán thành công',
         subtitle: 'Giao dịch đã được xác nhận tự động.',
       );
     }
     if (isCancelled) {
-      return _Banner(
-        bg: const Color(0x0F64748B),
-        border: const Color(0x3364748B),
-        icon: const Icon(Icons.block, color: Colors.white, size: 14),
-        iconBg: const Color(0xFF64748B),
-        titleColor: const Color(0xFF475569),
+      return const _Banner(
+        bg: Color(0x0F64748B),
+        border: Color(0x3364748B),
+        icon: Icon(Icons.block, color: Colors.white, size: 14),
+        iconBg: Color(0xFF64748B),
+        titleColor: Color(0xFF475569),
         title: 'Giao dịch đã được huỷ',
         subtitle:
             'Nếu bạn đã chuyển khoản, vui lòng liên hệ hỗ trợ để được hoàn tiền.',
       );
     }
     if (isFailed) {
-      return _Banner(
-        bg: const Color(0x0FEF4444),
-        border: const Color(0x33EF4444),
-        icon: const Icon(Icons.close, color: Colors.white, size: 14),
-        iconBg: const Color(0xFFEF4444),
-        titleColor: const Color(0xFFDC2626),
+      return const _Banner(
+        bg: Color(0x0FEF4444),
+        border: Color(0x33EF4444),
+        icon: Icon(Icons.close, color: Colors.white, size: 14),
+        iconBg: Color(0xFFEF4444),
+        titleColor: Color(0xFFDC2626),
         title: 'Không thể xác nhận thanh toán',
         subtitle:
             'Giao dịch chưa được hoàn tất. Vui lòng kiểm tra lại hoặc thử lại.',
       );
     }
-    return _Banner(
+    return const _Banner(
       bg: Colors.white,
-      border: const Color(0xFFE2E8F0),
-      icon: const SizedBox(
+      border: Color(0xFFE2E8F0),
+      icon: SizedBox(
         width: 14,
         height: 14,
         child: CircularProgressIndicator(
@@ -1606,8 +1606,8 @@ class _StatusBanner extends StatelessWidget {
           strokeWidth: 2,
         ),
       ),
-      iconBg: const Color(0xFFFEF3C7),
-      titleColor: const Color(0xFF0F172A),
+      iconBg: Color(0xFFFEF3C7),
+      titleColor: Color(0xFF0F172A),
       title: 'Đang chờ thanh toán',
       subtitle: 'Hệ thống sẽ tự động xác nhận sau khi nhận được giao dịch.',
     );
@@ -1809,8 +1809,8 @@ class _SuccessView extends StatelessWidget {
           Container(
             width: 64,
             height: 64,
-            decoration: BoxDecoration(
-              color: const Color(0x1A10B981),
+            decoration: const BoxDecoration(
+              color: Color(0x1A10B981),
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -2026,6 +2026,7 @@ class _SuccessView extends StatelessWidget {
                 ),
                 _DetailRow(
                   label: 'Trạng thái',
+                  last: true,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -2062,7 +2063,6 @@ class _SuccessView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  last: true,
                 ),
               ],
             ),

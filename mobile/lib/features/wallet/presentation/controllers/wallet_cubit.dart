@@ -32,8 +32,17 @@ class WalletCubit extends Cubit<WalletState> {
   Future<void> load() async {
     emit(state.copyWith(isLoading: true, clearError: true));
     try {
+      // Backend /wallet/overview only returns balance + a count, not the
+      // list of transactions. Fetch the list in parallel and merge it
+      // into the overview so the UI's transaction section has data to
+      // show.
       final overview = await _getWalletOverview();
-      emit(state.copyWith(isLoading: false, overview: overview));
+      final txs = await _walletRepository.getTransactions();
+      final enriched = overview.copyWith(
+        transactions: txs,
+        recentTransactionsCount: txs.length,
+      );
+      emit(state.copyWith(isLoading: false, overview: enriched));
     } catch (e) {
       emit(
         state.copyWith(
@@ -253,7 +262,15 @@ class WalletCubit extends Cubit<WalletState> {
   Future<void> _refreshOverview() async {
     try {
       final overview = await _getWalletOverview();
-      emit(state.copyWith(overview: overview));
+      final txs = await _walletRepository.getTransactions();
+      emit(
+        state.copyWith(
+          overview: overview.copyWith(
+            transactions: txs,
+            recentTransactionsCount: txs.length,
+          ),
+        ),
+      );
     } catch (_) {
       // Silent — UI still shows the success screen.
     }

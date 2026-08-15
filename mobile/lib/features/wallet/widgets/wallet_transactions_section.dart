@@ -56,10 +56,10 @@ class _WalletTransactionsSectionState extends State<WalletTransactionsSection> {
           children: [
             Row(
               children: [
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Lịch sử giao dịch',
                         style: TextStyle(

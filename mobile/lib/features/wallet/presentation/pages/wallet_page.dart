@@ -101,26 +101,24 @@ class _WalletViewState extends State<_WalletView> {
         return Scaffold(
           backgroundColor: const Color(0xFFF7F7F8),
           body: SafeArea(
-            child: Stack(
-              children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 128),
-                  child: Column(
-                    children: [
-                      WalletHeader(
-                        onBack: () {
-                          if (Navigator.of(context).canPop()) {
-                            Navigator.of(context).pop();
-                          } else {
-                            Navigator.of(context)
-                                .pushNamedAndRemoveUntil('/home', (_) => false);
-                          }
-                        },
-                        onMore: () {},
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                        child: Column(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Column(
+                children: [
+                  WalletHeader(
+                    onBack: () {
+                      if (Navigator.of(context).canPop()) {
+                        Navigator.of(context).pop();
+                      } else {
+                        Navigator.of(context)
+                            .pushNamedAndRemoveUntil('/home', (_) => false);
+                      }
+                    },
+                    onMore: () {},
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Header eyebrow
@@ -181,14 +179,6 @@ class _WalletViewState extends State<_WalletView> {
                       ),
                     ],
                   ),
-                ),
-                const Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: WalletBottomNavBar(),
-                ),
-              ],
             ),
           ),
         );

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../features/auth/presentation/controllers/auth_cubit.dart';
+import '../../../../shared/extensions/context_extensions.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 
@@ -108,6 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showLogoutConfirmation(BuildContext context) {
+    final authCubit = context.read<AuthCubit>();
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -120,10 +124,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('Hủy'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
+              // Đóng dialog trước để UX không kẹt.
               Navigator.pop(dialogContext);
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil('/login', (route) => false);
+              // Yêu cầu AuthCubit xóa token + emit AuthUnauthenticated.
+              // AuthGate sẽ tự swap sang LoginPage — KHÔNG pushNamedAndRemoveUntil
+              // '/login' thủ công vì:
+              //   1. AuthGate là single source of truth (line 167 main.dart),
+              //   2. Nếu vẫn còn token thì gate vẫn render HomePage đè lên,
+              //   3. Trước đây chỉ navigate UI → backend session còn → các
+              //      API call sau đó (refresh, profile, ...) trả 401, alert
+              //      "phiên đăng nhập hết hạn" và đứng ở loading mãi.
+              try {
+                await authCubit.logout();
+              } catch (e) {
+                if (!context.mounted) return;
+                await context.showAlertError(e, title: 'Đăng xuất thất bại');
+              }
             },
             child: const Text('Đăng xuất'),
           ),

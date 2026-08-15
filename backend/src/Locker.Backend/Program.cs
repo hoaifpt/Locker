@@ -24,18 +24,16 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.Configure<AppSettings>(
     builder.Configuration.GetSection("AppSettings"));
-Console.WriteLine("========== APP SETTINGS ==========");
-Console.WriteLine($"BaseUrl: {appSettings?.BaseUrl}");
-Console.WriteLine($"FrontendUrl: {appSettings?.FrontendUrl}");
-Console.WriteLine("==================================");
+
 
 Console.WriteLine("========== ENV ==========");
 Console.WriteLine(builder.Environment.EnvironmentName);
 Console.WriteLine("=========================");
-var builder = WebApplication.CreateBuilder(args);
 
 
 var envFile = Path.Combine(builder.Environment.ContentRootPath, ".env");

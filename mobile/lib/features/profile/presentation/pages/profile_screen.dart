@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 
@@ -27,7 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F7F6),
+      backgroundColor: AppColors.settingsBackground,
       body: SafeArea(
         bottom: false,
         child: FutureBuilder<UserProfile>(
@@ -35,7 +36,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
               return const Center(
-                child: CircularProgressIndicator(color: Color(0xFFEE8C2B)),
+                child: CircularProgressIndicator(
+                  color: AppColors.settingsAccent,
+                ),
               );
             }
 
@@ -51,46 +54,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
               return const _ProfileEmptyState();
             }
 
-            return SingleChildScrollView(
+            return CustomScrollView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _ProfileTopBar(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: SettingsTopBar(
                     title: 'Cài Đặt Tài Khoản',
+                    icon: Icons.person_rounded,
                     onBack: () => Navigator.maybePop(context),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _ProfileHero(profile: profile),
                         const SizedBox(height: 24),
                         const _ProfileMenuSection(),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
                         _LogoutButton(
                           onTap: () => _showLogoutConfirmation(context),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         const Center(
                           child: Text(
                             'App Version 2.4.0 (Build 102)',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Color(0xFF94A3B8),
+                              color: AppColors.settingsTextMuted,
                               fontSize: 12,
-                              fontFamily: 'Plus Jakarta Sans',
                               fontWeight: FontWeight.w400,
-                              height: 1.33,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           },
         ),
@@ -108,6 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Đăng xuất'),
         content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
         actions: [
@@ -136,45 +140,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class _ProfileTopBar extends StatelessWidget {
-  final String title;
-  final VoidCallback onBack;
-
-  const _ProfileTopBar({required this.title, required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      decoration: const BoxDecoration(
-        color: Color(0xE5F8F7F6),
-        border: Border(
-          bottom: BorderSide(color: Color(0x19EE8C2B), width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          _IconCircleButton(onTap: onBack, icon: Icons.arrow_back_ios_new),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 18,
-                fontFamily: 'Plus Jakarta Sans',
-                fontWeight: FontWeight.w700,
-                height: 1.56,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ProfileHero extends StatelessWidget {
   final UserProfile profile;
 
@@ -182,60 +147,86 @@ class _ProfileHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 232,
-      child: Stack(
-        alignment: Alignment.topCenter,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: settingsCardDecoration(),
+      child: Row(
         children: [
-          Positioned(
-            top: 0,
-            child: _AvatarRing(imageUrl: profile.avatarUrl),
-          ),
-          Positioned(
-            top: 144,
-            child: Text(
-              profile.name,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 24,
-                fontFamily: 'Plus Jakarta Sans',
-                fontWeight: FontWeight.w700,
-                height: 1.33,
-              ),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.settingsAccentSoft,
+              borderRadius: BorderRadius.circular(9999),
             ),
+            clipBehavior: Clip.antiAlias,
+            child: profile.avatarUrl.isNotEmpty
+                ? Image.network(
+                    profile.avatarUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const _AvatarFallback(),
+                  )
+                : const _AvatarFallback(),
           ),
-          Positioned(
-            top: 180,
-            child: _MembershipChip(label: profile.membershipTier),
-          ),
-          Positioned(
-            top: 212,
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  const TextSpan(
-                    text: 'Points: ',
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 14,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w500,
-                      height: 1.43,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        profile.name.isNotEmpty
+                            ? profile.name
+                            : 'Người dùng',
+                        style: const TextStyle(
+                          color: AppColors.settingsTextPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    const SizedBox(width: 8),
+                    _MembershipChip(label: profile.membershipTier),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  profile.email,
+                  style: const TextStyle(
+                    color: AppColors.settingsTextSecondary,
+                    fontSize: 13,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text.rich(
                   TextSpan(
-                    text: _formatPoints(profile.loyaltyPoints),
-                    style: const TextStyle(
-                      color: Color(0xFFEE8C2B),
-                      fontSize: 14,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w700,
-                      height: 1.43,
-                    ),
+                    children: [
+                      const TextSpan(
+                        text: 'Points: ',
+                        style: TextStyle(
+                          color: AppColors.settingsTextSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      TextSpan(
+                        text: _formatPoints(profile.loyaltyPoints),
+                        style: const TextStyle(
+                          color: AppColors.settingsAccent,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -251,106 +242,6 @@ class _ProfileHero extends StatelessWidget {
   }
 }
 
-class _AvatarRing extends StatelessWidget {
-  final String imageUrl;
-
-  const _AvatarRing({required this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 128,
-      height: 128,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: const Color(0x33EE8C2B),
-        border: Border.all(color: const Color(0xFFF8F7F6), width: 4),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: const Color(0xFFF8F7F6),
-          border: Border.all(color: const Color(0xFFF8F7F6), width: 4),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x19000000),
-              blurRadius: 24,
-              offset: Offset(0, 10),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: _AvatarImage(imageUrl: imageUrl),
-      ),
-    );
-  }
-}
-
-class _AvatarImage extends StatelessWidget {
-  final String imageUrl;
-
-  const _AvatarImage({required this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    if (imageUrl.isEmpty) {
-      return const Center(
-        child: Icon(Icons.person_rounded, size: 64, color: Color(0xFFEE8C2B)),
-      );
-    }
-
-    return Image.network(
-      imageUrl,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) => const Center(
-        child: Icon(Icons.person_rounded, size: 64, color: Color(0xFFEE8C2B)),
-      ),
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) {
-          return child;
-        }
-
-        return const Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _MembershipChip extends StatelessWidget {
-  final String label;
-
-  const _MembershipChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0x19EE8C2B),
-        borderRadius: BorderRadius.circular(9999),
-      ),
-      child: Text(
-        label.toUpperCase(),
-        style: const TextStyle(
-          color: Color(0xFFEE8C2B),
-          fontSize: 12,
-          fontFamily: 'Plus Jakarta Sans',
-          fontWeight: FontWeight.w700,
-          height: 1.33,
-          letterSpacing: 0.6,
-        ),
-      ),
-    );
-  }
-}
-
 class _ProfileMenuSection extends StatelessWidget {
   const _ProfileMenuSection();
 
@@ -363,16 +254,16 @@ class _ProfileMenuSection extends StatelessWidget {
           icon: Icons.account_balance_wallet_outlined,
           iconBackground: const Color(0xFFFFEDD5),
           title: 'Ví của tôi',
-          subtitle: 'Manage payment methods',
+          subtitle: 'Số dư, nạp tiền',
           onTap: () => Navigator.pushNamed(context, '/wallet'),
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          icon: Icons.lock_outline_rounded,
+          icon: Icons.settings_rounded,
           iconBackground: const Color(0xFFEFF6FF),
-          title: 'Bảo mật',
-          subtitle: 'Password, FaceID',
-          onTap: () => Navigator.pushNamed(context, '/security-privacy'),
+          title: 'Cài đặt',
+          subtitle: 'Giao diện, thông báo',
+          onTap: () => Navigator.pushNamed(context, '/settings'),
         ),
         const SizedBox(height: 12),
         _SectionCard(
@@ -414,67 +305,62 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(48),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(48),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(48),
-            border: Border.all(color: const Color(0xFFF1F5F9)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0C000000),
-                blurRadius: 2,
-                offset: Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: iconBackground,
-                  borderRadius: BorderRadius.circular(32),
+    return Container(
+      decoration: settingsCardDecoration(),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: iconBackground,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: AppColors.settingsAccent,
+                    size: 22,
+                  ),
                 ),
-                child: Icon(icon, color: const Color(0xFFEE8C2B), size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 16,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w600,
-                        height: 1.5,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.settingsTextPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 12,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w400,
-                        height: 1.33,
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: AppColors.settingsTextSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
-            ],
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.settingsTextMuted,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -489,38 +375,77 @@ class _LogoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0x7FFEF2F2),
-      borderRadius: BorderRadius.circular(48),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(48),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(48),
-            border: Border.all(color: const Color(0xFFFECACA)),
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Đăng xuất',
-                style: TextStyle(
-                  color: Color(0xFFEF4444),
-                  fontSize: 16,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w700,
-                  height: 1.5,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFECACA)),
+        color: const Color(0xFFFEF2F2),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'Đăng xuất',
+                  style: TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _MembershipChip extends StatelessWidget {
+  final String label;
+
+  const _MembershipChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.settingsAccentSoft,
+        borderRadius: BorderRadius.circular(9999),
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: const TextStyle(
+          color: AppColors.settingsAccent,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarFallback extends StatelessWidget {
+  const _AvatarFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Icon(
+      Icons.person_rounded,
+      size: 36,
+      color: AppColors.settingsAccent,
     );
   }
 }
@@ -539,26 +464,28 @@ class _ProfileErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Color(0xFFEE8C2B)),
+            const Icon(
+              Icons.error_outline,
+              size: 48,
+              color: AppColors.settingsAccent,
+            ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0xFF334155),
+                color: AppColors.settingsTextPrimary,
                 fontSize: 14,
-                fontFamily: 'Plus Jakarta Sans',
-                height: 1.5,
               ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEE8C2B),
+                backgroundColor: AppColors.settingsAccent,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(9999),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child: const Text('Thử lại'),
@@ -579,45 +506,21 @@ class _ProfileEmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.person_off_outlined, size: 48, color: Color(0xFF94A3B8)),
+          Icon(
+            Icons.person_off_outlined,
+            size: 48,
+            color: AppColors.settingsTextMuted,
+          ),
           SizedBox(height: 16),
           Text(
             'Không tải được thông tin người dùng',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF334155),
+              color: AppColors.settingsTextPrimary,
               fontSize: 14,
-              fontFamily: 'Plus Jakarta Sans',
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _IconCircleButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final IconData icon;
-
-  const _IconCircleButton({required this.onTap, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(9999),
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0x190F172A)),
-          ),
-          child: Icon(icon, size: 18, color: const Color(0xFF0F172A)),
-        ),
       ),
     );
   }

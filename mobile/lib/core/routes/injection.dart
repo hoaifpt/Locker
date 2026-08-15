@@ -53,6 +53,14 @@ import '../../features/feedback/domain/usecases/get_my_feedback_usecase.dart';
 import '../../features/feedback/domain/usecases/upsert_feedback_usecase.dart';
 import '../../features/feedback/presentation/controllers/feedback_cubit.dart';
 
+import '../../features/settings/data/settings_repository.dart';
+import '../../features/settings/domain/repositories/i_settings_repository.dart';
+import '../../features/settings/domain/usecases/get_preferences_usecase.dart';
+import '../../features/settings/domain/usecases/get_profile_usecase.dart';
+import '../../features/settings/domain/usecases/logout_settings_usecase.dart';
+import '../../features/settings/domain/usecases/update_preferences_usecase.dart';
+import '../../features/settings/presentation/controllers/settings_cubit.dart';
+
 final getIt = GetIt.instance;
 
 /// Configures dependencies for the entire application.
@@ -240,5 +248,36 @@ void configureDependencies() {
   );
   getIt.registerFactory(
     () => FeedbackCubit(getMyFeedback: getIt(), upsertFeedback: getIt()),
+  );
+
+  //========================================================================
+  //                                SETTINGS
+  //========================================================================
+
+  // Single app-wide instance so the MaterialApp builder can listen for
+  // fontSize changes and propagate the textScaler to every route. The
+  // Settings page reuses the same instance instead of creating a fresh
+  // cubit per visit.
+  getIt.registerLazySingleton<ISettingsRepository>(() => SettingsRepository());
+  getIt.registerLazySingleton(
+    () => GetProfileUsecase(getIt<ISettingsRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetPreferencesUsecase(getIt<ISettingsRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => UpdatePreferencesUsecase(getIt<ISettingsRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => LogoutSettingsUsecase(getIt<ISettingsRepository>()),
+  );
+
+  getIt.registerLazySingleton(
+    () => SettingsCubit(
+      getProfile: getIt(),
+      getPreferences: getIt(),
+      updatePreferences: getIt(),
+      logout: getIt(),
+    )..load(),
   );
 }

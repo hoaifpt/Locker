@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+
 class PersonalInfoSectionHeader extends StatelessWidget {
   final String title;
 
@@ -12,12 +14,10 @@ class PersonalInfoSectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: const TextStyle(
-          color: Color(0xFF52443E),
+          color: AppColors.settingsTextSecondary,
           fontSize: 12,
-          fontFamily: 'Plus Jakarta Sans',
           fontWeight: FontWeight.w700,
-          height: 1.33,
-          letterSpacing: 1.2,
+          letterSpacing: 0.8,
         ),
       ),
     );

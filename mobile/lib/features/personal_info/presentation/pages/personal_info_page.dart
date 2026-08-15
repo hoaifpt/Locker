@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../data/personal_info_repository.dart';
 import '../../domain/usecases/get_personal_info_overview_usecase.dart';
 import '../../domain/entities/personal_info_item.dart';
@@ -34,11 +35,13 @@ class _PersonalInfoView extends StatelessWidget {
     return BlocBuilder<PersonalInfoCubit, PersonalInfoState>(
       builder: (context, state) {
         if (state.isLoading && state.overview == null) {
-          return const Scaffold(
-            backgroundColor: Color(0xFFF9F9F9),
+          return Scaffold(
+            backgroundColor: AppColors.settingsBackground,
             body: SafeArea(
               child: Center(
-                child: CircularProgressIndicator(color: Color(0xFFFB923C)),
+                child: CircularProgressIndicator(
+                  color: AppColors.settingsAccent,
+                ),
               ),
             ),
           );
@@ -46,7 +49,7 @@ class _PersonalInfoView extends StatelessWidget {
 
         if (state.errorMessage != null && state.overview == null) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF9F9F9),
+            backgroundColor: AppColors.settingsBackground,
             body: SafeArea(
               child: Center(
                 child: Padding(
@@ -57,16 +60,15 @@ class _PersonalInfoView extends StatelessWidget {
                       const Icon(
                         Icons.person_off_outlined,
                         size: 48,
-                        color: Color(0xFFFB923C),
+                        color: AppColors.settingsAccent,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         state.errorMessage!,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: Color(0xFF52443E),
+                          color: AppColors.settingsTextPrimary,
                           fontSize: 14,
-                          fontFamily: 'Plus Jakarta Sans',
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -74,8 +76,11 @@ class _PersonalInfoView extends StatelessWidget {
                         onPressed: () =>
                             context.read<PersonalInfoCubit>().load(),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFB923C),
+                          backgroundColor: AppColors.settingsAccent,
                           foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         child: const Text('Thử lại'),
                       ),
@@ -90,7 +95,7 @@ class _PersonalInfoView extends StatelessWidget {
         final overview = state.overview!;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF9F9F9),
+          backgroundColor: AppColors.settingsBackground,
           body: SafeArea(
             child: Stack(
               children: [
@@ -109,10 +114,9 @@ class _PersonalInfoView extends StatelessWidget {
                             );
                           }
                         },
-                        onMore: () {},
                       ),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                        padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -161,12 +165,10 @@ class _PersonalInfoView extends StatelessWidget {
                             const SizedBox(height: 12),
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(24),
-                              decoration: ShapeDecoration(
-                                color: const Color(0xFFFFF7ED),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                ),
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: AppColors.settingsAccentSoft,
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Column(
                                 children: [
@@ -174,11 +176,9 @@ class _PersonalInfoView extends StatelessWidget {
                                     'Thông tin được bảo vệ bởi E-BOX',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: Color(0xFF9D4320),
-                                      fontSize: 16,
-                                      fontFamily: 'Manrope',
+                                      color: AppColors.settingsAccent,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w700,
-                                      height: 1.5,
                                     ),
                                   ),
                                   SizedBox(height: 8),
@@ -186,11 +186,9 @@ class _PersonalInfoView extends StatelessWidget {
                                     'Mọi thay đổi sẽ được lưu lại sau khi bạn xác nhận.\nBạn luôn có thể quay lại để chỉnh sửa.',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: Color(0xFF52443E),
-                                      fontSize: 14,
-                                      fontFamily: 'Plus Jakarta Sans',
+                                      color: AppColors.settingsTextSecondary,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w400,
-                                      height: 1.63,
                                     ),
                                   ),
                                 ],
@@ -207,7 +205,7 @@ class _PersonalInfoView extends StatelessWidget {
                   right: 0,
                   bottom: 0,
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -218,43 +216,35 @@ class _PersonalInfoView extends StatelessWidget {
                         ],
                       ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Đã lưu thay đổi thông tin cá nhân',
-                                  ),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFFB79D),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              shadowColor: const Color(0x66FFB79D),
-                            ),
-                            child: const Text(
-                              'Lưu thay đổi',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontWeight: FontWeight.w600,
-                                height: 1.56,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Đã lưu thay đổi thông tin cá nhân',
                               ),
                             ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.settingsAccent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                      ],
+                        child: const Text(
+                          'Lưu thay đổi',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

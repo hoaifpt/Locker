@@ -2,6 +2,50 @@ import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/user_profile.dart';
 
+enum FontSize {
+  normal,
+  easyRead;
+
+  static FontSize fromString(String? value) =>
+      value == 'easy-read' ? FontSize.easyRead : FontSize.normal;
+}
+
+class NotificationPrefs extends Equatable {
+  final bool sound;
+  final bool vibration;
+  final bool orderUpdates;
+  final bool deliveryUpdates;
+  final bool promotions;
+
+  const NotificationPrefs({
+    this.sound = true,
+    this.vibration = true,
+    this.orderUpdates = true,
+    this.deliveryUpdates = true,
+    this.promotions = false,
+  });
+
+  NotificationPrefs copyWith({
+    bool? sound,
+    bool? vibration,
+    bool? orderUpdates,
+    bool? deliveryUpdates,
+    bool? promotions,
+  }) {
+    return NotificationPrefs(
+      sound: sound ?? this.sound,
+      vibration: vibration ?? this.vibration,
+      orderUpdates: orderUpdates ?? this.orderUpdates,
+      deliveryUpdates: deliveryUpdates ?? this.deliveryUpdates,
+      promotions: promotions ?? this.promotions,
+    );
+  }
+
+  @override
+  List<Object?> get props =>
+      [sound, vibration, orderUpdates, deliveryUpdates, promotions];
+}
+
 abstract class SettingsState extends Equatable {
   const SettingsState();
   @override
@@ -18,29 +62,33 @@ class SettingsLoading extends SettingsState {
 
 class SettingsLoaded extends SettingsState {
   final UserProfile profile;
-  final bool pushNotifications;
   final bool darkMode;
+  final FontSize fontSize;
+  final NotificationPrefs notifications;
 
   const SettingsLoaded({
     required this.profile,
-    required this.pushNotifications,
     required this.darkMode,
+    required this.fontSize,
+    required this.notifications,
   });
 
   SettingsLoaded copyWith({
     UserProfile? profile,
-    bool? pushNotifications,
     bool? darkMode,
+    FontSize? fontSize,
+    NotificationPrefs? notifications,
   }) {
     return SettingsLoaded(
       profile: profile ?? this.profile,
-      pushNotifications: pushNotifications ?? this.pushNotifications,
       darkMode: darkMode ?? this.darkMode,
+      fontSize: fontSize ?? this.fontSize,
+      notifications: notifications ?? this.notifications,
     );
   }
 
   @override
-  List<Object?> get props => [profile, pushNotifications, darkMode];
+  List<Object?> get props => [profile, darkMode, fontSize, notifications];
 }
 
 class SettingsError extends SettingsState {

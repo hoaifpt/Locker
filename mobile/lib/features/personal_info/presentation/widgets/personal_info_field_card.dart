@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+
 class PersonalInfoFieldCard extends StatelessWidget {
   final String label;
   final String value;
@@ -18,68 +20,63 @@ class PersonalInfoFieldCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(28),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-            side: const BorderSide(color: Color(0xFFF1F5F9)),
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: Color(0xFF52443E),
-                      fontSize: 12,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w700,
-                      height: 1.33,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      color: Color(0xFF1A1C1C),
-                      fontSize: 16,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (hint.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      hint,
-                      style: const TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 12,
-                        fontFamily: 'Plus Jakarta Sans',
+    return Container(
+      decoration: settingsCardDecoration(),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          color: AppColors.settingsTextSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.6,
+                        ),
                       ),
-                    ),
-                  ],
-                ],
-              ),
+                      const SizedBox(height: 6),
+                      Text(
+                        value,
+                        style: const TextStyle(
+                          color: AppColors.settingsTextPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (hint.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          hint,
+                          style: const TextStyle(
+                            color: AppColors.settingsTextMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (isEditable)
+                  const Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: AppColors.settingsAccent,
+                  ),
+              ],
             ),
-            if (isEditable)
-              const Icon(
-                Icons.edit_outlined,
-                size: 20,
-                color: Color(0xFFEE8C2B),
-              ),
-          ],
+          ),
         ),
       ),
     );

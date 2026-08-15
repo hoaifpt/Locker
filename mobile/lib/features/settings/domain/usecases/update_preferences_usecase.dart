@@ -4,5 +4,6 @@ class UpdatePreferencesUsecase {
   final ISettingsRepository _repo;
   UpdatePreferencesUsecase(this._repo);
 
-  Future<void> call(Map<String, bool> prefs) => _repo.updatePreferences(prefs);
+  Future<void> call(Map<String, dynamic> prefs) =>
+      _repo.updatePreferences(prefs);
 }

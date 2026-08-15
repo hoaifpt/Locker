@@ -13,30 +13,23 @@ class SettingsScreen extends StatelessWidget {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: const Color(0xFFFFFAF5),
+          backgroundColor: const Color(0xFFF8FAFC),
           body: SafeArea(
-            child: Column(
-              children: [
-                _buildTopBar(context),
-                Expanded(
-                  child: switch (state) {
-                    SettingsLoading() => const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFFF7E5F),
-                      ),
-                    ),
-                    SettingsError(:final message) => Center(
-                      child: Text(
-                        message,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
-                    SettingsLoaded() => _buildBody(context, state),
-                    _ => const SizedBox.shrink(),
-                  },
+            child: switch (state) {
+              SettingsLoading() => const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFFF97316),
                 ),
-              ],
-            ),
+              ),
+              SettingsError(:final message) => Center(
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+              SettingsLoaded() => _buildBody(context, state),
+              _ => const SizedBox.shrink(),
+            },
           ),
         );
       },
@@ -44,37 +37,143 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context, SettingsLoaded state) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildProfileSection(state.profile),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildTopBar(context)),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildAccountSettingsCard(),
+                _buildProfileHeader(state.profile),
                 const SizedBox(height: 24),
-                _buildPreferencesCard(context, state),
-                const SizedBox(height: 24),
-                _buildSupportCard(context),
-                const SizedBox(height: 24),
-                _buildLogoutButton(context),
+                _AppearanceCard(
+                  darkMode: state.darkMode,
+                  fontSize: state.fontSize,
+                  onDarkModeChanged: context
+                      .read<SettingsCubit>()
+                      .toggleDarkMode,
+                  onFontSizeChanged:
+                      context.read<SettingsCubit>().setFontSize,
+                ),
                 const SizedBox(height: 16),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 32),
-                  child: Center(
-                    child: Text(
-                      'Version 2.4.1 (8823)',
-                      style: TextStyle(
-                        color: Color(0xCC94A3B8),
-                        fontSize: 12,
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.w500,
+                _NotificationCard(
+                  notifications: state.notifications,
+                  onChanged: (changes) =>
+                      context.read<SettingsCubit>().updateNotifications(
+                        changes,
                       ),
-                    ),
+                ),
+                const SizedBox(height: 24),
+                const _Footer(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Top bar ────────────────────────────────────────────────────────────────
+
+  Widget _buildTopBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.8),
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.6)),
+        ),
+      ),
+      child: Row(
+        children: [
+          _circleButton(
+            onTap: () => Navigator.pop(context),
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              size: 18,
+              color: Color(0xFF334155),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Icon(
+            Icons.settings_rounded,
+            size: 20,
+            color: Color(0xFFF97316),
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            'Cài đặt',
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(UserProfile profile) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0C000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(9999),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: profile.avatarUrl != null
+                ? Image.network(
+                    profile.avatarUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        _avatarFallback(),
+                  )
+                : _avatarFallback(),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  profile.name.isNotEmpty
+                      ? profile.name
+                      : 'Người dùng',
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  profile.email,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 13,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -84,539 +183,11 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // ─── Top bar ────────────────────────────────────────────────────────────────
-
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: const BoxDecoration(
-        color: Color(0xCCFFFAF5),
-        border: Border(bottom: BorderSide(color: Color(0xFFFFEDD5))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _circleButton(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back_ios_rounded,
-              size: 18,
-              color: Color(0xFF334155),
-            ),
-          ),
-          const Text(
-            'Settings',
-            style: TextStyle(
-              color: Color(0xFF1E293B),
-              fontSize: 18,
-              fontFamily: 'Manrope',
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          _circleButton(
-            child: const Icon(
-              Icons.notifications_none_rounded,
-              size: 20,
-              color: Color(0xFF334155),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── Profile section ────────────────────────────────────────────────────────
-
-  Widget _buildProfileSection(UserProfile profile) {
-    return SizedBox(
-      height: 298,
-      child: Stack(
-        children: [
-          // Background gradient
-          Container(
-            height: 200,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFFFFF7ED), Color(0xFFFFFAF5)],
-              ),
-            ),
-          ),
-          // Avatar centered
-          Positioned(
-            top: 32,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: SizedBox(
-                width: 136,
-                height: 136,
-                child: Stack(
-                  children: [
-                    // Glow ring
-                    Opacity(
-                      opacity: 0.30,
-                      child: Container(
-                        width: 136,
-                        height: 136,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.bottomLeft,
-                            end: Alignment.topRight,
-                            colors: [Color(0xFFFF7E5F), Color(0xFFFEB47B)],
-                          ),
-                          borderRadius: BorderRadius.circular(9999),
-                        ),
-                      ),
-                    ),
-                    // Photo
-                    Positioned(
-                      left: 4,
-                      top: 4,
-                      child: Container(
-                        width: 128,
-                        height: 128,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: const Color(0xFFFF7E5F),
-                            width: 3,
-                          ),
-                          borderRadius: BorderRadius.circular(9999),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x66FF7E5F),
-                              blurRadius: 20,
-                              spreadRadius: -5,
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: profile.avatarUrl != null
-                              ? Image.network(
-                                  profile.avatarUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _avatarFallback(),
-                                )
-                              : _avatarFallback(),
-                        ),
-                      ),
-                    ),
-                    // Camera button
-                    Positioned(
-                      right: 0,
-                      bottom: 4,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: const Color(0xFFFFEDD5)),
-                          borderRadius: BorderRadius.circular(9999),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x19000000),
-                              blurRadius: 6,
-                              offset: Offset(0, 4),
-                              spreadRadius: -4,
-                            ),
-                            BoxShadow(
-                              color: Color(0x19000000),
-                              blurRadius: 15,
-                              offset: Offset(0, 10),
-                              spreadRadius: -3,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt_rounded,
-                          size: 16,
-                          color: Color(0xFFFF7E5F),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 58,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                profile.name.isNotEmpty ? profile.name : 'Người dùng',
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 24,
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-          // Loyalty badge
-          Positioned(
-            bottom: 8,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)],
-                  ),
-                  border: Border.all(color: const Color(0x7FFED7AA)),
-                  borderRadius: BorderRadius.circular(9999),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0C000000),
-                      blurRadius: 2,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      size: 16,
-                      color: Color(0xFFE06C50),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Loyalty Member • ${profile.loyaltyPoints} Points',
-                      style: const TextStyle(
-                        color: Color(0xFFE06C50),
-                        fontSize: 14,
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── Cards ──────────────────────────────────────────────────────────────────
-
-  Widget _buildAccountSettingsCard() {
-    return _settingsGroup(
-      label: 'ACCOUNT SETTINGS',
-      child: Column(
-        children: [
-          _settingRow(
-            icon: Icons.person_outline_rounded,
-            iconBg: const Color(0xFFFFEDD5),
-            iconColor: const Color(0xFFE06C50),
-            label: 'Personal Information',
-          ),
-          _divider(),
-          _settingRow(
-            icon: Icons.lock_outline_rounded,
-            iconBg: const Color(0xFFFFE4E1),
-            iconColor: const Color(0xFFE06C50),
-            label: 'Security & Privacy',
-          ),
-          _divider(),
-          _settingRow(
-            icon: Icons.credit_card_rounded,
-            iconBg: const Color(0xFFFEF3C7),
-            iconColor: const Color(0xFFD97706),
-            label: 'Payment Methods',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPreferencesCard(BuildContext context, SettingsLoaded state) {
-    final cubit = context.read<SettingsCubit>();
-    return _settingsGroup(
-      label: 'PREFERENCES',
-      child: Column(
-        children: [
-          _toggleRow(
-            icon: Icons.notifications_outlined,
-            iconBg: const Color(0xFFFFE4E6),
-            iconColor: const Color(0xFFE05E5E),
-            label: 'Push Notifications',
-            value: state.pushNotifications,
-            onChanged: cubit.togglePushNotifications,
-          ),
-          _divider(),
-          _toggleRow(
-            icon: Icons.dark_mode_outlined,
-            iconBg: const Color(0xFFE0E7FF),
-            iconColor: const Color(0xFF6366F1),
-            label: 'Dark Mode',
-            value: state.darkMode,
-            onChanged: cubit.toggleDarkMode,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSupportCard(BuildContext context) {
-    return _settingsGroup(
-      label: 'SUPPORT',
-      child: Column(
-        children: [
-          _settingRow(
-            icon: Icons.help_outline_rounded,
-            iconBg: const Color(0xFFCCFBF1),
-            iconColor: const Color(0xFF0D9488),
-            label: 'Help Center',
-          ),
-          _divider(),
-          _settingRow(
-            icon: Icons.rate_review_outlined,
-            iconBg: const Color(0xFFFFEDD5),
-            iconColor: const Color(0xFFEA580C),
-            label: 'Gửi feedback',
-            onTap: () async {
-              final submitted = await Navigator.of(
-                context,
-              ).pushNamed('/feedback');
-              if (context.mounted && submitted == true) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Cảm ơn bạn đã gửi feedback!'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _avatarFallback() => Container(
-    color: const Color(0xFFFFEDD5),
-    child: const Icon(Icons.person_rounded, size: 64, color: Color(0xFFFF7E5F)),
+  Widget _avatarFallback() => const Icon(
+    Icons.person_rounded,
+    size: 32,
+    color: Color(0xFFF97316),
   );
-
-  Widget _buildLogoutButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.read<SettingsCubit>().logout(),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(width: 1, color: Color(0xFFFEE2E2)),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          shadows: const [
-            BoxShadow(
-              color: Color(0x0C000000),
-              blurRadius: 20,
-              offset: Offset(0, 4),
-              spreadRadius: -2,
-            ),
-          ],
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 8,
-          children: [
-            Icon(Icons.logout_rounded, color: Color(0xFFFF6B6B), size: 20),
-            Text(
-              'Log Out',
-              style: TextStyle(
-                color: Color(0xFFFF6B6B),
-                fontSize: 16,
-                fontFamily: 'Manrope',
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ─── Helpers ────────────────────────────────────────────────────────────────
-
-  Widget _settingsGroup({required String label, required Widget child}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 12,
-              fontFamily: 'Manrope',
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.20,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          clipBehavior: Clip.antiAlias,
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              side: const BorderSide(width: 1, color: Color(0x7FFFEDD5)),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            shadows: const [
-              BoxShadow(
-                color: Color(0x0C000000),
-                blurRadius: 20,
-                offset: Offset(0, 4),
-                spreadRadius: -2,
-              ),
-            ],
-          ),
-          child: child,
-        ),
-      ],
-    );
-  }
-
-  Widget _settingRow({
-    required IconData icon,
-    required Color iconBg,
-    required Color iconColor,
-    required String label,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap ?? () {},
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Row(
-          spacing: 16,
-          children: [
-            _iconBox(icon: icon, bg: iconBg, color: iconColor),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: Color(0xFF334155),
-                  fontSize: 16,
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: Color(0xFFB0BEC5),
-              size: 22,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _toggleRow({
-    required IconData icon,
-    required Color iconBg,
-    required Color iconColor,
-    required String label,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        spacing: 16,
-        children: [
-          _iconBox(icon: icon, bg: iconBg, color: iconColor),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF334155),
-                fontSize: 16,
-                fontFamily: 'Manrope',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () => onChanged(!value),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 48,
-              height: 28,
-              decoration: BoxDecoration(
-                color: value
-                    ? const Color(0xFFFF6B6B)
-                    : const Color(0xFFE2E8F0),
-                borderRadius: BorderRadius.circular(9999),
-              ),
-              child: Stack(
-                children: [
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut,
-                    left: value ? 24 : 4,
-                    top: 4,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(9999),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x0C000000),
-                            blurRadius: 2,
-                            offset: Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _iconBox({
-    required IconData icon,
-    required Color bg,
-    required Color color,
-  }) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Icon(icon, color: color, size: 20),
-    );
-  }
 
   Widget _circleButton({VoidCallback? onTap, required Widget child}) {
     return GestureDetector(
@@ -624,10 +195,11 @@ class SettingsScreen extends StatelessWidget {
       child: Container(
         width: 40,
         height: 40,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: const [
             BoxShadow(
               color: Color(0x0C000000),
               blurRadius: 2,
@@ -639,11 +211,351 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _divider() => const Divider(
-    height: 1,
-    indent: 20,
-    endIndent: 20,
-    color: Color(0xFFF1F5F9),
-  );
 }
+
+// ─── Appearance card ─────────────────────────────────────────────────────────
+
+class _AppearanceCard extends StatelessWidget {
+  final bool darkMode;
+  final FontSize fontSize;
+  final ValueChanged<bool> onDarkModeChanged;
+  final ValueChanged<FontSize> onFontSizeChanged;
+
+  const _AppearanceCard({
+    required this.darkMode,
+    required this.fontSize,
+    required this.onDarkModeChanged,
+    required this.onFontSizeChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.monitor_rounded,
+                size: 20,
+                color: Color(0xFFF97316),
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Giao diện',
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _ToggleRow(
+            label: 'Chế độ tối',
+            description:
+                'Giảm mỏi mắt khi sử dụng trong điều kiện thiếu sáng',
+            value: darkMode,
+            onChanged: onDarkModeChanged,
+          ),
+          const SizedBox(height: 16),
+          Container(height: 1, color: const Color(0xFFF1F5F9)),
+          const SizedBox(height: 16),
+          const Row(
+            children: [
+              Icon(
+                Icons.text_fields_rounded,
+                size: 16,
+                color: Color(0xFF64748B),
+              ),
+              SizedBox(width: 6),
+              Text(
+                'Chế độ đọc dễ',
+                style: TextStyle(
+                  color: Color(0xFF334155),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _FontSizeSegmented(
+            value: fontSize,
+            onChanged: onFontSizeChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Notification card ───────────────────────────────────────────────────────
+
+class _NotificationCard extends StatelessWidget {
+  final NotificationPrefs notifications;
+  final void Function(Map<String, bool> changes) onChanged;
+
+  const _NotificationCard({
+    required this.notifications,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.notifications_rounded,
+                size: 20,
+                color: Color(0xFFF97316),
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Thông báo',
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _ToggleRow(
+            label: 'Âm thanh',
+            description: 'Phát âm thanh khi có thông báo mới',
+            value: notifications.sound,
+            onChanged: (v) => onChanged({'sound': v}),
+          ),
+          const SizedBox(height: 12),
+          _ToggleRow(
+            label: 'Rung',
+            description: 'Rung khi có thông báo mới',
+            value: notifications.vibration,
+            onChanged: (v) => onChanged({'vibration': v}),
+          ),
+          const SizedBox(height: 16),
+          Container(height: 1, color: const Color(0xFFF1F5F9)),
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              'Nhận thông báo về',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          _ToggleRow(
+            label: 'Cập nhật đơn hàng',
+            description: 'Trạng thái đơn hàng, thanh toán',
+            value: notifications.orderUpdates,
+            onChanged: (v) => onChanged({'orderUpdates': v}),
+          ),
+          const SizedBox(height: 12),
+          _ToggleRow(
+            label: 'Cập nhật giao hàng',
+            description: 'Thông tin vận chuyển, giao thành công',
+            value: notifications.deliveryUpdates,
+            onChanged: (v) => onChanged({'deliveryUpdates': v}),
+          ),
+          const SizedBox(height: 12),
+          _ToggleRow(
+            label: 'Khuyến mãi',
+            description: 'Mã giảm giá, ưu đãi đặc biệt',
+            value: notifications.promotions,
+            onChanged: (v) => onChanged({'promotions': v}),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FontSizeSegmented extends StatelessWidget {
+  final FontSize value;
+  final ValueChanged<FontSize> onChanged;
+
+  const _FontSizeSegmented({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _segmentButton(
+              label: 'Mặc định',
+              active: value == FontSize.normal,
+              onTap: () => onChanged(FontSize.normal),
+            ),
+          ),
+          Expanded(
+            child: _segmentButton(
+              label: 'Đọc dễ',
+              active: value == FontSize.easyRead,
+              onTap: () => onChanged(FontSize.easyRead),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _segmentButton({
+    required String label,
+    required bool active,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: active ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: active
+              ? const [
+                  BoxShadow(
+                    color: Color(0x0C000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: active
+                  ? const Color(0xFF0F172A)
+                  : const Color(0xFF64748B),
+              fontSize: 14,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ToggleRow extends StatelessWidget {
+  final String label;
+  final String description;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _ToggleRow({
+    required this.label,
+    required this.description,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Transform.scale(
+            scale: 0.9,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: const Color(0xFFF97316),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Footer extends StatelessWidget {
+  const _Footer();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        children: [
+          Text(
+            'E-Box Locker',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Phiên bản 1.0.0',
+            style: TextStyle(
+              color: Color(0xFF94A3B8),
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+BoxDecoration _cardDecoration() => BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(20),
+  border: Border.all(color: const Color(0xFFE2E8F0)),
+  boxShadow: const [
+    BoxShadow(
+      color: Color(0x0C000000),
+      blurRadius: 8,
+      offset: Offset(0, 2),
+    ),
+  ],
+);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,6 +9,8 @@ import 'core/constants/app_constants.dart';
 import 'core/routes/app_router.dart';
 import 'core/routes/injection.dart';
 import 'core/theme/app_theme.dart';
+import 'features/settings/presentation/controllers/settings_cubit.dart';
+import 'features/settings/presentation/controllers/settings_state.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 // 1. CẤU HÌNH XỬ LÝ THÔNG BÁO KHI APP ĐANG TẮT HOÀN TOÀN (BACKGROUND/TERMINATED)
@@ -99,12 +102,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppConstants.appName,
-      theme: AppTheme.light,
-      initialRoute: AppRouter.initialRoute,
-      routes: AppRouter.routes,
-      debugShowCheckedModeBanner: false,
+    return BlocProvider.value(
+      // App-wide so the MaterialApp builder can read the current fontSize
+      // and propagate the matching textScaler to every route.
+      value: getIt<SettingsCubit>(),
+      child: BlocBuilder<SettingsCubit, SettingsState>(
+        buildWhen: (prev, next) {
+          // Only rebuild when the loaded settings change (not on every
+          // loading/error transition).
+          if (next is SettingsLoaded && prev is SettingsLoaded) {
+            return prev.fontSize != next.fontSize;
+          }
+          return false;
+        },
+        builder: (context, state) {
+          final textScaleFactor =
+              state is SettingsLoaded && state.fontSize == FontSize.easyRead
+                  ? 1.25
+                  : 1.0;
+          return MaterialApp(
+            title: AppConstants.appName,
+            theme: AppTheme.light,
+            initialRoute: AppRouter.initialRoute,
+            routes: AppRouter.routes,
+            debugShowCheckedModeBanner: false,
+            builder: (context, child) {
+              final mq = MediaQuery.of(context);
+              return MediaQuery(
+                data: mq.copyWith(
+                  textScaler: TextScaler.linear(textScaleFactor),
+                ),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

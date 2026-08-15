@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/routes/injection.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/feedback.dart';
 import '../controllers/feedback_cubit.dart';
 import '../controllers/feedback_state.dart';
@@ -76,7 +77,7 @@ class _FeedbackViewState extends State<_FeedbackView> {
       ..showSnackBar(
         const SnackBar(
           content: Text('Cảm ơn bạn! Phản hồi đã được gửi thành công.'),
-          backgroundColor: Color(0xFFEC5B13),
+          backgroundColor: AppColors.settingsAccent,
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ),
@@ -86,35 +87,36 @@ class _FeedbackViewState extends State<_FeedbackView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FeedbackCubit, FeedbackState>(
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: const Color(0xFFFFFAF5),
-          appBar: AppBar(
-            title: const Text('Gửi feedback'),
-            backgroundColor: const Color(0xCCFFFAF5),
-            surfaceTintColor: Colors.transparent,
-            bottom: const PreferredSize(
-              preferredSize: Size.fromHeight(1),
-              child: Divider(height: 1, color: Color(0xFFFFEDD5)),
-            ),
-          ),
-          body: SafeArea(
-            top: false,
-            child: switch (state.status) {
-              FeedbackLoadStatus.initial ||
-              FeedbackLoadStatus.loading => const _LoadingView(),
-              FeedbackLoadStatus.failure => _LoadErrorView(
-                message: state.errorMessage ?? 'Không thể tải phản hồi.',
-                onRetry: () {
-                  context.read<FeedbackCubit>().load();
-                },
-              ),
-              FeedbackLoadStatus.ready => _buildForm(state),
-            },
-          ),
-        );
-      },
+    return Scaffold(
+      backgroundColor: AppColors.settingsBackground,
+      body: SafeArea(
+        child: BlocBuilder<FeedbackCubit, FeedbackState>(
+          builder: (context, state) {
+            return Column(
+              children: [
+                SettingsTopBar(
+                  title: 'Gửi feedback',
+                  icon: Icons.chat_bubble_outline_rounded,
+                  onBack: () => Navigator.maybePop(context),
+                ),
+                Expanded(
+                  child: switch (state.status) {
+                    FeedbackLoadStatus.initial ||
+                    FeedbackLoadStatus.loading => const _LoadingView(),
+                    FeedbackLoadStatus.failure => _LoadErrorView(
+                      message: state.errorMessage ?? 'Không thể tải phản hồi.',
+                      onRetry: () {
+                        context.read<FeedbackCubit>().load();
+                      },
+                    ),
+                    FeedbackLoadStatus.ready => _buildForm(state),
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -123,192 +125,169 @@ class _FeedbackViewState extends State<_FeedbackView> {
 
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'CÙNG HOÀN THIỆN E-BOX',
-            style: TextStyle(
-              color: Color(0xFFEA580C),
-              fontSize: 11,
-              fontFamily: 'Manrope',
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.4,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Trải nghiệm của bạn\nnhư thế nào?',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 28,
-              height: 1.2,
-              fontFamily: 'Manrope',
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.6,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Chia sẻ một khoảnh khắc cụ thể để chúng tôi cải thiện trải nghiệm của bạn.',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 14,
-              height: 1.55,
-              fontFamily: 'Manrope',
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 28),
-          _StarSelector(
-            value: _rating,
-            enabled: !state.isSubmitting,
-            onChanged: (rating) {
-              setState(() {
-                _rating = rating;
-                _validationMessage = null;
-              });
-            },
-          ),
-          const SizedBox(height: 28),
-          const _FieldLabel('Chuyện này là sao vậy?'),
-          const SizedBox(height: 10),
-          DropdownButtonFormField<FeedbackTopic>(
-            initialValue: _topic,
-            isExpanded: true,
-            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-            decoration: _inputDecoration(),
-            items: FeedbackTopic.values
-                .map(
-                  (topic) =>
-                      DropdownMenuItem(value: topic, child: Text(topic.label)),
-                )
-                .toList(),
-            onChanged: state.isSubmitting
-                ? null
-                : (topic) {
-                    if (topic != null) setState(() => _topic = topic);
-                  },
-          ),
-          const SizedBox(height: 24),
-          const _FieldLabel(
-            'Điều gì đã hiệu quả — hoặc điều gì đang cản trở bạn?',
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _contentController,
-            enabled: !state.isSubmitting,
-            minLines: 6,
-            maxLines: 8,
-            maxLength: _maxContentLength,
-            decoration: _inputDecoration().copyWith(
-              hintText:
-                  'Một khoảnh khắc cụ thể sẽ giúp chúng tôi tiến bộ nhanh hơn...',
-              counterText: '',
-              contentPadding: const EdgeInsets.all(16),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${_contentController.text.length} / $_maxContentLength ký tự',
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 12,
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              if (state.feedback != null)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: settingsCardDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text(
-                  'Cập nhật phản hồi',
+                  'CÙNG HOÀN THIỆN E-BOX',
                   style: TextStyle(
-                    color: Color(0xFFEA580C),
-                    fontSize: 12,
-                    fontFamily: 'Manrope',
-                    fontWeight: FontWeight.w700,
+                    color: AppColors.settingsAccent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.4,
                   ),
                 ),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  'Trải nghiệm của bạn\nnhư thế nào?',
+                  style: TextStyle(
+                    color: AppColors.settingsTextPrimary,
+                    fontSize: 24,
+                    height: 1.2,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Chia sẻ một khoảnh khắc cụ thể để chúng tôi cải thiện trải nghiệm của bạn.',
+                  style: TextStyle(
+                    color: AppColors.settingsTextSecondary,
+                    fontSize: 13,
+                    height: 1.55,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _StarSelector(
+                  value: _rating,
+                  enabled: !state.isSubmitting,
+                  onChanged: (rating) {
+                    setState(() {
+                      _rating = rating;
+                      _validationMessage = null;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
-          if (errorMessage != null) ...[
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEF2F2),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFFECACA)),
-              ),
-              child: Text(
-                errorMessage,
-                style: const TextStyle(
-                  color: Color(0xFFB91C1C),
-                  fontSize: 13,
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w600,
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: settingsCardDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _FieldLabel('Chuyện này là sao vậy?'),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<FeedbackTopic>(
+                  initialValue: _topic,
+                  isExpanded: true,
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                  decoration: settingsInputDecoration(),
+                  items: FeedbackTopic.values
+                      .map(
+                        (topic) => DropdownMenuItem(
+                          value: topic,
+                          child: Text(topic.label),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: state.isSubmitting
+                      ? null
+                      : (topic) {
+                          if (topic != null) setState(() => _topic = topic);
+                        },
                 ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: state.isSubmitting ? null : _submit,
-              icon: state.isSubmitting
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+                const SizedBox(height: 20),
+                const _FieldLabel(
+                  'Điều gì đã hiệu quả — hoặc điều gì đang cản trở bạn?',
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _contentController,
+                  enabled: !state.isSubmitting,
+                  minLines: 6,
+                  maxLines: 8,
+                  maxLength: _maxContentLength,
+                  decoration: settingsInputDecoration(
+                    hintText:
+                        'Một khoảnh khắc cụ thể sẽ giúp chúng tôi tiến bộ nhanh hơn...',
+                  ).copyWith(counterText: ''),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${_contentController.text.length} / $_maxContentLength ký tự',
+                      style: const TextStyle(
+                        color: AppColors.settingsTextMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                       ),
-                    )
-                  : const Icon(Icons.send_rounded, size: 19),
-              label: Text(
-                state.isSubmitting ? 'Đang gửi...' : 'Gửi phản hồi',
-                style: const TextStyle(
-                  fontFamily: 'Manrope',
-                  fontWeight: FontWeight.w800,
+                    ),
+                    if (state.feedback != null)
+                      const Text(
+                        'Cập nhật phản hồi',
+                        style: TextStyle(
+                          color: AppColors.settingsAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                  ],
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEC5B13),
-                disabledBackgroundColor: const Color(0xFFFDBA8C),
-                foregroundColor: Colors.white,
-                disabledForegroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(
+                        color: Color(0xFFB91C1C),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: state.isSubmitting ? null : _submit,
+            icon: state.isSubmitting
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.send_rounded, size: 19),
+            label: Text(
+              state.isSubmitting ? 'Đang gửi...' : 'Gửi phản hồi',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            style: settingsPrimaryButtonStyle(),
           ),
         ],
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration() {
-    return InputDecoration(
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFEC5B13), width: 1.5),
-      ),
-      disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
     );
   }
@@ -324,10 +303,8 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        color: Color(0xFF334155),
+        color: AppColors.settingsTextPrimary,
         fontSize: 14,
-        height: 1.4,
-        fontFamily: 'Manrope',
         fontWeight: FontWeight.w700,
       ),
     );
@@ -367,19 +344,23 @@ class _StarSelector extends StatelessWidget {
                     duration: const Duration(milliseconds: 160),
                     height: 52,
                     decoration: BoxDecoration(
-                      color: selected ? const Color(0xFFFFF7ED) : Colors.white,
+                      color: selected
+                          ? AppColors.settingsAccentSoft
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: selected
-                            ? const Color(0xFFFDBA74)
-                            : const Color(0xFFE2E8F0),
+                            ? AppColors.settingsAccent
+                            : AppColors.settingsCardBorder,
                       ),
                     ),
                     child: Icon(
-                      selected ? Icons.star_rounded : Icons.star_border_rounded,
+                      selected
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
                       color: selected
-                          ? const Color(0xFFF97316)
-                          : const Color(0xFF94A3B8),
+                          ? AppColors.settingsAccent
+                          : AppColors.settingsTextMuted,
                       size: 27,
                     ),
                   ),
@@ -402,9 +383,12 @@ class _LoadingView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(color: Color(0xFFEC5B13)),
+          CircularProgressIndicator(color: AppColors.settingsAccent),
           SizedBox(height: 16),
-          Text('Đang tải phản hồi của bạn...'),
+          Text(
+            'Đang tải phản hồi của bạn...',
+            style: TextStyle(color: AppColors.settingsTextSecondary),
+          ),
         ],
       ),
     );
@@ -433,15 +417,32 @@ class _LoadErrorView extends StatelessWidget {
             const SizedBox(height: 14),
             const Text(
               'Không thể tải feedback',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: AppColors.settingsTextPrimary,
+              ),
             ),
             const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.settingsTextSecondary,
+              ),
+            ),
             const SizedBox(height: 22),
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Thử lại'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.settingsAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
             ),
           ],
         ),

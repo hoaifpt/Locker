@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+
 class EditProfileDialog extends StatefulWidget {
   final String title;
   final String initialValue;
@@ -38,13 +40,14 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(widget.title),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _controller,
-            decoration: InputDecoration(labelText: widget.label),
+            decoration: settingsInputDecoration(labelText: widget.label),
             enabled: !widget.isLoading,
           ),
         ],
@@ -58,11 +61,21 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
           onPressed: widget.isLoading
               ? null
               : () => widget.onSave(_controller.text.trim()),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.settingsAccent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
           child: widget.isLoading
               ? const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : const Text('Lưu'),
         ),

@@ -4,5 +4,5 @@ class GetPreferencesUsecase {
   final ISettingsRepository _repo;
   const GetPreferencesUsecase(this._repo);
 
-  Future<Map<String, bool>> call() => _repo.getPreferences();
+  Future<Map<String, dynamic>> call() => _repo.getPreferences();
 }

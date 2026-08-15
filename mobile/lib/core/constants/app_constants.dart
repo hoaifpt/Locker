@@ -15,4 +15,7 @@ class AppConstants {
 
   static const String prefsDarkModeKey =
       'pref_dark_mode';
+
+  static const String prefsFontSizeKey =
+      'pref_font_size';
 }

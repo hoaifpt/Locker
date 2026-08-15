@@ -19,6 +19,10 @@ class TopUpPage extends StatefulWidget {
 
 class _TopUpPageState extends State<TopUpPage> {
   final TextEditingController _amountController = TextEditingController();
+  // Selected payment method id. Default 'sepay'; the only method offered
+  // today so the setter is technically dead code, but kept non-final so
+  // future payment tiles can still select themselves.
+  // ignore: prefer_final_fields
   String _selectedPaymentMethod = 'sepay';
 
   Timer? _countdownTimer;

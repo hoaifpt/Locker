@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/extensions/context_extensions.dart';
 import '../../data/payment_success_repository.dart';
 import '../../domain/entities/payment_success_info.dart';
 import '../../domain/usecases/get_payment_success_usecase.dart';
@@ -205,9 +206,17 @@ class _InfoCard extends StatelessWidget {
           const SizedBox(height: 16),
           _InfoItem(label: 'Locker Hub', value: lockerHub),
           const SizedBox(height: 16),
-          _InfoItem(label: 'Transaction ID', value: transactionId),
+          _InfoItem(
+            label: 'Transaction ID',
+            value: transactionId,
+            copyable: true,
+          ),
           const SizedBox(height: 16),
-          _InfoItem(label: 'Order Code', value: orderCode),
+          _InfoItem(
+            label: 'Order Code',
+            value: orderCode,
+            copyable: true,
+          ),
           const SizedBox(height: 16),
           _InfoItem(label: 'Payment Method', value: paymentMethod),
         ],
@@ -260,8 +269,13 @@ class _InfoRow extends StatelessWidget {
 class _InfoItem extends StatelessWidget {
   final String label;
   final String value;
+  final bool copyable;
 
-  const _InfoItem({required this.label, required this.value});
+  const _InfoItem({
+    required this.label,
+    required this.value,
+    this.copyable = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -280,17 +294,55 @@ class _InfoItem extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Color(0xFF333333),
-            fontSize: 16,
-            fontFamily: 'Liberation Sans',
-            fontWeight: FontWeight.w700,
-            height: 1.4,
+        if (copyable)
+          GestureDetector(
+            onTap: () => context.copyToClipboard(value, label: 'Đã sao chép $label'),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: SelectableText(
+                      value,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF333333),
+                        fontSize: 16,
+                        fontFamily: 'Liberation Sans',
+                        fontWeight: FontWeight.w700,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.content_copy_rounded,
+                    size: 16,
+                    color: Color(0xFFF97316),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF333333),
+              fontSize: 16,
+              fontFamily: 'Liberation Sans',
+              fontWeight: FontWeight.w700,
+              height: 1.4,
+            ),
           ),
-        ),
       ],
     );
   }

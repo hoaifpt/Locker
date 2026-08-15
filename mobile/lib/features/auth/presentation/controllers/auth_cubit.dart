@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:locker_mobile/core/exceptions/app_exception.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/check_login_usecase.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/login_usecase.dart';
 import 'package:locker_mobile/features/auth/domain/usecases/logout_usecase.dart';
@@ -45,35 +46,31 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> login(String username, String password) async {
+  /// Returns true on success, throws on failure so the caller (LoginPage)
+  /// can hand the raw exception to `context.showAlertError()` for friendly
+  /// mapping. We do NOT swallow errors into `AuthError.message` here —
+  /// keeping the exception object intact preserves type information
+  /// (`UnauthorizedException`, `DioException`, …) so the friendly mapper
+  /// can render the right Vietnamese copy.
+  Future<bool> login(String username, String password) async {
     emit(AuthLoading());
 
-    try {
-      final success = await loginUsecase(username, password);
+    final success = await loginUsecase(username, password);
 
-      if (!success) {
-        emit(const AuthError('Tài khoản hoặc mật khẩu không đúng'));
-        return;
-      }
-
-      final user = await getUserProfileUsecase();
-
-      emit(AuthAuthenticated(user));
-    } catch (e) {
-      emit(AuthError(e.toString()));
+    if (!success) {
+      // Backend didn't return a token — treat as bad credentials.
+      throw UnauthorizedException('Sai tài khoản hoặc mật khẩu.');
     }
+
+    final user = await getUserProfileUsecase();
+    emit(AuthAuthenticated(user));
+    return true;
   }
 
   Future<void> signInWithGoogle() async {
     emit(AuthLoading());
-
-    try {
-      final user = await signInWithGoogleUsecase.call();
-
-      emit(AuthAuthenticated(user));
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
+    final user = await signInWithGoogleUsecase.call();
+    emit(AuthAuthenticated(user));
   }
 
   /// Đăng xuất: xoá token → emit AuthUnauthenticated. AuthGate sẽ tự
@@ -82,7 +79,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await logoutUsecase(callServer: callServer);
     } catch (_) {
-      // Bỏ qua lỗi — vẫn tiếp tục clear local state.
+      // Bỏ qua l�i — vẫn tiếp tục clear local state.
     }
     emit(const AuthUnauthenticated());
   }

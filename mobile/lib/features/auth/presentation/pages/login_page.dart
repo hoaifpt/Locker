@@ -5,6 +5,7 @@ import '../controllers/auth_cubit.dart';
 import '../../../../shared/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../controllers/auth_state.dart';
+import '../widgets/hi_tech_background.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -28,6 +29,7 @@ class _LoginViewState extends State<_LoginView> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  AutovalidateMode _autovalidate = AutovalidateMode.disabled;
   bool _obscure = true;
 
   @override
@@ -55,7 +57,11 @@ class _LoginViewState extends State<_LoginView> {
   }
 
   Future<void> _submit() async {
-    // Validate form trước khi gọi API — tránh round-trip vô ích.
+    // Lần đầu bấm Đăng nhập: bật live validation để các lần sau error
+    // hiện ngay khi user gõ — tránh bắt user bấm submit mới biết sai.
+    setState(() => _autovalidate = AutovalidateMode.onUserInteraction);
+
+    // Validate form trư�c khi gọi API — tránh round-trip vô ích.
     if (!_formKey.currentState!.validate()) return;
 
     final cubit = context.read<AuthCubit>();
@@ -67,33 +73,19 @@ class _LoginViewState extends State<_LoginView> {
       // AuthGate sẽ tự swap sang HomePage khi state thành AuthAuthenticated.
     } catch (e) {
       if (!mounted) return;
-      await context.showAlertError(e);
+      // Exception được map qua FriendlyError → message tiếng Việt user-friendly.
+      await context.showAlertError(e, title: 'Đăng nhập thất bại');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state is AuthError) {
-          // state.message từ cubit có thể là raw text — đẩy qua alert
-          // thân thiện thay vì show snackbar kiểu dev.
-          context.showAlert(
-            state.message,
-            title: 'Đăng nhập thất bại',
-            type: AlertType.error,
-          );
-        }
-      },
-      child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFFFDE7DC), Color(0xFFF7D5C3)],
-            ),
-          ),
+    // Không còn BlocListener: AuthCubit.login() giờ rethrow exception
+    // thay vì emit AuthError, nên UI bắt trực tiếp qua try/catch trong
+    // _submit() và hiển thị qua FriendlyError.
+    return Scaffold(
+        backgroundColor: const Color(0xFF1A0E08),
+        body: HiTechBackground(
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -103,7 +95,11 @@ class _LoginViewState extends State<_LoginView> {
                 ),
                 child: Form(
                   key: _formKey,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  // State-driven: mặc định disabled (không hiện error trước
+                  // khi user bấm submit lần đầu). Sau lần submit đầu tiên
+                  // _submit() bật onUserInteraction để các lần sau error
+                  // hiện ngay khi user gõ tiếp.
+                  autovalidateMode: _autovalidate,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -111,7 +107,12 @@ class _LoginViewState extends State<_LoginView> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {},
-                          child: const Text('Trợ giúp'),
+                          child: Text(
+                            'Trợ giúp',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -136,19 +137,21 @@ class _LoginViewState extends State<_LoginView> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         'Chào mừng đến với Ebox',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF1C1C1E),
+                          color: Colors.white.withValues(alpha: 0.95),
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Đăng nhập để quản lý tủ đồ thông minh của bạn',
-                        style: TextStyle(color: Color(0xFF6C6C6C)),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 28),
@@ -173,7 +176,7 @@ class _LoginViewState extends State<_LoginView> {
                             _obscure
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            color: const Color(0xFFEB6C4B),
+                            color: const Color(0xFFFB923C),
                           ),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
@@ -187,7 +190,7 @@ class _LoginViewState extends State<_LoginView> {
                           },
                           child: const Text(
                             'Quên mật khẩu?',
-                            style: TextStyle(color: Color(0xFFEB6C4B)),
+                            style: TextStyle(color: Color(0xFFFB923C)),
                           ),
                         ),
                       ),
@@ -206,9 +209,11 @@ class _LoginViewState extends State<_LoginView> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
+                          Text(
                             'Chưa có tài khoản? ',
-                            style: TextStyle(color: Color(0xFF6C6C6C)),
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.6),
+                            ),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -217,7 +222,7 @@ class _LoginViewState extends State<_LoginView> {
                             child: const Text(
                               'Đăng ký ngay',
                               style: TextStyle(
-                                color: Color(0xFFEB6C4B),
+                                color: Color(0xFFFB923C),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -232,10 +237,9 @@ class _LoginViewState extends State<_LoginView> {
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
 class _InputField extends StatelessWidget {
   final TextEditingController controller;
@@ -264,13 +268,14 @@ class _InputField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.96),
         borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
+        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.25)),
+        boxShadow: [
           BoxShadow(
-            blurRadius: 10,
-            color: Color(0x18000000),
-            offset: Offset(0, 4),
+            blurRadius: 24,
+            color: const Color(0xFFFB923C).withValues(alpha: 0.18),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -281,10 +286,12 @@ class _InputField extends StatelessWidget {
         textInputAction: textInputAction,
         validator: validator,
         onFieldSubmitted: onSubmitted,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        // Không đặt autovalidateMode ở field — Form cha kiểm soát.
+        style: const TextStyle(color: Color(0xFF1C1C1E)),
         decoration: InputDecoration(
           hintText: hint,
-          prefixIcon: Icon(icon, color: const Color(0xFFEB6C4B)),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+          prefixIcon: Icon(icon, color: const Color(0xFFFB923C)),
           suffixIcon: suffix,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(

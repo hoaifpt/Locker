@@ -21,10 +21,11 @@ class WalletBalanceCardV2 extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: Stack(
         children: [
-          // Base slate background
+          // Base deep-slate background (darker than slate-900 for
+          // maximum contrast against the white page).
           Container(
             width: double.infinity,
-            decoration: const BoxDecoration(color: Color(0xFF0B1220)),
+            decoration: const BoxDecoration(color: Color(0xFF020617)),
           ),
           // Right-top orange glow (subtle, no blur API needed)
           Positioned(
@@ -37,7 +38,7 @@ class WalletBalanceCardV2 extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFF97316).withValues(alpha: 0.18),
+                    const Color(0xFFF97316).withValues(alpha: 0.22),
                     const Color(0xFFF97316).withValues(alpha: 0.0),
                   ],
                 ),
@@ -55,9 +56,23 @@ class WalletBalanceCardV2 extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFF97316).withValues(alpha: 0.10),
+                    const Color(0xFFF97316).withValues(alpha: 0.12),
                     const Color(0xFFF97316).withValues(alpha: 0.0),
                   ],
+                ),
+              ),
+            ),
+          ),
+          // Subtle hairline border so the card edge reads on light
+          // page backgrounds (the dark fill alone blends into shadows).
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.06),
+                  ),
                 ),
               ),
             ),

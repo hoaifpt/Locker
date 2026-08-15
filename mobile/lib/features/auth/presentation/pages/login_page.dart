@@ -104,18 +104,6 @@ class _LoginViewState extends State<_LoginView> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            'Trợ giúp',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 8),
                       // Logo is centered and animated (subtle pulse +
                       // glow) — see AnimatedLoginLogo.

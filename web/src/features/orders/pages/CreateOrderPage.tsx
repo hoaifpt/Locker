@@ -26,26 +26,45 @@ export default function CreateOrderPage() {
 
   // LẤY DỮ LIỆU THẬT TỪ API
   useEffect(() => {
-    const initData = async () => {
-      try {
-        const [lockerRes, pkgRes] = await Promise.all([
-          fetch('https://api.hoaitran.online/api/lockers'),
-          fetch('https://api.hoaitran.online/api/packages')
-        ]);
+  const initData = async () => {
+    const token = localStorage.getItem('token'); // Lấy token từ nơi bạn đã lưu sau khi login
 
-        const lockerData = await lockerRes.json();
-        const pkgData = await pkgRes.json();
-
-        // Cập nhật state với dữ liệu từ API
-        setLockers(lockerData);
-        setPackages(pkgData.filter((p: any) => p.isActive));
-      } catch (err) {
-        console.error("Lỗi tải dữ liệu:", err);
-        showToast("Không thể tải dữ liệu từ server", "error");
+    try {
+      // Thêm Authorization Header vào cả 2 lệnh fetch
+      const [lockerRes, pkgRes] = await Promise.all([
+        fetch('https://api.hoaitran.online/api/lockers', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch('https://api.hoaitran.online/api/packages', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+      
+      // Kiểm tra nếu 401 thì chuyển hướng về trang login
+      if (lockerRes.status === 401) {
+        showToast("Bạn cần đăng nhập để tiếp tục", "error");
+        navigate('/login');
+        return;
       }
-    };
-    initData();
-  }, [showToast]);
+
+      const lockerData = await lockerRes.json();
+      const pkgData = await pkgRes.json();
+      
+      setLockers(lockerData);
+      setPackages(pkgData.filter((p: any) => p.isActive));
+    } catch (err) {
+      console.error("Lỗi tải dữ liệu:", err);
+      showToast("Không thể tải dữ liệu từ server", "error");
+    }
+  };
+  initData();
+}, [showToast, navigate]);
 
   const currentLocker = lockers.find(l => l.id === selectedLocker);
   const currentPackage = packages.find(p => p.id === selectedPackage);

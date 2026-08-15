@@ -5,7 +5,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { getAvailableLockers, getLockerById, SEED_PACKAGES, SeedLocker, SeedPackage } from '../../../mocks/seed';
+import { API_ENDPOINTS } from '../../../constants/api-endpoints';
 import { useToast } from '../../../context/ToastContext';
+
 
 export default function CreateOrderPage() {
   const navigate = useNavigate();
@@ -48,14 +50,44 @@ export default function CreateOrderPage() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    await new Promise(r => setTimeout(r, 1000));
-    setSubmitting(false);
-    
-    // Create mock order ID
-    const mockOrderId = `ord-mock-${Date.now()}`;
-    showToast('✓ Đã tạo đơn hàng thành công!', 'success');
-    navigate(`/payment/${mockOrderId}`);
+
+    try {
+      const payload = {
+        lockerId: selectedLocker,
+        slotIndex: selectedSlot,
+        packageId: selectedPackage,
+        mobileNumber: mobile,
+        checkInTime: new Date().toISOString(),
+        durationHours: durationHours,
+        couponCode: null,
+        notes: notes
+      };
+
+      const response = await fetch(API_ENDPOINTS.orders.reserve, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Đặt tủ thất bại');
+      }
+
+      const result = await response.json();
+
+      showToast('✓ Đã tạo đơn hàng thành công!', 'success');
+      navigate(`/payment/${result.orderId || `ord-${Date.now()}`}`);
+
+    } catch (error) {
+      console.error(error);
+      showToast('Có lỗi xảy ra khi đặt tủ', 'error');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-[#F9F8F6] font-sans antialiased">
@@ -128,7 +160,7 @@ export default function CreateOrderPage() {
           {step === 3 && (
             <div className="space-y-5">
               <h2 className="font-bold text-gray-900">Bước 3: Gói dịch vụ & Thông tin</h2>
-              
+
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">Chọn gói dịch vụ</label>
                 <div className="grid gap-2">
@@ -178,8 +210,8 @@ export default function CreateOrderPage() {
           {/* STEP 4: Review & Submit */}
           {step === 4 && (
             <div className="space-y-6">
-              <h2 className="font-bold text-gray-900 flex items-center gap-2 text-center justify-center mb-6"><Package size={20} className="text-orange-500"/> Xác nhận đơn hàng</h2>
-              
+              <h2 className="font-bold text-gray-900 flex items-center gap-2 text-center justify-center mb-6"><Package size={20} className="text-orange-500" /> Xác nhận đơn hàng</h2>
+
               <div className="rounded-2xl bg-gray-50 p-4 text-sm space-y-3 border border-gray-100">
                 <div className="flex justify-between"><span className="text-gray-500">Tủ khóa</span><span className="font-bold text-gray-900 text-right">{currentLocker?.name}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Vị trí</span><span className="font-semibold text-gray-700 text-right">{currentLocker?.location}</span></div>
@@ -200,7 +232,7 @@ export default function CreateOrderPage() {
               </div>
 
               <button onClick={handleSubmit} disabled={submitting} className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3.5 text-sm font-semibold text-white shadow-md shadow-orange-200 transition hover:bg-orange-600 disabled:opacity-60">
-                {submitting ? 'Đang tạo đơn...' : <>Xác nhận và Thanh toán <ChevronRight size={16}/></>}
+                {submitting ? 'Đang tạo đơn...' : <>Xác nhận và Thanh toán <ChevronRight size={16} /></>}
               </button>
             </div>
           )}

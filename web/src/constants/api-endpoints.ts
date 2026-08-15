@@ -60,6 +60,9 @@ export const API_ENDPOINTS = {
     complete: (id: string) => `${API_BASE}/bookings/${id}/complete`,
     cancel: (id: string) => `${API_BASE}/bookings/${id}/cancel`,
   },
+    orders: {
+    reserve: `${API_BASE}/orders/reserve`,
+  },
 
   packages: {
     getAll: `${API_BASE}/packages`,

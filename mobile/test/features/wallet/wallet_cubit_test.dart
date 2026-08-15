@@ -30,7 +30,12 @@ class _FakeWalletRepository implements IWalletRepository {
   final List<String> statusCalls = [];
   final List<String> cancelCalls = [];
 
+  /// Default / seeded overview. Tests may swap this to simulate the
+  /// wallet overview being re-fetched (e.g. after cancel).
   WalletOverview? nextOverview;
+  /// Incremented every time `getWalletOverview` is called. Lets tests
+  /// assert that cancelTopUp triggered a follow-up refresh.
+  int overviewLoadCount = 0;
 
   final List<double> initCalls = [];
 
@@ -60,8 +65,10 @@ class _FakeWalletRepository implements IWalletRepository {
   }
 
   @override
-  Future<WalletOverview> getWalletOverview() async =>
-      nextOverview ?? _notConfigured<WalletOverview>('nextOverview');
+  Future<WalletOverview> getWalletOverview() async {
+    overviewLoadCount++;
+    return nextOverview ?? _notConfigured<WalletOverview>('nextOverview');
+  }
 
   // Unused in these tests:
   @override
@@ -283,6 +290,62 @@ void main() {
       expect(cubit.state.pendingPayment?.paymentId, 'pay-6');
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('locker:pending-topup'), isNull);
+    });
+
+    test('refreshes overview after cancel so cancelled payment appears in '
+        'history', () async {
+      // The first `getWalletOverview` is from the explicit cubit.load()
+      // below; the second is the cancel-triggered refresh. Both will
+      // return the same `nextOverview` payload, which contains a
+      // cancelled transaction — this mirrors what the backend would
+      // hand back after the cancel endpoint commits.
+      repo.nextOverview = const WalletOverview(
+        balance: 0,
+        monthlyChange: 0,
+        points: 0,
+        transactions: [
+          WalletTransaction(
+            id: 'tx-cancelled',
+            amount: -200000,
+            type: 0,
+            status: 3, // 3 == Cancelled
+            description: 'TOPUP CANCELLED',
+            title: 'Nạp tiền vào ví',
+            timeLabel: '15/08/2026 18:50',
+          ),
+        ],
+      );
+      await cubit.load();
+      final before = repo.overviewLoadCount;
+
+      repo.sepayResponse = SepayInitResponse(
+        paymentId: 'pay-cancel-history',
+        paymentUrl: 'u',
+        amount: 200000,
+        sepayCode: 'TOPUP CANCELLED',
+        expiresAt: DateTime.utc(2099, 1, 1),
+      );
+      repo.cancelResponse = const SepayCancelResponse(
+        success: true,
+        message: 'Cancelled',
+        newStatus: 'Cancelled',
+        paymentId: 'pay-cancel-history',
+      );
+      await cubit.topUp(200000);
+      await cubit.cancelTopUp();
+
+      // Allow the unawaited refresh to run.
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(repo.overviewLoadCount, greaterThan(before),
+          reason:
+              'cancelTopUp must trigger an overview refresh so the '
+              'cancelled transaction shows up in history');
+      expect(
+        cubit.state.overview?.transactions.first.status,
+        3,
+        reason: 'cancelled transaction surfaces in history list',
+      );
     });
 
     test('emits errorMessage when backend rejects', () async {

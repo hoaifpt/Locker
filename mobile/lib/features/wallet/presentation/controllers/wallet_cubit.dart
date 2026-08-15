@@ -149,6 +149,11 @@ class WalletCubit extends Cubit<WalletState> {
             topUpStep: TopUpStep.cancelled,
           ),
         );
+        // Refresh the wallet overview silently so the cancelled
+        // transaction surfaces in history. We can't reuse `load()`
+        // because it flips `isLoading:true`, which would force the
+        // transaction list to flash its skeleton.
+        unawaited(_refreshOverview());
       } else {
         emit(
           state.copyWith(

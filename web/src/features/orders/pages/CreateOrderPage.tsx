@@ -139,7 +139,7 @@ export default function CreateOrderPage() {
                     <div>
                       <h3 className="font-bold text-gray-900">{l.name}</h3>
                       <p className="text-xs text-gray-500 mt-1">{l.location}</p>
-                      <span className="mt-2 inline-block rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">{l.slots.filter(s => s.status === 'Available').length} ô trống</span>
+                      <span className="mt-2 inline-block rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">{l.slots.filter((s: any) => s.status === 0).length} ô trống</span>
                     </div>
                   </button>
                 ))}

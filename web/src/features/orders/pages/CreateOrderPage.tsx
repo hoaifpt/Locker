@@ -51,31 +51,39 @@ export default function CreateOrderPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
 
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
 
     try {
+      // Kiểm tra dữ liệu tại client trước khi gửi
+      if (!selectedLocker || selectedSlot === null || !selectedPackage) {
+        throw new Error("Vui lòng kiểm tra lại các trường bắt buộc");
+      }
+
       const payload = {
         lockerId: selectedLocker,
-        slotIndex: selectedSlot,
+        slotIndex: Number(selectedSlot), // Đảm bảo là Number
         packageId: selectedPackage,
         mobileNumber: mobile,
         checkInTime: new Date().toISOString(),
-        durationHours: durationHours,
-        couponCode: null,
-        notes: notes
+        durationHours: Number(durationHours), // Đảm bảo là Number
+        couponCode: null, // Hoặc "" thay vì null nếu Backend yêu cầu string
+        notes: notes || "" // Gửi chuỗi rỗng thay vì null
       };
 
       const response = await fetch('https://api.hoaitran.online/api/orders/reserve', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Đừng quên token!
         },
         body: JSON.stringify(payload),
       });
 
+      // BÍ QUYẾT: Đọc lỗi chi tiết từ Backend
       if (!response.ok) {
-        throw new Error('Đặt tủ thất bại');
+        const errorDetails = await response.json();
+        console.error("Lỗi từ server:", errorDetails); // Xem chi tiết trong F12 Console
+        throw new Error(errorDetails.title || 'Đặt tủ thất bại');
       }
 
       const result = await response.json();

@@ -5,6 +5,7 @@ import '../controllers/auth_cubit.dart';
 import '../../../../shared/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../controllers/auth_state.dart';
+import '../widgets/animated_login_logo.dart';
 import '../widgets/hi_tech_background.dart';
 
 class LoginPage extends StatelessWidget {
@@ -116,25 +117,10 @@ class _LoginViewState extends State<_LoginView> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // Logo is centered and constrained in BOTH width and
-                      // height so that BoxFit.contain produces a square
-                      // bounding box — previously the SizedBox was height-
-                      // only, which let the asset overflow horizontally and
-                      // look misaligned against the centered form below.
-                      Center(
-                        child: SizedBox(
-                          height: 200,
-                          width: 200,
-                          child: Image.asset(
-                            'assets/ebox_logo.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const Icon(
-                              Icons.inbox,
-                              size: 80,
-                              color: Color(0xFFEB6C4B),
-                            ),
-                          ),
-                        ),
+                      // Logo is centered and animated (subtle pulse +
+                      // glow) — see AnimatedLoginLogo.
+                      const Center(
+                        child: AnimatedLoginLogo(size: 200),
                       ),
                       const SizedBox(height: 12),
                       Text(

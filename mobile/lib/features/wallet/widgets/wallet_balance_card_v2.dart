@@ -19,28 +19,39 @@ class WalletBalanceCardV2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
-      child: SizedBox(
+      child: Container(
         width: double.infinity,
+        // Decoration lives directly on the Container so the base fill is
+        // sized by intrinsic content — no need to rely on a Stack's
+        // StackFit.expand (which misbehaves inside an unbounded vertical
+        // scroll view and triggers RenderBox-zero-size hit-test loops on
+        // Flutter web).
+        decoration: const BoxDecoration(color: Color(0xFF020617)),
+        foregroundDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        ),
         child: Stack(
-          fit: StackFit.expand,
+          // Glows do not need to fill — keep the Stack loose so it does
+          // not interfere with the parent's intrinsic sizing.
+          clipBehavior: Clip.none,
           children: [
-            // Base deep-slate background (darker than slate-900 for
-            // maximum contrast against the white page).
-            const ColoredBox(color: Color(0xFF020617)),
-            // Right-top orange glow (subtle, no blur API needed)
+            // Right-top orange glow
             Positioned(
               right: -60,
               top: -60,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFFF97316).withValues(alpha: 0.22),
-                      const Color(0xFFF97316).withValues(alpha: 0.0),
-                    ],
+              child: IgnorePointer(
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFFF97316).withValues(alpha: 0.22),
+                        const Color(0xFFF97316).withValues(alpha: 0.0),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -49,29 +60,17 @@ class WalletBalanceCardV2 extends StatelessWidget {
             Positioned(
               left: 60,
               bottom: -40,
-              child: Container(
-                width: 130,
-                height: 130,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFFF97316).withValues(alpha: 0.12),
-                      const Color(0xFFF97316).withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Subtle hairline border so the card edge reads on light
-            // page backgrounds (the dark fill alone blends into shadows).
-            Positioned.fill(
               child: IgnorePointer(
-                child: DecoratedBox(
+                child: Container(
+                  width: 130,
+                  height: 130,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.06),
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFFF97316).withValues(alpha: 0.12),
+                        const Color(0xFFF97316).withValues(alpha: 0.0),
+                      ],
                     ),
                   ),
                 ),

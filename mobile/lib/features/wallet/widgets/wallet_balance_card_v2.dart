@@ -98,16 +98,16 @@ class WalletBalanceCardV2 extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.10),
                         ),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.verified_user_outlined,
-                            color: const Color(0xFFFB923C),
+                            color: Color(0xFFFB923C),
                             size: 13,
                           ),
-                          const SizedBox(width: 5),
-                          const Text(
+                          SizedBox(width: 5),
+                          Text(
                             'Được bảo vệ bởi E-Box',
                             style: TextStyle(
                               color: Color(0xFFF1F5F9),

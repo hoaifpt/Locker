@@ -54,20 +54,23 @@ export default function CreateOrderPage() {
     const token = localStorage.getItem('token');
 
     try {
-      // Kiểm tra dữ liệu tại client trước khi gửi
-      if (!selectedLocker || selectedSlot === null || !selectedPackage) {
+      // SỬA Ở ĐÂY: Dùng defaultLockerId (lấy từ URL) làm lockerId thực tế.
+      // defaultLockerId được lấy từ searchParams, đó chính là Guid chuẩn.
+      const finalLockerId = defaultLockerId || selectedLocker;
+
+      if (!finalLockerId || selectedSlot === null || !selectedPackage) {
         throw new Error("Vui lòng kiểm tra lại các trường bắt buộc");
       }
 
       const payload = {
-        lockerId: selectedLocker,
-        slotIndex: Number(selectedSlot), // Đảm bảo là Number
+        lockerId: finalLockerId, // Sử dụng Guid chuẩn từ URL
+        slotIndex: Number(selectedSlot),
         packageId: selectedPackage,
         mobileNumber: mobile,
         checkInTime: new Date().toISOString(),
-        durationHours: Number(durationHours), // Đảm bảo là Number
-        couponCode: null, // Hoặc "" thay vì null nếu Backend yêu cầu string
-        notes: notes || "" // Gửi chuỗi rỗng thay vì null
+        durationHours: Number(durationHours),
+        couponCode: null,
+        notes: notes || ""
       };
 
       console.log("Dữ liệu gửi lên API:", JSON.stringify(payload));
@@ -76,26 +79,24 @@ export default function CreateOrderPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Đừng quên token!
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload),
       });
 
-      // BÍ QUYẾT: Đọc lỗi chi tiết từ Backend
       if (!response.ok) {
         const errorDetails = await response.json();
-        console.error("Lỗi từ server:", errorDetails); // Xem chi tiết trong F12 Console
+        console.error("Lỗi từ server:", errorDetails);
         throw new Error(errorDetails.title || 'Đặt tủ thất bại');
       }
 
       const result = await response.json();
-
       showToast('✓ Đã tạo đơn hàng thành công!', 'success');
       navigate(`/payment/${result.orderId || `ord-${Date.now()}`}`);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      showToast('Có lỗi xảy ra khi đặt tủ', 'error');
+      showToast(error.message || 'Có lỗi xảy ra khi đặt tủ', 'error');
     } finally {
       setSubmitting(false);
     }

@@ -63,7 +63,7 @@ export default function CreateOrderPage() {
         notes: notes
       };
 
-      const response = await fetch(API_ENDPOINTS.orders.reserve, {
+      const response = await fetch('/orders/reserve', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

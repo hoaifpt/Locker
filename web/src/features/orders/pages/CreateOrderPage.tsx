@@ -70,6 +70,8 @@ export default function CreateOrderPage() {
         notes: notes || "" // Gửi chuỗi rỗng thay vì null
       };
 
+      console.log("Dữ liệu gửi lên API:", JSON.stringify(payload));
+
       const response = await fetch('https://api.hoaitran.online/api/orders/reserve', {
         method: 'POST',
         headers: {

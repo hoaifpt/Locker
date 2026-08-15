@@ -63,7 +63,7 @@ export default function CreateOrderPage() {
         notes: notes
       };
 
-      const response = await fetch('/orders/reserve', {
+      const response = await fetch('https://api.hoaitran.online/api/orders/reserve', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

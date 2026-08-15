@@ -50,7 +50,7 @@ class _WalletTransactionsSectionState extends State<WalletTransactionsSection> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -72,7 +72,7 @@ class _WalletTransactionsSectionState extends State<WalletTransactionsSection> {
                       Text(
                         'Các giao dịch gần đây của ví',
                         style: TextStyle(
-                          color: Color(0xFF94A3B8),
+                          color: Color(0xFF64748B),
                           fontSize: 12,
                         ),
                       ),
@@ -81,8 +81,8 @@ class _WalletTransactionsSectionState extends State<WalletTransactionsSection> {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                    horizontal: 12,
+                    vertical: 5,
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1F5F9),
@@ -91,7 +91,7 @@ class _WalletTransactionsSectionState extends State<WalletTransactionsSection> {
                   child: Text(
                     '${filtered.length} giao dịch',
                     style: const TextStyle(
-                      color: Color(0xFF475569),
+                      color: Color(0xFF334155),
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -100,22 +100,19 @@ class _WalletTransactionsSectionState extends State<WalletTransactionsSection> {
               ],
             ),
             const SizedBox(height: 16),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final f in kTransactionStatusFilters) ...[
-                    _FilterChip(
-                      label: f.label,
-                      selected: widget.statusFilter == f.value,
-                      onTap: () => widget.onStatusFilterChanged(f.value),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                ],
-              ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final f in kTransactionStatusFilters)
+                  _FilterChip(
+                    label: f.label,
+                    selected: widget.statusFilter == f.value,
+                    onTap: () => widget.onStatusFilterChanged(f.value),
+                  ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             if (widget.isLoading && widget.transactions.isEmpty)
               const _LoadingList()
             else if (filtered.isEmpty)
@@ -202,20 +199,54 @@ class _EmptyState extends StatelessWidget {
         .where((c) => c.value == filter)
         .firstOrNull;
     final label = f?.label ?? 'Tất cả';
-    final msg = filter == 'all'
-        ? 'Chưa có giao dịch nào.'
-        : 'Không có giao dịch "$label".';
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 36),
+    final hasFilter = filter != 'all';
+    final heading = hasFilter
+        ? 'Chưa có giao dịch "$label"'
+        : 'Lịch sử trống';
+    final description = hasFilter
+        ? 'Khi có giao dịch mới ở trạng thái này, nó sẽ xuất hiện ở đây.'
+        : 'Nạp tiền lần đầu để bắt đầu giao dịch với ví E-BOX Pay.';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         children: [
-          const Icon(Icons.history, size: 28, color: Color(0xFFCBD5E1)),
-          const SizedBox(height: 10),
-          Text(
-            msg,
-            style: const TextStyle(
+          Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE2E8F0),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.receipt_long_outlined,
+              size: 24,
               color: Color(0xFF94A3B8),
-              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            heading,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF0F172A),
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            description,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 12,
+              height: 1.5,
             ),
           ),
         ],

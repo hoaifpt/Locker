@@ -64,7 +64,7 @@ class WalletBalanceCardV2 extends StatelessWidget {
           ),
           // Foreground content
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -95,7 +95,7 @@ class WalletBalanceCardV2 extends StatelessWidget {
                           const Text(
                             'Được bảo vệ bởi E-Box',
                             style: TextStyle(
-                              color: Color(0xFFCBD5E1),
+                              color: Color(0xFFE2E8F0),
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -105,17 +105,17 @@ class WalletBalanceCardV2 extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 22),
                 const Text(
                   'Số dư khả dụng',
                   style: TextStyle(
-                    color: Color(0xFF94A3B8),
+                    color: Color(0xFFCBD5E1),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.8,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 10),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
@@ -124,35 +124,37 @@ class WalletBalanceCardV2 extends StatelessWidget {
                       formatVndDigits(balance),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 40,
+                        fontSize: 42,
                         fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
+                        letterSpacing: -0.8,
                         height: 1.0,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 3),
                     const Padding(
-                      padding: EdgeInsets.only(bottom: 4),
+                      padding: EdgeInsets.only(bottom: 6),
                       child: Text(
                         '₫',
                         style: TextStyle(
                           color: Color(0xFFF97316),
-                          fontSize: 24,
+                          fontSize: 32,
                           fontWeight: FontWeight.w800,
+                          height: 1.0,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 const Text(
                   'Số dư được cập nhật ngay sau khi SePay xác nhận thanh toán.',
                   style: TextStyle(
-                    color: Color(0xFF94A3B8),
+                    color: Color(0xFFCBD5E1),
                     fontSize: 13,
+                    height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 24),
                 Material(
                   color: const Color(0xFFF97316),
                   borderRadius: BorderRadius.circular(12),

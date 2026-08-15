@@ -176,8 +176,6 @@ class _WalletViewState extends State<_WalletView> {
                               },
                               isLoading: state.isLoading,
                             ),
-                            const SizedBox(height: 24),
-                            const WalletPromoBanner(),
                           ],
                         ),
                       ),

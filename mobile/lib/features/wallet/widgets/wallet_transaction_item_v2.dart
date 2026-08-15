@@ -64,7 +64,7 @@ class WalletTransactionItemV2 extends StatelessWidget {
                 Text(
                   time,
                   style: const TextStyle(
-                    color: Color(0xFF94A3B8),
+                    color: Color(0xFF64748B),
                     fontSize: 12,
                   ),
                 ),

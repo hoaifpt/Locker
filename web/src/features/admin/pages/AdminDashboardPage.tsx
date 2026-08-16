@@ -122,8 +122,7 @@ export default function AdminDashboardPage() {
           throw new Error('Không thể tải dữ liệu.');
         }
 
-        const completedPayments = payments?.items.filter(p => p.status === 1) ?? [];
-        const revenue = completedPayments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
+
 
         const [usersData, bookingsData, paymentsData, walletData] = await Promise.all([
           usersRes.json() as Promise<AdminUser[]>,
@@ -152,31 +151,29 @@ export default function AdminDashboardPage() {
   // dashboard sum trên trang đầu (pageSize=200, backend cap). Với
   // dataset vài trăm payments thì chính xác; nếu vượt 200 cần endpoint
   // riêng — TODO thêm /admin/payments/summary nếu scale lên.
-  const completedPayments = payments?.items.filter(p => p.status === 'Completed') ?? [];
+  const completedPayments = payments?.items.filter(p => p.status === 1) ?? [];
   const revenue = completedPayments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
 
   const recentUsers = [...users]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 6);
 
-  const statsValues: Record<string, StatDisplay> = {
+  // 2. SỬA ĐỊNH NGHĨA statsValues: thêm "as Record<string, StatDisplay>" để tránh lỗi index
+  const statsValues = {
     users: { value: users.length.toLocaleString('vi-VN') },
     bookings: { value: bookings.length.toLocaleString('vi-VN') },
-    // Doanh thu: tổng tiền các payment Completed. Sub-line hiển thị số
-    // giao dịch Completed — gộp luôn vào card này thay cho 2 card
-    // Payments + Doanh thu riêng biệt.
     revenue: {
       value: revenue.toLocaleString('vi-VN') + ' đ',
       subValue: `${completedPayments.length.toLocaleString('vi-VN')} giao dịch`,
     },
-    // Wallet card: count ở ngoài (góc trên phải), tổng tiền ở trong (ô vàng)
     wallet: {
       value: wallet ? wallet.topUpCount.toLocaleString('vi-VN') : '0',
       subValue: wallet
         ? `${wallet.totalTopUpAmount.toLocaleString('vi-VN')} đ`
         : '0 đ',
     },
-  };
+  } as Record<string, StatDisplay>;
+
 
   return (
     <div className="flex min-h-screen bg-[#F9F8F6]">
@@ -260,16 +257,14 @@ export default function AdminDashboardPage() {
                         <td className="px-4 py-3 font-medium text-gray-900">{u.fullName ?? u.username}</td>
                         <td className="px-4 py-3 text-gray-500">{u.email}</td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            u.role === 'Admin' ? 'bg-purple-100 text-purple-600' :
-                            u.role === 'Shipper' ? 'bg-blue-100 text-blue-600' :
-                            'bg-gray-100 text-gray-600'
-                          }`}>{u.role}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === 'Admin' ? 'bg-purple-100 text-purple-600' :
+                              u.role === 'Shipper' ? 'bg-blue-100 text-blue-600' :
+                                'bg-gray-100 text-gray-600'
+                            }`}>{u.role}</span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            u.isActive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'
-                          }`}>{u.isActive ? 'Active' : 'Inactive'}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.isActive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'
+                            }`}>{u.isActive ? 'Active' : 'Inactive'}</span>
                         </td>
                       </tr>
                     ))

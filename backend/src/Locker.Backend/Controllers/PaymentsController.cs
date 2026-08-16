@@ -73,6 +73,12 @@ public class PaymentsController : ControllerBase
     [HttpPost("{id}/complete")]
     public async Task<IActionResult> Complete(Guid id, [FromBody] CompletePaymentRequest request, CancellationToken cancellationToken)
     {
+        if (request == null)
+        {
+            Console.WriteLine("DEBUG: Request body is null!");
+            return BadRequest("Request body is null");
+        }
+        Console.WriteLine($"DEBUG: Received TransactionId: {request.TransactionId}");
         var userId = GetUserId();
         if (userId == Guid.Empty) return Unauthorized();
 

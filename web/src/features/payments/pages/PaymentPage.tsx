@@ -53,12 +53,13 @@ export default function PaymentPage() {
       const payRes = await fetch('https://api.hoaitran.online/api/payments', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json', // Bắt buộc phải có
+          'Accept': 'application/json',       // Thêm header này để Backend biết ta muốn nhận JSON
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          bookingId: orderId, // Backend mong đợi bookingId
-          method: selectedMethod // Backend mong đợi method
+          BookingId: orderId, // Backend mong đợi bookingId
+          Method: selectedMethod // Backend mong đợi method
         })
       });
 
@@ -72,7 +73,11 @@ export default function PaymentPage() {
       // 2. Hoàn tất thanh toán
       const completeRes = await fetch(`https://api.hoaitran.online/api/payments/${paymentData.id}/complete`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (!completeRes.ok) throw new Error('Thanh toán thất bại');

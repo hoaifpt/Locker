@@ -29,11 +29,11 @@ public class WalletTransactionRepository : GenericRepository<WalletTransaction>,
     public async Task<decimal> GetBalanceAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var transactions = await GetByUserIdAsync(userId, cancellationToken);
-        
+
         // Calculate balance: (TopUp + Refund) - (Payment + TransferOut) + (TransferIn)
         var balance = transactions
             .Where(t => t.Status == TransactionStatus.Completed)
-            .Sum(t => 
+            .Sum(t =>
             {
                 if (t.Type == TransactionType.TopUp || t.Type == TransactionType.Refund)
                     return t.Amount;
@@ -46,11 +46,56 @@ public class WalletTransactionRepository : GenericRepository<WalletTransaction>,
                 }
                 return 0;
             });
-            
+
         // also count transfers where this user is the receiver
         var receivedTransfers = await _collection.Find(x => x.RelatedUserId == userId && x.Type == TransactionType.Transfer && x.Status == TransactionStatus.Completed)
             .ToListAsync(cancellationToken);
-            
+
         return balance + receivedTransfers.Sum(x => x.Amount);
+    }
+
+    public async Task<List<WalletTransaction>> GetTopUpsAsync(
+        DateTime? dateFrom,
+        DateTime? dateTo,
+        CancellationToken cancellationToken = default)
+    {
+        var filterBuilder = Builders<WalletTransaction>.Filter;
+        var filters = new List<FilterDefinition<WalletTransaction>>
+        {
+            filterBuilder.Eq(x => x.Type, TransactionType.TopUp),
+            filterBuilder.Eq(x => x.Status, TransactionStatus.Completed),
+        };
+
+        if (dateFrom.HasValue) filters.Add(filterBuilder.Gte(x => x.CreatedAt, dateFrom.Value));
+        if (dateTo.HasValue) filters.Add(filterBuilder.Lte(x => x.CreatedAt, dateTo.Value));
+
+        var combined = filterBuilder.And(filters);
+        return await _collection.Find(combined)
+            .SortByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<decimal> GetTotalTopUpAmountAsync(CancellationToken cancellationToken = default)
+    {
+        var pipeline = new[]
+        {
+            new MongoDB.Bson.BsonDocument("$match", new MongoDB.Bson.BsonDocument
+            {
+                { "Type", (int)TransactionType.TopUp },
+                { "Status", (int)TransactionStatus.Completed },
+            }),
+            new MongoDB.Bson.BsonDocument("$group", new MongoDB.Bson.BsonDocument
+            {
+                { "_id", MongoDB.Bson.BsonNull.Value },
+                { "total", new MongoDB.Bson.BsonDocument("$sum", "$Amount") },
+            }),
+        };
+
+        var result = await _collection
+            .Aggregate<MongoDB.Bson.BsonDocument>(pipeline, cancellationToken: cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (result == null || !result.Contains("total")) return 0m;
+        return result["total"].ToDecimal();
     }
 }

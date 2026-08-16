@@ -5,6 +5,8 @@ using Locker.Backend.Application.Features.Admin.Commands.UpdateUserRole;
 using Locker.Backend.Application.Features.Admin.Queries.GetAllBookings;
 using Locker.Backend.Application.Features.Admin.Queries.GetAllPayments;
 using Locker.Backend.Application.Features.Admin.Queries.GetAllUsers;
+using Locker.Backend.Application.Features.Admin.Queries.GetAllWalletTopUps;
+using Locker.Backend.Application.Features.Admin.Queries.GetWalletTopUpSummary;
 using Locker.Backend.Application.Interfaces;
 using Locker.Backend.Domain.Enums;
 using MediatR;
@@ -111,6 +113,27 @@ public class AdminController : ControllerBase
     {
         var payments = await _sender.Send(new GetAllPaymentsQuery(pageNumber, pageSize, dateFrom, dateTo), cancellationToken);
         return Ok(payments);
+    }
+
+    // ── Wallet ────────────────────────────────────────────
+
+    /// <summary>Tổng tiền user đã nạp vào hệ thống (Wallet TopUp Completed).</summary>
+    [HttpGet("wallet/summary")]
+    public async Task<IActionResult> GetWalletSummary(CancellationToken cancellationToken)
+    {
+        var summary = await _sender.Send(new GetWalletTopUpSummaryQuery(), cancellationToken);
+        return Ok(summary);
+    }
+
+    /// <summary>Danh sách các giao dịch TopUp Completed trong khoảng thời gian.</summary>
+    [HttpGet("wallet/top-ups")]
+    public async Task<IActionResult> GetWalletTopUps(
+        [FromQuery] DateTime? dateFrom = null,
+        [FromQuery] DateTime? dateTo = null,
+        CancellationToken cancellationToken = default)
+    {
+        var topUps = await _sender.Send(new GetAllWalletTopUpsQuery(dateFrom, dateTo), cancellationToken);
+        return Ok(topUps);
     }
 }
 

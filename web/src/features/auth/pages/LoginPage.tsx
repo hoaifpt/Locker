@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, User, Eye, EyeOff, ChevronRight } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, ChevronRight, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { apiFetch } from '../../../lib/api';
+import { extractApiError } from '../authValidation';
 import Logo from '../../../components/ui/Logo';
 
 const ERROR_MSG: Record<string, string> = {
@@ -36,13 +37,13 @@ export default function LoginPage() {
       });
 
       if (!response.ok) {
-        let errorMessage = 'Đăng nhập thất bại.';
-
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch { }
-
+        // Surface the backend's actual reason instead of the generic
+        // "Đăng nhập thất bại." — backend may return either an
+        // Identity-style string or an ASP.NET ProblemDetails body.
+        const errorMessage = await extractApiError(
+          response,
+          'Đăng nhập thất bại. Vui lòng thử lại.',
+        );
         throw new Error(errorMessage);
       }
 
@@ -178,8 +179,12 @@ export default function LoginPage() {
 
               {/* Error banner */}
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                  {error}
+                <div
+                  role="alert"
+                  className="flex items-start gap-2 whitespace-pre-line rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+                >
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
 

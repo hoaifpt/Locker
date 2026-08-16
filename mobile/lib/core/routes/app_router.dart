@@ -36,7 +36,6 @@ import '../../features/qr_scanner/presentation/pages/scan_history_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/notifications/presentation/pages/notification_page.dart';
-import '../../features/security_privacy/presentation/pages/security_privacy_page.dart';
 import '../../features/personal_info/presentation/pages/personal_info_page.dart';
 import '../../features/change_password/presentation/pages/change_password_page.dart';
 import '../../features/change_password/presentation/pages/forgot_password_page.dart';
@@ -48,9 +47,11 @@ import '../../features/feedback/presentation/pages/feedback_page.dart';
 final _forgotPasswordCubit = getIt<ForgotPasswordCubit>();
 
 class AppRouter {
-  static const initialRoute = '/login';
-
   static Map<String, WidgetBuilder> get routes => {
+    // '/login' kept for backwards compatibility — the LoginPage is now
+    // also rendered directly by the AuthGate in main.dart, so deep-links
+    // to /login still resolve. Prefer emitting AuthCubit.logout() so the
+    // gate swaps automatically.
     '/login': (context) => const LoginPage(),
     '/sign-up': (context) => const SignUpPage(),
     '/home': (context) => const HomePage(),
@@ -127,7 +128,6 @@ class AppRouter {
     '/settings': (context) => const SettingsPage(),
     '/feedback': (context) => const FeedbackPage(),
     '/notifications': (context) => const NotificationPage(),
-    '/security-privacy': (context) => const SecurityPrivacyPage(),
     '/personal-info': (context) => const PersonalInfoPage(),
     '/change-password': (context) => const ChangePasswordPage(),
     '/forgot-password': (context) => BlocProvider.value(

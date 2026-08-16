@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,6 +9,12 @@ import 'core/constants/app_constants.dart';
 import 'core/routes/app_router.dart';
 import 'core/routes/injection.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/presentation/controllers/auth_cubit.dart';
+import 'features/auth/presentation/controllers/auth_state.dart';
+import 'features/auth/presentation/pages/login_page.dart';
+import 'features/home/presentation/pages/home_page.dart';
+import 'features/settings/presentation/controllers/settings_cubit.dart';
+import 'features/settings/presentation/controllers/settings_state.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 // 1. CẤU HÌNH XỬ LÝ THÔNG BÁO KHI APP ĐANG TẮT HOÀN TOÀN (BACKGROUND/TERMINATED)
@@ -99,12 +106,92 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppConstants.appName,
-      theme: AppTheme.light,
-      initialRoute: AppRouter.initialRoute,
-      routes: AppRouter.routes,
-      debugShowCheckedModeBanner: false,
+    return MultiBlocProvider(
+      providers: [
+        // App-wide so the MaterialApp builder can read the current fontSize
+        // and propagate the matching textScaler to every route.
+        BlocProvider<SettingsCubit>.value(value: getIt<SettingsCubit>()),
+        // App-wide so the root AuthGate can swap LoginPage <-> HomePage
+        // based on the persisted token (no need to restart the app after
+        // login or logout).
+        BlocProvider<AuthCubit>.value(value: getIt<AuthCubit>()),
+      ],
+      child: BlocBuilder<SettingsCubit, SettingsState>(
+        buildWhen: (prev, next) {
+          // Only rebuild when the loaded settings change (not on every
+          // loading/error transition).
+          if (next is SettingsLoaded && prev is SettingsLoaded) {
+            return prev.fontSize != next.fontSize;
+          }
+          return false;
+        },
+        builder: (context, settingsState) {
+          final textScaleFactor =
+              settingsState is SettingsLoaded &&
+                      settingsState.fontSize == FontSize.easyRead
+                  ? 1.25
+                  : 1.0;
+          return MaterialApp(
+            title: AppConstants.appName,
+            theme: AppTheme.light,
+            debugShowCheckedModeBanner: false,
+            // `home` (not `initialRoute`) drives the root: AuthGate swaps
+            // between LoginPage and HomePage based on the persisted token.
+            // `routes` are kept for all secondary navigation (orders,
+            // profile, wallet, etc.).
+            home: const _AuthGate(),
+            routes: AppRouter.routes,
+            builder: (context, child) {
+              final mq = MediaQuery.of(context);
+              return MediaQuery(
+                data: mq.copyWith(
+                  textScaler: TextScaler.linear(textScaleFactor),
+                ),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Root gate that swaps between LoginPage and HomePage based on the
+/// persisted auth token (restored at app start by [AuthCubit.checkSession]).
+class _AuthGate extends StatelessWidget {
+  const _AuthGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, state) {
+        return switch (state) {
+          AuthInitial() ||
+          AuthLoading() =>
+            const _SplashScreen(),
+          AuthUnauthenticated() ||
+          AuthError() =>
+            const LoginPage(),
+          AuthAuthenticated() => const HomePage(),
+          // Fallback cho future subclasses (exhaustive guard).
+          AuthState() => const _SplashScreen(),
+        };
+      },
+    );
+  }
+}
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: CircularProgressIndicator(color: Color(0xFFF97316)),
+      ),
     );
   }
 }

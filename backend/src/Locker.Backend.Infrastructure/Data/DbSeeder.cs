@@ -39,8 +39,8 @@ public static class DbSeeder
         var adminEmail = config["Admin:Email"] ?? "admin@locker.com";
         var adminPassword = config["Admin:Password"] ?? defaultPassword;
 
-        int customersCount = config.GetValue<int>("Seed:CustomersCount", 10);
-        int shippersCount = config.GetValue<int>("Seed:ShippersCount", 5);
+        int customersCount = config.GetValue<int>("Seed:CustomersCount", 0);
+        int shippersCount = config.GetValue<int>("Seed:ShippersCount", 0);
         int restaurantOwnersCount = config.GetValue<int>("Seed:RestaurantOwnersCount", 5);
 
         // 1. Roles
@@ -60,23 +60,32 @@ public static class DbSeeder
         await CreateUserAsync(userManager, adminId, adminUsername, adminEmail, "0000000000", "Admin", "Administrator", adminPassword);
 
         // 3. Sample Users
+        // Seed user thật (Customer/Shipper) đã bị tắt theo yêu cầu —
+        // tài khoản thật được tạo qua flow đăng ký web/app. Việc seed
+        // các user ảo trước đây (nguyenvanan, dinhvangiao, …) khiến
+        // bảng Users phình to và Admin phải dò thủ công. Defaults đổi
+        // về 0; nếu cần demo có thể bật lại qua appsettings:
+        //   "Seed": { "CustomersCount": 5, "ShippersCount": 3 }
         var customerIds = new List<Guid>();
         var customerNames = new[] { "Nguyễn Văn An", "Trần Thị Mai", "Lê Hoàng Tuấn", "Phạm Ngọc Bích", "Vũ Xuân Đạt" };
         var customerUsernames = new[] { "nguyenvanan", "tranthimai", "lehoangtuan", "phamngocbich", "vuxuandat" };
         var customerPhones = new[] { "0901234567", "0912345678", "0923456789", "0934567890", "0945678901" };
 
-        for (int i = 0; i < customersCount; i++)
+        if (customersCount > 0)
         {
-            var idx = i % customerNames.Length;
-            var uName = customerUsernames[idx] + (i >= customerNames.Length ? (i + 1).ToString() : "");
-            var fullName = customerNames[idx];
-            var phone = customerPhones[idx];
-            var email = $"{uName}@gmail.com";
+            for (int i = 0; i < customersCount; i++)
+            {
+                var idx = i % customerNames.Length;
+                var uName = customerUsernames[idx] + (i >= customerNames.Length ? (i + 1).ToString() : "");
+                var fullName = customerNames[idx];
+                var phone = customerPhones[idx];
+                var email = $"{uName}@gmail.com";
 
-            var u = await userManager.FindByNameAsync(uName);
-            var id = u?.Id ?? Guid.NewGuid();
-            await CreateUserAsync(userManager, id, uName, email, phone, "User", fullName, defaultPassword);
-            customerIds.Add(id);
+                var u = await userManager.FindByNameAsync(uName);
+                var id = u?.Id ?? Guid.NewGuid();
+                await CreateUserAsync(userManager, id, uName, email, phone, "User", fullName, defaultPassword);
+                customerIds.Add(id);
+            }
         }
 
         var shipperIds = new List<Guid>();
@@ -84,18 +93,21 @@ public static class DbSeeder
         var shipperUsernames = new[] { "dinhvangiao", "lythanhhai", "buitronghieu", "dovantoan" };
         var shipperPhones = new[] { "0812345678", "0823456789", "0834567890", "0845678901" };
 
-        for (int i = 0; i < shippersCount; i++)
+        if (shippersCount > 0)
         {
-            var idx = i % shipperNames.Length;
-            var uName = shipperUsernames[idx] + (i >= shipperNames.Length ? (i + 1).ToString() : "");
-            var fullName = shipperNames[idx];
-            var phone = shipperPhones[idx];
-            var email = $"{uName}@fastdelivery.com";
+            for (int i = 0; i < shippersCount; i++)
+            {
+                var idx = i % shipperNames.Length;
+                var uName = shipperUsernames[idx] + (i >= shipperNames.Length ? (i + 1).ToString() : "");
+                var fullName = shipperNames[idx];
+                var phone = shipperPhones[idx];
+                var email = $"{uName}@fastdelivery.com";
 
-            var u = await userManager.FindByNameAsync(uName);
-            var id = u?.Id ?? Guid.NewGuid();
-            await CreateUserAsync(userManager, id, uName, email, phone, "Shipper", fullName, defaultPassword);
-            shipperIds.Add(id);
+                var u = await userManager.FindByNameAsync(uName);
+                var id = u?.Id ?? Guid.NewGuid();
+                await CreateUserAsync(userManager, id, uName, email, phone, "Shipper", fullName, defaultPassword);
+                shipperIds.Add(id);
+            }
         }
 
         // 4. Packages (Pricing plans)

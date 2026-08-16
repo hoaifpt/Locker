@@ -29,72 +29,37 @@ class SignUpCubit extends Cubit<SignUpState> {
     emit(state.copyWith(phoneNumber: phoneNumber));
   }
 
+  /// Gọi từ `TextFormField.validator`. Trả về `null` khi hợp lệ.
+  /// Cubit không tự validate inputs trước khi gọi API nữa — Form
+  /// validator ở Screen sẽ chặn từ đầu, tránh cubit lưu state lỗi tạm
+  /// thời rồi UI phải đợi emit mới.
   Future<void> signUp() async {
-    if (!_validateInputs()) return;
-
     emit(state.copyWith(isLoading: true, errorMessage: null));
 
     try {
       final request = SignUpRequest(
-        username: state.username,
-        fullName: state.fullName,
-        email: state.email,
+        username: state.username.trim(),
+        fullName: state.fullName.trim(),
+        email: state.email.trim(),
         password: state.password,
-        phoneNumber: state.phoneNumber,
+        // PhoneNumber optional — không gửi nếu rỗng để backend
+        // [Phone] validation chỉ chạy khi user nhập.
+        phoneNumber: state.phoneNumber.trim().isEmpty
+            ? ''
+            : state.phoneNumber.trim(),
       );
 
       final response = await signUpUseCase(request);
 
       emit(state.copyWith(isLoading: false, response: response));
     } catch (e) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          errorMessage: 'Đăng ký thất bại: ${e.toString()}',
-        ),
-      );
+      // Repo đã ném ValidationException / AppException có message rõ
+      // ràng. Cubit chỉ bubble lên cho Screen xử lý qua
+      // context.showAlertError(e, ...) — không bọc thêm 'Đăng ký thất
+      // bại: ...' để tránh leak exception class name ra UI.
+      emit(state.copyWith(isLoading: false));
+      rethrow;
     }
-  }
-
-  bool _validateInputs() {
-    if (state.username.isEmpty) {
-      emit(state.copyWith(errorMessage: 'Vui lòng nhập username'));
-      return false;
-    }
-    if (!_isValidUsername(state.username)) {
-      emit(
-        state.copyWith(
-          errorMessage:
-              'Username chỉ được chứa chữ cái, số và dấu gạch dưới (_)',
-        ),
-      );
-      return false;
-    }
-    if (state.fullName.isEmpty) {
-      emit(state.copyWith(errorMessage: 'Vui lòng nhập họ và tên'));
-      return false;
-    }
-    if (state.email.isEmpty || !_isValidEmail(state.email)) {
-      emit(state.copyWith(errorMessage: 'Vui lòng nhập email hợp lệ'));
-      return false;
-    }
-    if (state.phoneNumber.isEmpty) {
-      emit(state.copyWith(errorMessage: 'Vui lòng nhập số điện thoại'));
-      return false;
-    }
-    if (state.password.isEmpty || state.password.length < 6) {
-      emit(state.copyWith(errorMessage: 'Mật khẩu phải có ít nhất 6 ký tự'));
-      return false;
-    }
-    return true;
-  }
-
-  bool _isValidUsername(String username) {
-    return RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(username);
-  }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
   }
 
   void clearError() {

@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/payment_status.dart';
 import '../../domain/entities/sepay_init_response.dart';
 import '../../utils/currency.dart';
+import '../../../../shared/extensions/context_extensions.dart';
 import '../controllers/wallet_cubit.dart';
 import '../controllers/wallet_state.dart';
 import '../../widgets/payment_status_badge.dart';
@@ -80,19 +81,59 @@ class _TopUpPageState extends State<TopUpPage> {
   }
 
   Future<void> _handleTopUp() async {
-    final amount = int.tryParse(_amountController.text) ?? 0;
-    if (amount < _kMinAmount) {
-      _showSnackBar('Số tiền tối thiểu là 10.000 ₫');
+    final raw = _amountController.text.trim();
+    final amount = int.tryParse(raw) ?? 0;
+
+    // Validation: đẩy qua alert thân thiện thay vì snack — user dễ
+    // thấy và dễ hiểu hơn.
+    if (raw.isEmpty) {
+      await context.showAlert(
+        'Vui lòng nhập số tiền cần nạp.',
+        title: 'Số tiền chưa hợp lệ',
+        type: AlertType.warning,
+      );
       return;
     }
+    if (amount <= 0) {
+      await context.showAlert(
+        'Số tiền phải lớn hơn 0 ₫.',
+        title: 'Số tiền chưa hợp lệ',
+        type: AlertType.warning,
+      );
+      return;
+    }
+    if (amount < _kMinAmount) {
+      await context.showAlert(
+        'Số tiền tối thiểu mỗi lần nạp là ${_formatVnd(_kMinAmount)}.',
+        title: 'Số tiền dưới mức cho phép',
+        type: AlertType.warning,
+      );
+      return;
+    }
+
     final cubit = context.read<WalletCubit>();
-    final sepayResponse = await cubit.topUp(amount.toDouble());
-    if (!mounted) return;
-    if (sepayResponse == null) {
-      final err = cubit.state.errorMessage ?? 'Khởi tạo thanh toán thất bại';
-      _showSnackBar(err);
+    try {
+      final sepayResponse = await cubit.topUp(amount.toDouble());
+      if (!mounted) return;
+      if (sepayResponse == null) {
+        // cubit đã set state.errorMessage — show alert thay vì snack.
+        final errMsg = cubit.state.errorMessage ?? 'Không thể khởi tạo thanh toán.';
+        await context.showAlert(
+          errMsg,
+          title: 'Khởi tạo thanh toán thất bại',
+          type: AlertType.error,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      await context.showAlertError(e, title: 'Khởi tạo thanh toán thất bại');
     }
   }
+
+  String _formatVnd(int v) => '${v.toString().replaceAllMapped(
+        RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+        (m) => '${m[1]}.',
+      )} ₫';
 
   Future<void> _confirmCancel() async {
     final cubit = context.read<WalletCubit>();

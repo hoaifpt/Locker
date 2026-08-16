@@ -71,8 +71,7 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
         // 4. Tạo Payment
         var payment = new Payment
         {
-            BookingId = booking.Id,
-            OrderId = order.Id,
+            BookingId = request.BookingId,
             UserId = request.UserId,
             Amount = order.TotalAmount,
             Method = request.Method,

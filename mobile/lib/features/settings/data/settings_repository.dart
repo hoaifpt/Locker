@@ -20,24 +20,31 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   @override
-  Future<Map<String, bool>> getPreferences() async {
+  Future<Map<String, dynamic>> getPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     return {
       'pushNotifications':
           prefs.getBool(AppConstants.prefsPushNotificationsKey) ?? true,
       'darkMode': prefs.getBool(AppConstants.prefsDarkModeKey) ?? false,
+      'fontSize':
+          prefs.getString(AppConstants.prefsFontSizeKey) ?? 'normal',
     };
   }
 
   @override
-  Future<void> updatePreferences(Map<String, bool> prefsMap) async {
+  Future<void> updatePreferences(Map<String, dynamic> prefsMap) async {
     final prefs = await SharedPreferences.getInstance();
     if (prefsMap.containsKey('pushNotifications')) {
       await prefs.setBool(AppConstants.prefsPushNotificationsKey,
-          prefsMap['pushNotifications']!);
+          prefsMap['pushNotifications'] as bool);
     }
     if (prefsMap.containsKey('darkMode')) {
-      await prefs.setBool(AppConstants.prefsDarkModeKey, prefsMap['darkMode']!);
+      await prefs.setBool(
+          AppConstants.prefsDarkModeKey, prefsMap['darkMode'] as bool);
+    }
+    if (prefsMap.containsKey('fontSize')) {
+      await prefs.setString(
+          AppConstants.prefsFontSizeKey, prefsMap['fontSize'] as String);
     }
   }
 

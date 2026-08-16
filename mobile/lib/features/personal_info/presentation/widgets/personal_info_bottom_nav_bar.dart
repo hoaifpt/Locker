@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+
 class PersonalInfoBottomNavBar extends StatelessWidget {
   const PersonalInfoBottomNavBar({super.key});
 
@@ -7,16 +9,16 @@ class PersonalInfoBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF4F4F5)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.settingsCardBorder),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 16,
-            offset: Offset(0, -4),
+            color: AppColors.settingsShadow,
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -65,7 +67,9 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? const Color(0xFFEA580C) : const Color(0xFFA1A1AA);
+    final color = active
+        ? AppColors.settingsAccent
+        : AppColors.settingsTextSecondary;
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -75,20 +79,18 @@ class _NavItem extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: active ? const Color(0xFFFFF7ED) : Colors.transparent,
+              color: active ? AppColors.settingsAccentSoft : Colors.transparent,
               borderRadius: BorderRadius.circular(9999),
             ),
             child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
               color: color,
               fontSize: 11,
-              fontFamily: 'Plus Jakarta Sans',
               fontWeight: FontWeight.w600,
-              height: 1.5,
             ),
           ),
         ],

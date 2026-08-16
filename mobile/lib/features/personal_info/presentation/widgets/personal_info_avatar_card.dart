@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+
 class PersonalInfoAvatarCard extends StatelessWidget {
   final String avatarUrl;
   final String name;
@@ -16,45 +18,46 @@ class PersonalInfoAvatarCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 1, color: Color(0xFFF1F5F9)),
-          borderRadius: BorderRadius.circular(32),
-        ),
-        shadows: const [
-          BoxShadow(
-            color: Color(0x0A1A1C1C),
-            blurRadius: 16,
-            offset: Offset(4, 4),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.all(20),
+      decoration: settingsCardDecoration(),
       child: Column(
         children: [
           Stack(
             clipBehavior: Clip.none,
             children: [
               Container(
-                width: 112,
-                height: 112,
-                padding: const EdgeInsets.all(4),
+                width: 96,
+                height: 96,
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF7ED),
+                  color: AppColors.settingsAccentSoft,
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0x33FD8D64), width: 1),
+                  border: Border.all(
+                    color: AppColors.settingsAccent,
+                    width: 1.5,
+                  ),
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: ClipOval(
-                  child: Image.network(
-                    avatarUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Center(
-                      child: Icon(Icons.person_rounded,
-                          size: 60, color: Color(0xFFFB923C)),
-                    ),
-                  ),
+                  child: avatarUrl.isEmpty
+                      ? const Center(
+                          child: Icon(
+                            Icons.person_rounded,
+                            size: 56,
+                            color: AppColors.settingsAccent,
+                          ),
+                        )
+                      : Image.network(
+                          avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(
+                              Icons.person_rounded,
+                              size: 56,
+                              color: AppColors.settingsAccent,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               Positioned(
@@ -63,22 +66,23 @@ class PersonalInfoAvatarCard extends StatelessWidget {
                 child: Container(
                   width: 32,
                   height: 32,
-                  decoration: ShapeDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(width: 1, color: Color(0x4CD7C2BB)),
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    shadows: const [
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.settingsCardBorder),
+                    boxShadow: const [
                       BoxShadow(
-                        color: Color(0x0C000000),
+                        color: AppColors.settingsShadow,
                         blurRadius: 2,
                         offset: Offset(0, 1),
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.camera_alt_rounded,
-                      size: 16, color: Color(0xFF9D4320)),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    size: 16,
+                    color: AppColors.settingsAccent,
+                  ),
                 ),
               ),
             ],
@@ -87,30 +91,24 @@ class PersonalInfoAvatarCard extends StatelessWidget {
           Text(
             name,
             style: const TextStyle(
-              color: Color(0xFF1A1C1C),
-              fontSize: 24,
-              fontFamily: 'Manrope',
+              color: AppColors.settingsTextPrimary,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
-              height: 1.33,
             ),
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: ShapeDecoration(
-              color: const Color(0x33FD8D64),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(9999),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.settingsAccentSoft,
+              borderRadius: BorderRadius.circular(9999),
             ),
             child: Text(
               membershipTier,
               style: const TextStyle(
-                color: Color(0xFF9D4320),
-                fontSize: 14,
-                fontFamily: 'Plus Jakarta Sans',
-                fontWeight: FontWeight.w600,
-                height: 1.43,
+                color: AppColors.settingsAccent,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),

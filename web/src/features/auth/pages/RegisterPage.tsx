@@ -1,16 +1,37 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Mail, Eye, EyeOff, User, Phone, ChevronRight } from 'lucide-react';
+import {
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  User,
+  Phone,
+  ChevronRight,
+  AlertCircle,
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../../lib/api';
 import { hidden, visible, trans } from '../../../lib/animations';
 import Logo from '../../../components/ui/Logo';
+import {
+  RegisterForm,
+  RegisterErrors,
+  extractApiError,
+  validateConfirm,
+  validateEmail,
+  validatePassword,
+  validateRegisterForm,
+  validateUsername,
+  validateVietnamesePhone,
+  hasErrors,
+} from '../authValidation';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<RegisterForm>({
     username: '',
     email: '',
     fullName: '',
@@ -18,20 +39,68 @@ export default function RegisterPage() {
     password: '',
     confirm: '',
   });
+  const [errors, setErrors] = useState<RegisterErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof RegisterForm, boolean>>>({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setError('');
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const updateField = <K extends keyof RegisterForm>(
+    key: K,
+    value: RegisterForm[K],
+  ) => {
+    const nextForm = { ...form, [key]: value };
+    setForm(nextForm);
+
+    // Real-time validation: re-run only the field that changed, plus
+    // `confirm` if the password changed so the mismatch updates
+    // immediately.
+    const nextErrors: RegisterErrors = { ...errors };
+    switch (key) {
+      case 'username':
+        nextErrors.username = validateUsername(nextForm.username);
+        break;
+      case 'email':
+        nextErrors.email = validateEmail(nextForm.email);
+        break;
+      case 'phoneNumber':
+        nextErrors.phoneNumber = validateVietnamesePhone(nextForm.phoneNumber);
+        break;
+      case 'password':
+        nextErrors.password = validatePassword(nextForm.password);
+        nextErrors.confirm = validateConfirm(
+          nextForm.confirm,
+          nextForm.password,
+        );
+        break;
+      case 'confirm':
+        nextErrors.confirm = validateConfirm(nextForm.confirm, nextForm.password);
+        break;
+    }
+    setErrors(nextErrors);
+    // Clear the submit error once the user starts editing again.
+    if (submitError) setSubmitError('');
+  };
+
+  const handleBlur = (field: keyof RegisterForm) => {
+    setTouched((t) => ({ ...t, [field]: true }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setSubmitError('');
 
-    if (form.password !== form.confirm) {
-      setError('Mật khẩu xác nhận không khớp.');
+    // Force validation on every field on submit.
+    const allErrors = validateRegisterForm(form);
+    setErrors(allErrors);
+    setTouched({
+      username: true,
+      email: true,
+      phoneNumber: true,
+      password: true,
+      confirm: true,
+    });
+    if (hasErrors(allErrors)) {
+      setSubmitError('Vui lòng kiểm tra các trường được tô đỏ.');
       return;
     }
 
@@ -40,32 +109,25 @@ export default function RegisterPage() {
       const response = await apiFetch('/auth/register', {
         method: 'POST',
         data: {
-          username: form.username,
-          email: form.email,
+          username: form.username.trim(),
+          email: form.email.trim(),
           password: form.password,
-          fullName: form.fullName || undefined,
-          phoneNumber: form.phoneNumber || undefined,
+          fullName: form.fullName.trim() || undefined,
+          phoneNumber: form.phoneNumber.trim() || undefined,
         },
       });
 
       if (!response.ok) {
-        let errorMessage = 'Đăng ký thất bại. Vui lòng thử lại.';
-        // Thử phân tích phản hồi lỗi dưới dạng JSON, nhưng xử lý các trường hợp không phải JSON.
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (jsonError) {
-          // Nội dung phản hồi không phải là JSON.
-          // Chúng ta có thể sử dụng statusText làm phương án dự phòng.
-          errorMessage = response.statusText || errorMessage;
-        }
+        const errorMessage = await extractApiError(
+          response,
+          'Đăng ký thất bại. Vui lòng thử lại.',
+        );
         throw new Error(errorMessage);
       }
 
-      // On success, redirect to email verification page
-      navigate(`/verify-email?email=${encodeURIComponent(form.email)}`);
+      navigate(`/verify-email?email=${encodeURIComponent(form.email.trim())}`);
     } catch (err: any) {
-      setError(err.message);
+      setSubmitError(err.message);
     } finally {
       setLoading(false);
     }
@@ -121,145 +183,111 @@ export default function RegisterPage() {
             transition={trans(0.1)}
             className="rounded-3xl border border-gray-100 bg-white p-8 shadow-xl shadow-orange-100/40"
           >
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
               {/* Username */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Tên đăng nhập <span className="text-orange-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
-                    <User size={16} />
-                  </span>
-                  <input
-                    type="text"
-                    name="username"
-                    value={form.username}
-                    onChange={handleChange}
-                    placeholder="vd: nguyenvana"
-                    required
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
-                  />
-                </div>
-              </div>
+              <FormField
+                label="Tên đăng nhập"
+                required
+                icon={<User size={16} />}
+                name="username"
+                value={form.username}
+                onChange={(v) => updateField('username', v)}
+                onBlur={() => handleBlur('username')}
+                error={touched.username ? errors.username : undefined}
+                placeholder="vd: nguyenvana"
+                autoComplete="username"
+              />
 
               {/* Full name */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Họ và tên
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
-                    <User size={16} />
-                  </span>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={form.fullName}
-                    onChange={handleChange}
-                    placeholder="Nguyễn Văn A"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
-                  />
-                </div>
-              </div>
+              <FormField
+                label="Họ và tên"
+                icon={<User size={16} />}
+                name="fullName"
+                value={form.fullName}
+                onChange={(v) => updateField('fullName', v)}
+                onBlur={() => handleBlur('fullName')}
+                placeholder="Nguyễn Văn A"
+                autoComplete="name"
+              />
 
               {/* Email */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Email <span className="text-orange-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
-                    <Mail size={16} />
-                  </span>
-                  <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="you@example.com"
-                    required
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
-                  />
-                </div>
-              </div>
+              <FormField
+                label="Email"
+                required
+                icon={<Mail size={16} />}
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={(v) => updateField('email', v)}
+                onBlur={() => handleBlur('email')}
+                error={touched.email ? errors.email : undefined}
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
 
               {/* Phone number */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Số điện thoại
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
-                    <Phone size={16} />
-                  </span>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={form.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="0912 345 678"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
-                  />
-                </div>
-              </div>
+              <FormField
+                label="Số điện thoại"
+                icon={<Phone size={16} />}
+                name="phoneNumber"
+                type="tel"
+                value={form.phoneNumber}
+                onChange={(v) => updateField('phoneNumber', v)}
+                onBlur={() => handleBlur('phoneNumber')}
+                error={touched.phoneNumber ? errors.phoneNumber : undefined}
+                placeholder="0912345678"
+                autoComplete="tel"
+              />
 
               {/* Password */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Mật khẩu <span className="text-orange-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
-                    <Lock size={16} />
-                  </span>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder="Tối thiểu 6 ký tự"
-                    required
-                    minLength={6}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-11 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
-                  />
+              <FormField
+                label="Mật khẩu"
+                required
+                icon={<Lock size={16} />}
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={(v) => updateField('password', v)}
+                onBlur={() => handleBlur('password')}
+                error={touched.password ? errors.password : undefined}
+                placeholder="Tối thiểu 8 ký tự, có chữ hoa, chữ thường và số"
+                autoComplete="new-password"
+                trailing={
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-4 flex items-center text-gray-400 transition hover:text-gray-600"
+                    className="text-gray-400 transition hover:text-gray-600"
+                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
-                </div>
-              </div>
+                }
+              />
 
               {/* Confirm password */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Xác nhận mật khẩu <span className="text-orange-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
-                    <Lock size={16} />
-                  </span>
-                  <input
-                    type={showConfirm ? 'text' : 'password'}
-                    name="confirm"
-                    value={form.confirm}
-                    onChange={handleChange}
-                    placeholder="Nhập lại mật khẩu"
-                    required
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-11 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
-                  />
+              <FormField
+                label="Xác nhận mật khẩu"
+                required
+                icon={<Lock size={16} />}
+                name="confirm"
+                type={showConfirm ? 'text' : 'password'}
+                value={form.confirm}
+                onChange={(v) => updateField('confirm', v)}
+                onBlur={() => handleBlur('confirm')}
+                error={touched.confirm ? errors.confirm : undefined}
+                placeholder="Nhập lại mật khẩu"
+                autoComplete="new-password"
+                trailing={
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute inset-y-0 right-4 flex items-center text-gray-400 transition hover:text-gray-600"
+                    className="text-gray-400 transition hover:text-gray-600"
+                    aria-label={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   >
                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
-                </div>
-              </div>
+                }
+              />
 
               {/* Terms */}
               <label className="flex cursor-pointer items-start gap-2.5">
@@ -280,9 +308,13 @@ export default function RegisterPage() {
                 </span>
               </label>
 
-              {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                  {error}
+              {submitError && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-2 whitespace-pre-line rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+                >
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <span>{submitError}</span>
                 </div>
               )}
 
@@ -332,6 +364,90 @@ export default function RegisterPage() {
           </motion.p>
         </div>
       </main>
+    </div>
+  );
+}
+
+/**
+ * Reusable styled input with an optional inline error.
+ * Keeps the JSX of the register page flat. Error takes precedence
+ * over the regular focus ring — it switches the border + ring to red
+ * and renders the message underneath.
+ */
+interface FormFieldProps {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+  icon?: React.ReactNode;
+  trailing?: React.ReactNode;
+  type?: string;
+  required?: boolean;
+  error?: string;
+  placeholder?: string;
+  autoComplete?: string;
+}
+
+function FormField({
+  label,
+  name,
+  value,
+  onChange,
+  onBlur,
+  icon,
+  trailing,
+  type = 'text',
+  required,
+  error,
+  placeholder,
+  autoComplete,
+}: FormFieldProps) {
+  const hasError = !!error;
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-gray-700">
+        {label}
+        {required && <span className="text-orange-500"> *</span>}
+      </label>
+      <div className="relative">
+        {icon && (
+          <span
+            className={[
+              'pointer-events-none absolute inset-y-0 left-4 flex items-center',
+              hasError ? 'text-red-400' : 'text-gray-400',
+            ].join(' ')}
+          >
+            {icon}
+          </span>
+        )}
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          aria-invalid={hasError || undefined}
+          className={[
+            'w-full rounded-xl border bg-gray-50 py-3 pl-11 pr-4 text-sm outline-none transition placeholder:text-gray-400 focus:bg-white focus:ring-2',
+            hasError
+              ? 'border-red-300 text-red-900 focus:border-red-400 focus:ring-red-100'
+              : 'border-gray-200 text-gray-900 focus:border-orange-400 focus:ring-orange-100',
+            trailing ? 'pr-11' : '',
+          ].join(' ')}
+        />
+        {trailing && (
+          <span className="absolute inset-y-0 right-4 flex items-center">{trailing}</span>
+        )}
+      </div>
+      {hasError && (
+        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-red-600">
+          <AlertCircle size={12} />
+          <span>{error}</span>
+        </p>
+      )}
     </div>
   );
 }

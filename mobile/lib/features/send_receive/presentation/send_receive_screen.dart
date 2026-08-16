@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../shared/extensions/context_extensions.dart';
 import '../../locker/domain/entities/locker_slot.dart';
 import '../../locker/domain/entities/locker.dart'; // Giả định bạn có entity này
 import '../domain/entities/send_receive_order.dart';
@@ -24,17 +25,30 @@ class _SendReceiveScreenState extends State<SendReceiveScreen> {
     context.read<SendReceiveCubit>().load();
   }
 
+  bool _orderHandled = false;
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SendReceiveCubit, SendReceiveState>(
-      listener: (context, state) {
+      listenWhen: (prev, next) =>
+          prev.currentOrder != next.currentOrder ||
+          prev.errorMessage != next.errorMessage,
+      listener: (context, state) async {
         // Chỉ lắng nghe sau khi đã tải xong dữ liệu ban đầu
         if (state.lockerSizes.isEmpty) return;
 
-        if (state.currentOrder != null) {
-          // Tạo đơn hàng thành công, điều hướng đến trang thanh toán với dữ liệu thật
+        // Capture navigator + cubit TRƯỚC khi await để tránh
+        // use_build_context_synchronously khi dùng context sau dialog.
+        final navigator = Navigator.of(context);
+        final cubit = context.read<SendReceiveCubit>();
+
+        if (state.currentOrder != null && !_orderHandled) {
+          _orderHandled = true;
+          // Tạo đơn hàng thành công → show dialog có mã đơn + nút Copy
+          // trước khi điều hướng sang trang thanh toán.
           final order = state.currentOrder!;
           final orderData = {
+            'orderId': order.id,
             'lockerCode': order.lockerCode,
             'location': order.location,
             'size': order.size,
@@ -43,17 +57,23 @@ class _SendReceiveScreenState extends State<SendReceiveScreen> {
             'servicePrice': 2000, // Tạm thời hardcode, nên lấy từ API nếu có
             'totalPrice': order.estimatedFee,
           };
-          Navigator.of(context).pushNamed('/payment', arguments: orderData);
+          await context.showCopyDialog(
+            title: 'Tạo đơn hàng thành công',
+            code: order.id,
+            subtitle: 'Vui lòng sao chép mã đơn hàng để tra cứu khi cần.',
+            description: 'Bạn có thể tìm lại mã này trong mục "Đơn hàng của tôi".',
+          );
+          navigator.pushNamed('/payment', arguments: orderData);
+          _orderHandled = false;
         } else if (state.errorMessage != null) {
-          // Hiển thị lỗi nếu tạo đơn hàng thất bại
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: Colors.red,
-            ),
+          // Alert thân thiện thay vì snackbar raw text.
+          await context.showAlert(
+            state.errorMessage!,
+            title: 'Tạo đơn hàng thất bại',
+            type: AlertType.error,
           );
           // Xóa lỗi để không hiển thị lại
-          context.read<SendReceiveCubit>().clearError();
+          cubit.clearError();
         }
       },
       builder: (context, state) {

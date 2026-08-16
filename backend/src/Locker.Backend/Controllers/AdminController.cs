@@ -117,11 +117,23 @@ public class AdminController : ControllerBase
 
     // ── Wallet ────────────────────────────────────────────
 
-    /// <summary>Tổng tiền user đã nạp vào hệ thống (Wallet TopUp Completed).</summary>
+    /// <summary>Tổng tiền user đã nạp vào hệ thống (Wallet TopUp Completed).
+    /// Truyền query <c>date</c> (YYYY-MM-DD) để xem stats của ngày cụ thể
+    /// trong quá khứ (hôm qua, hôm kia…). Nếu không truyền, mặc định là
+    /// hôm nay (UTC).</summary>
     [HttpGet("wallet/summary")]
-    public async Task<IActionResult> GetWalletSummary(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetWalletSummary(
+        [FromQuery] DateTime? date = null,
+        CancellationToken cancellationToken = default)
     {
-        var summary = await _sender.Send(new GetWalletTopUpSummaryQuery(), cancellationToken);
+        DateTime? selectedUtc = null;
+        if (date.HasValue)
+        {
+            // Chỉ lấy phần ngày (00:00:00 UTC) — tránh client gửi kèm giờ làm lệch.
+            selectedUtc = DateTime.SpecifyKind(date.Value.Date, DateTimeKind.Utc);
+        }
+
+        var summary = await _sender.Send(new GetWalletTopUpSummaryQuery(selectedUtc), cancellationToken);
         return Ok(summary);
     }
 

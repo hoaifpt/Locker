@@ -81,13 +81,13 @@ public class WalletTransactionRepository : GenericRepository<WalletTransaction>,
         {
             new MongoDB.Bson.BsonDocument("$match", new MongoDB.Bson.BsonDocument
             {
-                { "Type", (int)TransactionType.TopUp },
-                { "Status", (int)TransactionStatus.Completed },
+                { "type", (int)TransactionType.TopUp },
+                { "status", (int)TransactionStatus.Completed },
             }),
             new MongoDB.Bson.BsonDocument("$group", new MongoDB.Bson.BsonDocument
             {
                 { "_id", MongoDB.Bson.BsonNull.Value },
-                { "total", new MongoDB.Bson.BsonDocument("$sum", "$Amount") },
+                { "total", new MongoDB.Bson.BsonDocument("$sum", "$amount") },
             }),
         };
 
@@ -97,5 +97,71 @@ public class WalletTransactionRepository : GenericRepository<WalletTransaction>,
 
         if (result == null || !result.Contains("total")) return 0m;
         return result["total"].ToDecimal();
+    }
+
+    public async Task<(decimal Amount, int Count)> GetTopUpStatsSinceAsync(
+        DateTime startUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var pipeline = new[]
+        {
+            new MongoDB.Bson.BsonDocument("$match", new MongoDB.Bson.BsonDocument
+            {
+                { "type", (int)TransactionType.TopUp },
+                { "status", (int)TransactionStatus.Completed },
+                { "createdAt", new MongoDB.Bson.BsonDocument("$gte", startUtc) },
+            }),
+            new MongoDB.Bson.BsonDocument("$group", new MongoDB.Bson.BsonDocument
+            {
+                { "_id", MongoDB.Bson.BsonNull.Value },
+                { "amount", new MongoDB.Bson.BsonDocument("$sum", "$amount") },
+                { "count", new MongoDB.Bson.BsonDocument("$sum", 1) },
+            }),
+        };
+
+        var result = await _collection
+            .Aggregate<MongoDB.Bson.BsonDocument>(pipeline, cancellationToken: cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (result == null) return (0m, 0);
+        var amount = result.Contains("amount") ? result["amount"].ToDecimal() : 0m;
+        var count = result.Contains("count") ? result["count"].ToInt32() : 0;
+        return (amount, count);
+    }
+
+    public async Task<(decimal Amount, int Count)> GetTopUpStatsInRangeAsync(
+        DateTime startUtc,
+        DateTime endUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var pipeline = new[]
+        {
+            new MongoDB.Bson.BsonDocument("$match", new MongoDB.Bson.BsonDocument
+            {
+                { "type", (int)TransactionType.TopUp },
+                { "status", (int)TransactionStatus.Completed },
+                { "createdAt", new MongoDB.Bson.BsonDocument
+                    {
+                        { "$gte", startUtc },
+                        { "$lt", endUtc },
+                    }
+                },
+            }),
+            new MongoDB.Bson.BsonDocument("$group", new MongoDB.Bson.BsonDocument
+            {
+                { "_id", MongoDB.Bson.BsonNull.Value },
+                { "amount", new MongoDB.Bson.BsonDocument("$sum", "$amount") },
+                { "count", new MongoDB.Bson.BsonDocument("$sum", 1) },
+            }),
+        };
+
+        var result = await _collection
+            .Aggregate<MongoDB.Bson.BsonDocument>(pipeline, cancellationToken: cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (result == null) return (0m, 0);
+        var amount = result.Contains("amount") ? result["amount"].ToDecimal() : 0m;
+        var count = result.Contains("count") ? result["count"].ToInt32() : 0;
+        return (amount, count);
     }
 }

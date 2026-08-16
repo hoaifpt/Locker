@@ -55,12 +55,22 @@ type PaginatedPayments = {
 type WalletTopUpSummary = {
   totalTopUpAmount: number;
   topUpCount: number;
+  todayAmount: number;
+  todayCount: number;
+  weekAmount: number;
+  weekCount: number;
+  monthAmount: number;
+  monthCount: number;
+};
+
+type StatDisplay = {
+  value: string;
+  subValue?: string;
 };
 
 const stats = [
   { label: 'Tổng Users', key: 'users', icon: Users, color: 'bg-blue-500', to: '/users' },
   { label: 'Bookings', key: 'bookings', icon: Clock, color: 'bg-green-500', to: '/bookings' },
-  { label: 'Payments', key: 'payments', icon: CreditCard, color: 'bg-purple-500', to: '/payments' },
   { label: 'Doanh thu', key: 'revenue', icon: TrendingUp, color: 'bg-emerald-500', to: '/payments' },
   { label: 'Wallet TopUp', key: 'wallet', icon: Wallet, color: 'bg-amber-500', to: '/wallet-admin' },
 ];
@@ -144,14 +154,23 @@ export default function AdminDashboardPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 6);
 
-  const statsValues = {
-    users: users.length,
-    bookings: bookings.length,
-    payments: payments?.totalCount ?? 0,
-    revenue: revenue.toLocaleString('vi-VN') + ' đ',
-    wallet: wallet
-      ? `${wallet.totalTopUpAmount.toLocaleString('vi-VN')} đ`
-      : '0 đ',
+  const statsValues: Record<string, StatDisplay> = {
+    users: { value: users.length.toLocaleString('vi-VN') },
+    bookings: { value: bookings.length.toLocaleString('vi-VN') },
+    // Doanh thu: tổng tiền các payment Completed. Sub-line hiển thị số
+    // giao dịch Completed — gộp luôn vào card này thay cho 2 card
+    // Payments + Doanh thu riêng biệt.
+    revenue: {
+      value: revenue.toLocaleString('vi-VN') + ' đ',
+      subValue: `${completedPayments.length.toLocaleString('vi-VN')} giao dịch`,
+    },
+    // Wallet card: count ở ngoài (góc trên phải), tổng tiền ở trong (ô vàng)
+    wallet: {
+      value: wallet ? wallet.topUpCount.toLocaleString('vi-VN') : '0',
+      subValue: wallet
+        ? `${wallet.totalTopUpAmount.toLocaleString('vi-VN')} đ`
+        : '0 đ',
+    },
   };
 
   return (
@@ -184,7 +203,12 @@ export default function AdminDashboardPage() {
               {loading ? (
                 <div className="h-7 w-12 animate-pulse rounded-md bg-gray-200" />
               ) : (
-                <p className="text-2xl font-extrabold text-gray-900">{statsValues[s.key as keyof typeof statsValues]}</p>
+                <>
+                  <p className="text-2xl font-extrabold text-gray-900">{statsValues[s.key].value}</p>
+                  {statsValues[s.key].subValue && (
+                    <p className="mt-0.5 text-xs font-semibold text-amber-600">{statsValues[s.key].subValue}</p>
+                  )}
+                </>
               )}
               <p className="mt-1 text-xs text-gray-400">{s.label}</p>
             </Link>
@@ -294,12 +318,22 @@ export default function AdminDashboardPage() {
                   <span className="font-semibold text-gray-700">{loading ? '...' : bookings.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Payments</span>
-                  <span className="font-semibold text-gray-700">{loading ? '...' : (payments?.totalCount ?? 0)}</span>
+                  <span>Doanh thu</span>
+                  <span className="font-semibold text-gray-700">
+                    {loading ? '...' : `${revenue.toLocaleString('vi-VN')} đ`}
+                    <span className="ml-1 text-xs font-normal text-gray-400">
+                      ({completedPayments.length} giao dịch)
+                    </span>
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Wallet TopUp</span>
-                  <span className="font-semibold text-gray-700">{loading ? '...' : (wallet?.totalTopUpAmount.toLocaleString('vi-VN') ?? '0')} đ</span>
+                  <span className="font-semibold text-gray-700">
+                    {loading ? '...' : `${(wallet?.totalTopUpAmount ?? 0).toLocaleString('vi-VN')} đ`}
+                    <span className="ml-1 text-xs font-normal text-gray-400">
+                      ({(wallet?.topUpCount ?? 0).toLocaleString('vi-VN')} giao dịch)
+                    </span>
+                  </span>
                 </div>
               </div>
             </div>

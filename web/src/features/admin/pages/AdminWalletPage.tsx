@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Search, Wallet, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Wallet, Calendar, TrendingUp, BarChart3, Activity } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { apiFetch } from '../../../lib/api';
@@ -20,6 +20,20 @@ type AdminWalletTopUp = {
   updatedAt: string;
 };
 
+type AdminWalletSummary = {
+  totalTopUpAmount: number;
+  topUpCount: number;
+  todayAmount: number;
+  todayCount: number;
+  weekAmount: number;
+  weekCount: number;
+  monthAmount: number;
+  monthCount: number;
+  selectedDay: string | null;
+  selectedDayAmount: number;
+  selectedDayCount: number;
+};
+
 const PAGE_SIZE = 10;
 
 function toLocalDateInput(d: Date): string {
@@ -31,8 +45,9 @@ function toLocalDateInput(d: Date): string {
 
 export default function AdminWalletPage() {
   const [topUps, setTopUps] = useState<AdminWalletTopUp[]>([]);
-  const [summary, setSummary] = useState<{ totalTopUpAmount: number; topUpCount: number } | null>(null);
+  const [summary, setSummary] = useState<AdminWalletSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState<string>(toLocalDateInput(new Date()));
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
@@ -52,17 +67,18 @@ export default function AdminWalletPage() {
       }
       const qs = params.toString();
       const url = `/admin/wallet/top-ups${qs ? `?${qs}` : ''}`;
+      const summaryUrl = `/admin/wallet/summary?date=${encodeURIComponent(selectedDay)}`;
 
       const [topUpsRes, summaryRes] = await Promise.all([
         apiFetch(url),
-        apiFetch('/admin/wallet/summary'),
+        apiFetch(summaryUrl),
       ]);
       if (!topUpsRes.ok || !summaryRes.ok) {
         throw new Error('Không thể tải dữ liệu ví.');
       }
       const [topUpsData, summaryData] = await Promise.all([
         topUpsRes.json() as Promise<AdminWalletTopUp[]>,
-        summaryRes.json() as Promise<{ totalTopUpAmount: number; topUpCount: number }>,
+        summaryRes.json() as Promise<AdminWalletSummary>,
       ]);
       setTopUps(topUpsData);
       setSummary(summaryData);
@@ -77,7 +93,7 @@ export default function AdminWalletPage() {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, selectedDay]);
 
   const filtered = topUps.filter(t => {
     if (!search) return true;
@@ -115,6 +131,59 @@ export default function AdminWalletPage() {
             Tổng cộng {summary?.topUpCount ?? 0} giao dịch nạp tiền hoàn thành
             {' · '}Tổng tiền vào {summary?.totalTopUpAmount.toLocaleString('vi-VN') ?? 0} đ
           </p>
+        </motion.div>
+
+        {/* Breakdown: today / week / month */}
+        <motion.div initial={hidden} animate={visible} transition={trans(0.05)} className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <label className="flex flex-col text-xs font-semibold uppercase tracking-widest text-emerald-600">
+                Ngày
+                <input
+                  type="date"
+                  value={selectedDay}
+                  onChange={(e) => setSelectedDay(e.target.value)}
+                  className="mt-1 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-700 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                />
+              </label>
+              <Activity size={16} className="text-emerald-500" />
+            </div>
+            <p className="mt-3 text-2xl font-extrabold text-gray-900">
+              {summary?.selectedDayAmount.toLocaleString('vi-VN') ?? 0} đ
+            </p>
+            <p className="mt-1 text-xs text-gray-400">
+              {summary?.selectedDayCount ?? 0} giao dịch
+            </p>
+            <p className="mt-2 text-[11px] text-gray-400">
+              {selectedDay === toLocalDateInput(new Date())
+                ? 'Hôm nay'
+                : `Đã chọn: ${new Date(selectedDay).toLocaleDateString('vi-VN')}`}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-widest text-blue-600">Tuần này</span>
+              <BarChart3 size={16} className="text-blue-500" />
+            </div>
+            <p className="mt-2 text-2xl font-extrabold text-gray-900">
+              {summary?.weekAmount.toLocaleString('vi-VN') ?? 0} đ
+            </p>
+            <p className="mt-1 text-xs text-gray-400">
+              {summary?.weekCount ?? 0} giao dịch
+            </p>
+          </div>
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-widest text-purple-600">Tháng này</span>
+              <TrendingUp size={16} className="text-purple-500" />
+            </div>
+            <p className="mt-2 text-2xl font-extrabold text-gray-900">
+              {summary?.monthAmount.toLocaleString('vi-VN') ?? 0} đ
+            </p>
+            <p className="mt-1 text-xs text-gray-400">
+              {summary?.monthCount ?? 0} giao dịch
+            </p>
+          </div>
         </motion.div>
 
         {/* Filters */}

@@ -154,7 +154,7 @@ export default function AppHeader() {
               </Link>
             ))}
             <div className="my-2 border-t border-gray-100"></div>
-            {feedback && (
+            {feedback && role !== 'Admin' && (
               <button
                 type="button"
                 onClick={(event) => {

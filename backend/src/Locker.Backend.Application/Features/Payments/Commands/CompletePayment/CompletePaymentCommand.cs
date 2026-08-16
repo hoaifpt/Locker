@@ -22,6 +22,7 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
     {
         var payment = await _paymentRepository.GetByIdAsync(request.PaymentId, cancellationToken);
         if (payment == null || payment.UserId != request.UserId) return false;
+        if (payment.Status == PaymentStatus.Completed) return true;
         if (payment.Status != PaymentStatus.Pending) return false;
 
         payment.Status = PaymentStatus.Completed;
@@ -29,6 +30,10 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
         payment.PaidAt = DateTime.UtcNow;
 
         await _paymentRepository.UpdateAsync(payment, cancellationToken);
+
+        
+
+
         return true;
     }
 }

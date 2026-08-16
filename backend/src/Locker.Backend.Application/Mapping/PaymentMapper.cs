@@ -9,6 +9,7 @@ public class PaymentMapper : IMapper<Payment, PaymentDto>
     {
         Id = source.Id,
         BookingId = source.BookingId,
+        OrderId = source.OrderId,
         UserId = source.UserId,
         Amount = source.Amount,
         Status = source.Status,

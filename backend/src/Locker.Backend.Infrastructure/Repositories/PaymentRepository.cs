@@ -92,4 +92,10 @@ public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
             },
             cancellationToken);
     }
+
+    public async Task AddAsync(Payment payment, CancellationToken cancellationToken)
+    {
+        // Vì bạn đã có _collection (được thừa hưởng từ base), bạn dùng nó để insert
+        await _collection.InsertOneAsync(payment, null, cancellationToken);
+    }
 }

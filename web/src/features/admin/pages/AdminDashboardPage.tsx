@@ -38,12 +38,14 @@ type AdminPayment = {
   bookingId: string;
   userId: string;
   amount: number;
-  status: string;            // "Pending" | "Completed" | "Failed" | "Cancelled" | "Refunded"
+  status: any;            // "Pending" | "Completed" | "Failed" | "Cancelled" | "Refunded"
   method: string;
   transactionId: string | null;
   createdAt: string;
   paidAt: string | null;
 };
+
+
 
 type PaginatedPayments = {
   items: AdminPayment[];
@@ -119,6 +121,9 @@ export default function AdminDashboardPage() {
           }
           throw new Error('Không thể tải dữ liệu.');
         }
+
+        const completedPayments = payments?.items.filter(p => p.status === 1) ?? [];
+        const revenue = completedPayments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
 
         const [usersData, bookingsData, paymentsData, walletData] = await Promise.all([
           usersRes.json() as Promise<AdminUser[]>,

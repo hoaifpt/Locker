@@ -57,6 +57,8 @@ import AdminFeedbackPage from '../features/feedback/pages/AdminFeedbackPage';
 // Admin
 import AdminDashboardPage from '../features/admin/pages/AdminDashboardPage';
 import AdminUsersPage from '../features/admin/pages/AdminUsersPage';
+import AdminBookingsPage from '../features/admin/pages/AdminBookingsPage';
+import AdminPaymentsPage from '../features/admin/pages/AdminPaymentsPage';
 
 export default function AppRoutes() {
   return (
@@ -84,6 +86,8 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
         <Route path="/dashboard" element={<AdminDashboardPage />} />
         <Route path="/users" element={<AdminUsersPage />} />
+        <Route path="/bookings" element={<AdminBookingsPage />} />
+        <Route path="/payments" element={<AdminPaymentsPage />} />
         <Route path="/feedbacks" element={<AdminFeedbackPage />} />
       </Route>
 

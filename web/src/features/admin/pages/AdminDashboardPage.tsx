@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Package, Clock, CreditCard, TrendingUp, ChevronRight, ShieldCheck, MessageSquare, UserPlus, BarChart3 } from 'lucide-react';
+import { Users, Clock, CreditCard, TrendingUp, ChevronRight, ShieldCheck, MessageSquare, UserPlus, BarChart3 } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { apiFetch } from '../../../lib/api';
@@ -18,9 +18,42 @@ type AdminUser = {
   createdAt: string;
 };
 
+type AdminBooking = {
+  id: string;
+  userId: string;
+  lockerId: string;
+  slotIndex: number;
+  packageId: string;
+  mobileNumber: string;
+  status: string;            // "Pending" | "Active" | "Completed" | "Cancelled"
+  totalAmount: number;
+  paymentId: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+};
+
+type AdminPayment = {
+  id: string;
+  bookingId: string;
+  userId: string;
+  amount: number;
+  status: string;            // "Pending" | "Completed" | "Failed" | "Cancelled" | "Refunded"
+  method: string;
+  transactionId: string | null;
+  createdAt: string;
+  paidAt: string | null;
+};
+
+type PaginatedPayments = {
+  items: AdminPayment[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+};
+
 const stats = [
   { label: 'Tổng Users', key: 'users', icon: Users, color: 'bg-blue-500' },
-  { label: 'Đơn hàng', key: 'orders', icon: Package, color: 'bg-orange-500' },
   { label: 'Bookings', key: 'bookings', icon: Clock, color: 'bg-green-500' },
   { label: 'Payments', key: 'payments', icon: CreditCard, color: 'bg-purple-500' },
   { label: 'Doanh thu', key: 'revenue', icon: TrendingUp, color: 'bg-emerald-500' },
@@ -28,12 +61,15 @@ const stats = [
 
 const quickActions = [
   { to: '/users', icon: Users, label: 'Quản lý Users', desc: 'Xem, thêm, sửa, xóa người dùng', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-500' },
-  { to: '/feedbacks', icon: MessageSquare, label: 'Xem Feedback', desc: 'Review phản hồi từ người dùng', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-500' },
-  { to: '/users', icon: UserPlus, label: 'Thêm User mới', desc: 'Tạo tài khoản người dùng', color: 'from-emerald-500 to-emerald-600', bgColor: 'bg-emerald-500' },
+  { to: '/bookings', icon: Clock, label: 'Quản lý Bookings', desc: 'Theo dõi các đơn đặt tủ', color: 'from-green-500 to-green-600', bgColor: 'bg-green-500' },
+  { to: '/payments', icon: CreditCard, label: 'Quản lý Payments', desc: 'Đối soát giao dịch', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-500' },
+  { to: '/feedbacks', icon: MessageSquare, label: 'Xem Feedback', desc: 'Review phản hồi từ người dùng', color: 'from-amber-500 to-amber-600', bgColor: 'bg-amber-500' },
 ];
 
 export default function AdminDashboardPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [bookings, setBookings] = useState<AdminBooking[]>([]);
+  const [payments, setPayments] = useState<PaginatedPayments | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { show: showToast } = useToast();
@@ -43,15 +79,37 @@ export default function AdminDashboardPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiFetch('/admin/users');
-        if (!res.ok) {
-          if (res.status === 401 || res.status === 403) {
+        // Fire 3 requests in parallel — they share the same auth header
+        // and don't depend on each other's results. Payments uses
+        // pageSize=200 (backend MaxPageSize) so the dashboard revenue
+        // figure covers as many records as possible without paging.
+        const [usersRes, bookingsRes, paymentsRes] = await Promise.all([
+          apiFetch('/admin/users'),
+          apiFetch('/admin/bookings'),
+          apiFetch('/admin/payments?pageNumber=1&pageSize=200'),
+        ]);
+
+        if (!usersRes.ok || !bookingsRes.ok || !paymentsRes.ok) {
+          const status = usersRes.status === 401 || usersRes.status === 403
+            ? usersRes.status
+            : bookingsRes.status === 401 || bookingsRes.status === 403
+              ? bookingsRes.status
+              : paymentsRes.status;
+          if (status === 401 || status === 403) {
             throw new Error('Bạn không có quyền truy cập trang này. Vui lòng đăng nhập tài khoản Admin.');
           }
           throw new Error('Không thể tải dữ liệu.');
         }
-        const data = await res.json() as AdminUser[];
-        setUsers(data);
+
+        const [usersData, bookingsData, paymentsData] = await Promise.all([
+          usersRes.json() as Promise<AdminUser[]>,
+          bookingsRes.json() as Promise<AdminBooking[]>,
+          paymentsRes.json() as Promise<PaginatedPayments>,
+        ]);
+
+        setUsers(usersData);
+        setBookings(bookingsData);
+        setPayments(paymentsData);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Lỗi không xác định';
         setError(message);
@@ -63,24 +121,23 @@ export default function AdminDashboardPage() {
     fetchAdminData();
   }, [showToast]);
 
-  const otherStats = {
-    users: users.length,
-    orders: 0,
-    bookings: 0,
-    payments: 0,
-    revenue: 0,
-  };
+  // Revenue = tổng amount các payment Completed. Backend trả Paginated
+  // Result với totalCount nhưng không có field tổng tiền, nên
+  // dashboard sum trên trang đầu (pageSize=200, backend cap). Với
+  // dataset vài trăm payments thì chính xác; nếu vượt 200 cần endpoint
+  // riêng — TODO thêm /admin/payments/summary nếu scale lên.
+  const completedPayments = payments?.items.filter(p => p.status === 'Completed') ?? [];
+  const revenue = completedPayments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
 
   const recentUsers = [...users]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 6);
 
   const statsValues = {
-    users: otherStats.users,
-    orders: otherStats.orders,
-    bookings: otherStats.bookings,
-    payments: otherStats.payments,
-    revenue: otherStats.revenue.toLocaleString('vi-VN'),
+    users: users.length,
+    bookings: bookings.length,
+    payments: payments?.totalCount ?? 0,
+    revenue: revenue.toLocaleString('vi-VN') + ' đ',
   };
 
   return (
@@ -97,19 +154,26 @@ export default function AdminDashboardPage() {
         </motion.div>
 
         {/* Stats Cards */}
-        <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((s) => (
-            <div key={s.key} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${s.color}`}>
-                <s.icon size={16} className="text-white" />
+            <Link
+              key={s.key}
+              to={s.key === 'users' ? '/users' : s.key === 'bookings' ? '/bookings' : '/payments'}
+              className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:border-orange-200 hover:shadow-md hover:shadow-orange-100/40"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${s.color}`}>
+                  <s.icon size={16} className="text-white" />
+                </div>
+                <ChevronRight size={14} className="text-gray-300 transition group-hover:text-orange-500" />
               </div>
-              {loading && s.key === 'users' ? (
+              {loading ? (
                 <div className="h-7 w-12 animate-pulse rounded-md bg-gray-200" />
               ) : (
                 <p className="text-2xl font-extrabold text-gray-900">{statsValues[s.key as keyof typeof statsValues]}</p>
               )}
               <p className="mt-1 text-xs text-gray-400">{s.label}</p>
-            </div>
+            </Link>
           ))}
         </motion.div>
 
@@ -209,7 +273,15 @@ export default function AdminDashboardPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Users</span>
-                  <span className="font-semibold text-gray-700">{loading ? '...' : otherStats.users}</span>
+                  <span className="font-semibold text-gray-700">{loading ? '...' : users.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Bookings</span>
+                  <span className="font-semibold text-gray-700">{loading ? '...' : bookings.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Payments</span>
+                  <span className="font-semibold text-gray-700">{loading ? '...' : (payments?.totalCount ?? 0)}</span>
                 </div>
               </div>
             </div>

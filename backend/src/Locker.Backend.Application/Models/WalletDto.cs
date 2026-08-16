@@ -33,4 +33,31 @@ public class WalletTopUpSummaryDto
 
     /// <summary>Total number of Completed TopUp transactions.</summary>
     public int TopUpCount { get; set; }
+
+    /// <summary>Sum amount of Completed TopUp transactions created today (UTC).</summary>
+    public decimal TodayAmount { get; set; }
+
+    /// <summary>Number of Completed TopUp transactions created today (UTC).</summary>
+    public int TodayCount { get; set; }
+
+    /// <summary>Sum amount of Completed TopUp transactions created since the start of the current ISO week (UTC, Monday).</summary>
+    public decimal WeekAmount { get; set; }
+
+    /// <summary>Number of Completed TopUp transactions created since the start of the current ISO week (UTC, Monday).</summary>
+    public int WeekCount { get; set; }
+
+    /// <summary>Sum amount of Completed TopUp transactions created since the start of the current month (UTC).</summary>
+    public decimal MonthAmount { get; set; }
+
+    /// <summary>Number of Completed TopUp transactions created since the start of the current month (UTC).</summary>
+    public int MonthCount { get; set; }
+
+    /// <summary>Day this summary is scoped to (UTC date). Null = today.</summary>
+    public DateTime? SelectedDay { get; set; }
+
+    /// <summary>Sum amount of Completed TopUp transactions created on the selected UTC day (00:00–24:00).</summary>
+    public decimal SelectedDayAmount { get; set; }
+
+    /// <summary>Number of Completed TopUp transactions created on the selected UTC day.</summary>
+    public int SelectedDayCount { get; set; }
 }

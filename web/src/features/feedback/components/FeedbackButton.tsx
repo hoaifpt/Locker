@@ -3,7 +3,11 @@ import { useFeedback } from '../context/FeedbackContext';
 
 export default function FeedbackButton() {
   const feedback = useFeedback();
-  if (!feedback) return null;
+  // Admin đã có menu "Feedback" trong sidebar nên nút floating chỉ gây
+  // đè các action dưới cùng của admin pages (quick action list,
+  // pagination, footer…). Ẩn cho admin để tránh đè component.
+  const role = typeof window !== 'undefined' ? localStorage.getItem('role') : null;
+  if (!feedback || role === 'Admin') return null;
 
   return (
     <button

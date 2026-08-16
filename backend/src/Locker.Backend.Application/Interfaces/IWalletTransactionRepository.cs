@@ -21,4 +21,19 @@ public interface IWalletTransactionRepository : IGenericRepository<WalletTransac
         DateTime? dateFrom,
         DateTime? dateTo,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Sum amount + count of Completed TopUp transactions created on
+    /// or after the given start date (UTC). Used by admin wallet breakdown
+    /// widgets (today / week / month).</summary>
+    Task<(decimal Amount, int Count)> GetTopUpStatsSinceAsync(
+        DateTime startUtc,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Sum amount + count of Completed TopUp transactions created
+    /// within [startUtc, endUtc). Used by admin wallet breakdown widget
+    /// scoped to a specific day.</summary>
+    Task<(decimal Amount, int Count)> GetTopUpStatsInRangeAsync(
+        DateTime startUtc,
+        DateTime endUtc,
+        CancellationToken cancellationToken = default);
 }

@@ -77,7 +77,10 @@ export default function PaymentPage() {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({
+          transactionId: paymentData.transactionId || "TXN_" + Date.now() // Hoặc ID thực tế từ cổng thanh toán
+        })
       });
 
       if (!completeRes.ok) throw new Error('Thanh toán thất bại');

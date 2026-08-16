@@ -79,7 +79,7 @@ export default function PaymentPage() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          transactionId: paymentData.transactionId || "TXN_" + Date.now() // Hoặc ID thực tế từ cổng thanh toán
+          TransactionId: paymentData.transactionId || "TXN_" + Date.now()
         })
       });
 

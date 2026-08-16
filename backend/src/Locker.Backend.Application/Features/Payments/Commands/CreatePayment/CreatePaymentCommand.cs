@@ -38,6 +38,7 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
 
         var payment = new Payment
         {
+            Id = Guid.NewGuid(),
             BookingId = request.BookingId,
             UserId = request.UserId,
             Amount = booking.TotalAmount,

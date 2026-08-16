@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, MessageSquare, Settings, Clock, CreditCard, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, MessageSquare, Settings, Clock, CreditCard, Wallet, LogOut } from 'lucide-react';
 import Logo from '../../../components/ui/Logo';
 
 const adminNav = [
@@ -7,6 +7,7 @@ const adminNav = [
   { to: '/users', label: 'Quản lý Users', icon: Users },
   { to: '/bookings', label: 'Quản lý Bookings', icon: Clock },
   { to: '/payments', label: 'Quản lý Payments', icon: CreditCard },
+  { to: '/wallet-admin', label: 'Quản lý Wallet', icon: Wallet },
   { to: '/feedbacks', label: 'Feedback', icon: MessageSquare },
   { to: '/settings', label: 'Cài đặt', icon: Settings },
 ];

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Clock, CreditCard, TrendingUp, ChevronRight, ShieldCheck, MessageSquare, UserPlus, BarChart3 } from 'lucide-react';
+import { Users, Clock, CreditCard, TrendingUp, Wallet, ChevronRight, ShieldCheck, MessageSquare, UserPlus, BarChart3 } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import { hidden, visible, trans } from '../../../lib/animations';
 import { apiFetch } from '../../../lib/api';
@@ -52,17 +52,24 @@ type PaginatedPayments = {
   pageSize: number;
 };
 
+type WalletTopUpSummary = {
+  totalTopUpAmount: number;
+  topUpCount: number;
+};
+
 const stats = [
-  { label: 'Tổng Users', key: 'users', icon: Users, color: 'bg-blue-500' },
-  { label: 'Bookings', key: 'bookings', icon: Clock, color: 'bg-green-500' },
-  { label: 'Payments', key: 'payments', icon: CreditCard, color: 'bg-purple-500' },
-  { label: 'Doanh thu', key: 'revenue', icon: TrendingUp, color: 'bg-emerald-500' },
+  { label: 'Tổng Users', key: 'users', icon: Users, color: 'bg-blue-500', to: '/users' },
+  { label: 'Bookings', key: 'bookings', icon: Clock, color: 'bg-green-500', to: '/bookings' },
+  { label: 'Payments', key: 'payments', icon: CreditCard, color: 'bg-purple-500', to: '/payments' },
+  { label: 'Doanh thu', key: 'revenue', icon: TrendingUp, color: 'bg-emerald-500', to: '/payments' },
+  { label: 'Wallet TopUp', key: 'wallet', icon: Wallet, color: 'bg-amber-500', to: '/wallet-admin' },
 ];
 
 const quickActions = [
   { to: '/users', icon: Users, label: 'Quản lý Users', desc: 'Xem, thêm, sửa, xóa người dùng', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-500' },
   { to: '/bookings', icon: Clock, label: 'Quản lý Bookings', desc: 'Theo dõi các đơn đặt tủ', color: 'from-green-500 to-green-600', bgColor: 'bg-green-500' },
   { to: '/payments', icon: CreditCard, label: 'Quản lý Payments', desc: 'Đối soát giao dịch', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-500' },
+  { to: '/wallet-admin', icon: Wallet, label: 'Quản lý Wallet', desc: 'Tổng tiền user nạp vào hệ thống', color: 'from-emerald-500 to-emerald-600', bgColor: 'bg-emerald-500' },
   { to: '/feedbacks', icon: MessageSquare, label: 'Xem Feedback', desc: 'Review phản hồi từ người dùng', color: 'from-amber-500 to-amber-600', bgColor: 'bg-amber-500' },
 ];
 
@@ -70,6 +77,7 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [bookings, setBookings] = useState<AdminBooking[]>([]);
   const [payments, setPayments] = useState<PaginatedPayments | null>(null);
+  const [wallet, setWallet] = useState<WalletTopUpSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { show: showToast } = useToast();
@@ -79,17 +87,18 @@ export default function AdminDashboardPage() {
       setLoading(true);
       setError(null);
       try {
-        // Fire 3 requests in parallel — they share the same auth header
+        // Fire 4 requests in parallel — they share the same auth header
         // and don't depend on each other's results. Payments uses
         // pageSize=200 (backend MaxPageSize) so the dashboard revenue
         // figure covers as many records as possible without paging.
-        const [usersRes, bookingsRes, paymentsRes] = await Promise.all([
+        const [usersRes, bookingsRes, paymentsRes, walletRes] = await Promise.all([
           apiFetch('/admin/users'),
           apiFetch('/admin/bookings'),
           apiFetch('/admin/payments?pageNumber=1&pageSize=200'),
+          apiFetch('/admin/wallet/summary'),
         ]);
 
-        if (!usersRes.ok || !bookingsRes.ok || !paymentsRes.ok) {
+        if (!usersRes.ok || !bookingsRes.ok || !paymentsRes.ok || !walletRes.ok) {
           const status = usersRes.status === 401 || usersRes.status === 403
             ? usersRes.status
             : bookingsRes.status === 401 || bookingsRes.status === 403
@@ -101,15 +110,17 @@ export default function AdminDashboardPage() {
           throw new Error('Không thể tải dữ liệu.');
         }
 
-        const [usersData, bookingsData, paymentsData] = await Promise.all([
+        const [usersData, bookingsData, paymentsData, walletData] = await Promise.all([
           usersRes.json() as Promise<AdminUser[]>,
           bookingsRes.json() as Promise<AdminBooking[]>,
           paymentsRes.json() as Promise<PaginatedPayments>,
+          walletRes.json() as Promise<WalletTopUpSummary>,
         ]);
 
         setUsers(usersData);
         setBookings(bookingsData);
         setPayments(paymentsData);
+        setWallet(walletData);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Lỗi không xác định';
         setError(message);
@@ -138,6 +149,9 @@ export default function AdminDashboardPage() {
     bookings: bookings.length,
     payments: payments?.totalCount ?? 0,
     revenue: revenue.toLocaleString('vi-VN') + ' đ',
+    wallet: wallet
+      ? `${wallet.totalTopUpAmount.toLocaleString('vi-VN')} đ`
+      : '0 đ',
   };
 
   return (
@@ -154,11 +168,11 @@ export default function AdminDashboardPage() {
         </motion.div>
 
         {/* Stats Cards */}
-        <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <motion.div initial={hidden} animate={visible} transition={trans(0.1)} className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
           {stats.map((s) => (
             <Link
               key={s.key}
-              to={s.key === 'users' ? '/users' : s.key === 'bookings' ? '/bookings' : '/payments'}
+              to={s.to}
               className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:border-orange-200 hover:shadow-md hover:shadow-orange-100/40"
             >
               <div className="mb-3 flex items-center justify-between">
@@ -282,6 +296,10 @@ export default function AdminDashboardPage() {
                 <div className="flex justify-between">
                   <span>Payments</span>
                   <span className="font-semibold text-gray-700">{loading ? '...' : (payments?.totalCount ?? 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Wallet TopUp</span>
+                  <span className="font-semibold text-gray-700">{loading ? '...' : (wallet?.totalTopUpAmount.toLocaleString('vi-VN') ?? '0')} đ</span>
                 </div>
               </div>
             </div>

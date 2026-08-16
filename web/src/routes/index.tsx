@@ -59,6 +59,7 @@ import AdminDashboardPage from '../features/admin/pages/AdminDashboardPage';
 import AdminUsersPage from '../features/admin/pages/AdminUsersPage';
 import AdminBookingsPage from '../features/admin/pages/AdminBookingsPage';
 import AdminPaymentsPage from '../features/admin/pages/AdminPaymentsPage';
+import AdminWalletPage from '../features/admin/pages/AdminWalletPage';
 
 export default function AppRoutes() {
   return (
@@ -88,6 +89,7 @@ export default function AppRoutes() {
         <Route path="/users" element={<AdminUsersPage />} />
         <Route path="/bookings" element={<AdminBookingsPage />} />
         <Route path="/payments" element={<AdminPaymentsPage />} />
+        <Route path="/wallet-admin" element={<AdminWalletPage />} />
         <Route path="/feedbacks" element={<AdminFeedbackPage />} />
       </Route>
 

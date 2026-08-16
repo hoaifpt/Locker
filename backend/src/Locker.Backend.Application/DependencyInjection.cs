@@ -17,6 +17,7 @@ public static class DependencyInjection
         services.AddSingleton<BookingMapper>();
         services.AddSingleton<PaymentMapper>();
         services.AddSingleton<OrderMapper>();
+        services.AddSingleton<WalletTransactionMapper>();
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<AuthRequestValidator>();
